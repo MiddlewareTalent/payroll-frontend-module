@@ -1,10 +1,52 @@
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
+import axios from "axios";
+import { useEffect, useState } from "react";
 
-const PayslipView = ({ payslips }) => {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const payslip = payslips.find((p) => p.paySlipReference === id);
+const PayslipView = () => {
+  const navigate = useNavigate();
+  const [payslip, setPayslip] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const paySlipRefs=useParams("paySlipRef");
+  console.log(paySlipRefs.paySlipRef)
+
+  
+
+  useEffect(() => {
+    const fetchPayslip = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/payslip/reference/number/${paySlipRefs.paySlipRef}`);
+        setPayslip(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching payslip:", error);
+        setPayslip(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPayslip();
+  }, []);
+
+  const handleDownload = async () => {
+    const element = document.getElementById("payslip-content");
+    if (!element) {
+      alert("Payslip content missing, can't download PDF.");
+      return;
+    }
+
+    try {
+      await html2pdf().from(element).save();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error generating PDF. See console.");
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading payslip...</div>;
+  }
 
   if (!payslip) {
     return (
@@ -19,25 +61,8 @@ const PayslipView = ({ payslips }) => {
           </button>
         </div>
       </div>
-    )
+    );
   }
-
-  const handleDownload = async () => {
-    const element = document.getElementById("payslip-content");
-    if (!element) {
-      console.error("Element with id 'payslip-content' not found");
-      alert("Payslip content missing, can't download PDF.");
-      return;
-    }
-
-    try {
-      await html2pdf().from(element).save();
-      console.log("PDF saved successfully");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Error generating PDF. See console.");
-    }
-  };
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F9FAFB' }}>
@@ -82,14 +107,12 @@ const PayslipView = ({ payslips }) => {
           lineHeight: '1.5',
         }}
       >
-        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>PAYSLIP</h2>
           <p style={{ color: '#4B5563' }}>Pay Period: {payslip.payPeriod}</p>
           <p style={{ color: '#4B5563' }}>Tax Year: {payslip.taxYear}</p>
         </div>
 
-        {/* Employee Details and Pay Details */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
@@ -101,16 +124,18 @@ const PayslipView = ({ payslips }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <p><strong>Name:</strong> {payslip.firstName} {payslip.lastName}</p>
               <p><strong>Employee ID:</strong> {payslip.employeeId}</p>
-              <p><strong>NI Number:</strong> {payslip.NI_Number}</p>
+              <p><strong>NI Number:</strong> {payslip.ni_Number}</p>
               <p><strong>Tax Code:</strong> {payslip.taxCode}</p>
+              <p><strong>Working Company Name:</strong> {payslip.workingCompanyName}</p>
             </div>
           </div>
 
           <div>
             <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '1rem' }}>Pay Details</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <p><strong>Pay Date:</strong> {new Date(payslip.payDate).toLocaleDateString()}</p>
-              <p><strong>Period End:</strong> {new Date(payslip.periodEnd).toLocaleDateString()}</p>
+               <p><strong>Pay Date:</strong> {payslip.payDate}</p>
+                <p><strong>Pay Period:</strong> {payslip.payPeriod}</p>
+               <p><strong>Period End:</strong> {payslip.periodEnd}</p>
               <p><strong>Pay Reference:</strong> {payslip.paySlipReference}</p>
               <p><strong>Region:</strong> {payslip.region}</p>
             </div>
@@ -122,16 +147,14 @@ const PayslipView = ({ payslips }) => {
           <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '1.5rem' }}>Total Pay Details</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Earnings */}
             <div style={{ backgroundColor: '#F9FAFB', padding: '1rem', borderRadius: '0.5rem' }}>
               <h4 style={{ fontWeight: '600', color: '#111827', marginBottom: '0.75rem' }}>Earnings</h4>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Gross Pay</span>
+                <span>Gross Pay Total</span>
                 <span style={{ fontWeight: '500' }}>£{payslip.grossPayTotal}</span>
               </div>
             </div>
 
-            {/* Deductions */}
             <div style={{ backgroundColor: '#F9FAFB', padding: '1rem', borderRadius: '0.5rem' }}>
               <h4 style={{ fontWeight: '600', color: '#111827', marginBottom: '0.75rem' }}>Deductions</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -148,8 +171,20 @@ const PayslipView = ({ payslips }) => {
                   <span style={{ fontWeight: '500' }}>£{payslip.incomeTaxTotal}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>National Insurance</span>
-                  <span style={{ fontWeight: '500' }}>£{payslip.nationalInsurance}</span>
+                  <span>Employee NIC</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.employeeNationalInsurance}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Employer NIC</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.employersNationalInsurance}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Student Loan Deduction Amount</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.studentLoanDeductionAmount}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Post Graduate Deduction Amount</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.postgraduateDeductionAmount}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #D1D5DB', paddingTop: '0.5rem' }}>
                   <span style={{ fontWeight: '700' }}>Total Deductions</span>
@@ -158,7 +193,6 @@ const PayslipView = ({ payslips }) => {
               </div>
             </div>
 
-            {/* Net Pay */}
             <div style={{
               backgroundColor: '#ECFDF5',
               padding: '1rem',
@@ -173,9 +207,9 @@ const PayslipView = ({ payslips }) => {
             </div>
           </div>
         </div>
-        </div>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default PayslipView
+export default PayslipView;

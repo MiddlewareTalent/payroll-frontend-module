@@ -14,12 +14,13 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
 
 
   const navItems = [
-   
+    {name:" Add Employer Details",path:"/add-company"},
+    {name:"  Employer Details",path:"/company-details"},
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
-    { name: "Payroll Run", path: "/payroll-run", icon: "calculator" },
-    { name: "My Payslips", path: "/my-payslips", icon: "document" },
+    { name: "Payslips", path: "/payroll-run", icon: "calculator" },
     { name: "Reports", path: "/reports", icon: "chart" },
+     { name: "PAYE", path: "/paye", icon: "chart" },
   ]
 
   const getIcon = (iconName) => {
@@ -102,10 +103,7 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium"
   >
     Logout
-  </button>
-
-
-           
+  </button> 
           </div>
         </div>
       </div>
@@ -154,7 +152,7 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Employees</dt>
                       <dd className="text-lg font-medium text-gray-900">{employees?.length || 0}
-</dd>
+                      </dd>
                     </dl>
                   </div>
                 </div>

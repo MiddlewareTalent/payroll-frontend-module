@@ -6,34 +6,42 @@ import EmployerDashboard from "./components/EmployerDashboard";
 import CompanyRegistration from "./components/CompanyRegistration";
 import AddEmployee from "./components/AddEmployee";
 import EmployeeDetails from "./components/EmployeeDetails";
-import MyPayslips from "./components/MyPlayslips";
 import PayrollRun from "./components/PayrollRun";
 import Reports from "./components/Reports";
 import PayslipView from "./components/PayslipView";
+import Paye from "./components/Paye";
+import AddCompanyDetails from "./components/AddCompanyDetails";
+import CompanyDetails from "./components/CompanyDetails";
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [company, setCompany] = useState(null);
+  // Load from localStorage on initial render
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
+  const [company, setCompany] = useState(() => {
+    const storedCompany = localStorage.getItem("company");
+    return storedCompany ? JSON.parse(storedCompany) : null;
+  });
+
   const [employees, setEmployees] = useState([]);
   const [payslips, setPayslips] = useState([]);
   const [employerPayslips, setEmployerPayslips] = useState([]);
 
   const generateUniqueId = () => {
-  return `id-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-};
+    return `id-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  };
 
-  
-const handleGeneratePayslip = (payslipData) => {
-  return new Promise((resolve) => {
-    setEmployerPayslips((prev) => {
-      const updated = [...prev, payslipData];
-      resolve(payslipData); // resolve with the new payslip after update
-      return updated;
+  const handleGeneratePayslip = (payslipData) => {
+    return new Promise((resolve) => {
+      setEmployerPayslips((prev) => {
+        const updated = [...prev, payslipData];
+        resolve(payslipData);
+        return updated;
+      });
     });
-  });
-};
-
-
+  };
 
   const handleUpdateEmployee = (updatedEmployee) => {
     setEmployees((prevEmployees) =>
@@ -42,30 +50,31 @@ const handleGeneratePayslip = (payslipData) => {
       )
     );
   };
-  // Login handler updates user state
+
   const handleLogin = (userData) => {
     setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // Logout clears all state
   const handleLogout = () => {
     setUser(null);
     setCompany(null);
     setEmployees([]);
     setPayslips([]);
+    localStorage.removeItem("user");
+    localStorage.removeItem("company");
   };
 
-  // Company registration handler
   const handleCompanyRegister = (companyData) => {
     setCompany(companyData);
+    localStorage.setItem("company", JSON.stringify(companyData));
   };
 
   return (
-   
     <Router>
       <div className="min-h-screen bg-gray-50">
         <Routes>
-          {/* Root route: redirect based on user & company */}
+          {/* Root route */}
           <Route
             path="/"
             element={
@@ -83,14 +92,17 @@ const handleGeneratePayslip = (payslipData) => {
             }
           />
 
-          {/* Login page */}
           <Route
-  path="/login"
-  element={!user ? <Login onLogin={handleLogin} employees={employees} /> : <Navigate to="/" replace />}
-/>
+            path="/login"
+            element={
+              !user ? (
+                <Login onLogin={handleLogin} employees={employees} />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
 
-
-          {/* Company Registration */}
           <Route
             path="/company-registration"
             element={
@@ -106,7 +118,6 @@ const handleGeneratePayslip = (payslipData) => {
             }
           />
 
-          {/* Employer Dashboard */}
           <Route
             path="/employer-dashboard"
             element={
@@ -123,7 +134,6 @@ const handleGeneratePayslip = (payslipData) => {
             }
           />
 
-          {/* Employee Dashboard */}
           <Route
             path="/employee-dashboard"
             element={
@@ -140,22 +150,30 @@ const handleGeneratePayslip = (payslipData) => {
             }
           />
 
-          {/* Add Employee */}
           <Route
-  path="/add-employee"
-  element={
-    <AddEmployee
-      onAddEmployee={(newEmployee) => {
-        setEmployees((prev) => [...prev, newEmployee]);
-        console.log("New employee added:", newEmployee);
-      }}
-      company={company || { payPeriod: "MONTHLY" }}
-    />
-  }
-/>
+            path="/add-employee"
+            element={
+              <AddEmployee
+                onAddEmployee={(newEmployee) => {
+                  setEmployees((prev) => [...prev, newEmployee]);
+                  console.log("New employee added:", newEmployee);
+                }}
+                company={company || { payPeriod: "MONTHLY" }}
+              />
+            }
+          />
 
-          {/* Employee Details */}
-<Route
+           <Route
+            path="/paye"
+            element={
+              <Paye/>
+            }
+          />
+
+         <Route path="/add-company" element={<AddCompanyDetails />} />
+                <Route path="/company-details"element={<CompanyDetails/>}/>
+
+          <Route
             path="/employee-details"
             element={
               user?.type === "employer" && company ? (
@@ -164,71 +182,60 @@ const handleGeneratePayslip = (payslipData) => {
                   employees={employees}
                   payslips={payslips}
                   onLogout={handleLogout}
-                  onUpdateEmployee={handleUpdateEmployee} // Now defined
+                  onUpdateEmployee={handleUpdateEmployee}
                 />
               ) : (
                 <Navigate to="/" replace />
               )
             }
           />
-          {/* Payroll Run */}
+
           <Route
-  path="/payroll-run"
-  element={
-    user?.type === "employer" && company ? (
-      <PayrollRun
-        company={company}
-        employees={employees}
-        onGeneratePayslip={handleGeneratePayslip}
-        payslips={employerPayslips}
-      />
-    ) : (
-      <Navigate to="/" replace />
-    )
-  }
-/>
+            path="/payroll-run"
+            element={
+              user?.type === "employer" && company ? (
+                <PayrollRun
+                  company={company}
+                  employees={employees}
+                  onGeneratePayslip={handleGeneratePayslip}
+                  payslips={employerPayslips}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
 
+          <Route
+            path="/reports"
+            element={
+              user?.type === "employer" && company ? (
+                <Reports
+                  company={company}
+                  employees={employees}
+                  payslips={payslips}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
 
-{/* My Payslips */}
-<Route
-  path="/my-payslips"
-  element={
-    user?.type === "employee" ? (
-      <MyPayslips
-        payslips={payslips.filter(p => p.employeeId === user?.employeeId)}
+          <Route
+            path="/payslip/:paySlipRef"
+            element={
+              user ? (
+                <PayslipView payslips={employerPayslips} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
 
-      />
-    ) : (
-      <Navigate to="/" replace />
-    )
-  }
-/>
-
-{/* Reports */}
-<Route
-  path="/reports"
-  element={
-    user?.type === "employer" && company ? (
-      <Reports company={company} employees={employees} payslips={payslips} />
-    ) : (
-      <Navigate to="/" replace />
-    )
-  }
-/>
-
-<Route
-  path="/payslip/:id"
-  element={user ? <PayslipView payslips={employerPayslips} /> : <Navigate to="/login" replace />}
-/>
-
-
-
-          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
-    
   );
 }
 

@@ -1,53 +1,1142 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
-const EmployeeDetails = ({ onUpdateEmployee }) => {
-  const navigate = useNavigate();
-  
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({});
-  const [employees, setEmployees] = useState([]);
+const EmployeeDetails = () => {
+  const navigate = useNavigate()
+  const company = { payPeriod: "MONTHLY" }
 
+  const [selectedEmployee, setSelectedEmployee] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isViewing, setIsViewing] = useState(false)
+  const [employees, setEmployees] = useState([])
+  const [activeTab, setActiveTab] = useState("personal")
+  const [editData, setEditData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    dateOfBirth: "",
+    employeeId: "",
+    address: "",
+    gender: "",
+    postCode: "",
+    employeeDepartment: "",
+    employmentStartedDate: "",
+    employmentEndDate: null,
+    employmentType: "FULL_TIME",
+    employerId: "",
+    payPeriod: company?.payPeriod || "MONTHLY",
+    annualIncomeOfEmployee: "",
+
+    bankDetailsDTO: {
+      accountName: "",
+      accountNumber: "",
+      paymentReference: "",
+      bankName: "",
+      sortCode: "",
+      bankAddress: "",
+      bankPostCode: "",
+      telephone: "",
+      paymentLeadDays: 0,
+      isRTIReturnsIncluded: false,
+    },
+
+    studentLoanDTO: {
+    hasStudentLoan: false,
+    monthlyDeductionAmountInStudentLoan: "",
+    weeklyDeductionAmountInStudentLoan: "",
+    yearlyDeductionAmountInStudentLoan: "",
+    totalDeductionAmountInStudentLoan: "",
+    studentLoanPlanType: "NONE",
+    },
+
+    postGraduateLoanDTO: {
+    hasPostgraduateLoan: false,
+    monthlyDeductionAmountInPostgraduateLoan: "",
+    weeklyDeductionAmountInPostgraduateLoan: "",
+    yearlyDeductionAmountInPostgraduateLoan: "",
+    totalDeductionAmountInPostgraduateLoan: "",
+    postgraduateLoanPlanType: "NONE" 
+  },
+
+    taxCode: "1257L",
+    nationalInsuranceNumber: "",
+    niLetter: "",
+    region: "",
+    isEmergencyCode: false,
+    autoEnrolmentEligible: true,
+    isDirector: false,
+    pensionScheme: "WORKPLACE_PENSION",
+    employeeContribution: 5,
+    employerContribution: 3,
+  })
+
+  const tabs = [
+    { id: "personal", name: "Personal Details", icon: "user" },
+    { id: "employment", name: "Employment", icon: "briefcase" },
+    { id: "pay", name: "Pay", icon: "currency" },
+    { id: "taxNI", name: "Tax & NI", icon: "document" },
+    { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
+  ]
 
   useEffect(() => {
+    fetchEmployees()
+  }, [])
+
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees");
-      console.log("Data fetched:", response.data);
-      setEmployees(response.data);  // <-- update state here
+      const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees")
+      console.log("Data fetched:", response.data)
+      setEmployees(response.data)
     } catch (error) {
-      console.error("Failed to fetch employees:", error);
+      console.error("Failed to fetch employees:", error)
+      alert("Failed to fetch employees. Please try again.")
     }
-  };
-  fetchEmployees();
-}, []);
-
-  const handleEdit = (employee) => {
-    localStorage.setItem("selectedEmployee", JSON.stringify(employee)) 
-    setSelectedEmployee(employee)
-    setEditData(employee)
-    setIsEditing(true)
   }
 
-   const handleSave = () => {
-    onUpdateEmployee(selectedEmployee.employeeId, editData)
-    localStorage.removeItem("selectedEmployee")
-    setIsEditing(false)
-    setSelectedEmployee(null)
+  const handleEdit = async (employeeId) => {
+    if (!employeeId) {
+      console.warn("No employee ID provided for editing.")
+      return
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:8080/api/employee-details/employee/${employeeId}`)
+      const employee = response.data
+
+      console.log("Fetched employee data:", employee)
+      // Ensure bankDetailsDTO exists
+      if (!employee.bankDetailsDTO) {
+        employee.bankDetailsDTO = {
+          accountName: "",
+          accountNumber: "",
+          paymentReference: "",
+          bankName: "",
+          sortCode: "",
+          bankAddress: "",
+          bankPostCode: "",
+          telephone: "",
+          paymentLeadDays: 0,
+          isRTIReturnsIncluded: false,
+        }
+      }
+
+      setSelectedEmployee(employee)
+      setEditData(employee)
+      setIsEditing(true)
+      setIsViewing(false)
+      setActiveTab("personal")
+    } catch (error) {
+      console.error("Failed to fetch employee details:", error)
+      alert("Unable to fetch employee data. Please try again later.")
+    }
+  }
+
+  const handleView = async (employeeId) => {
+    if (!employeeId) {
+      console.warn("No employee ID provided for viewing.")
+      return
+    }
+
+    try {
+      const response = await axios.get(`http://localhost:8080/api/employee-details/employee/${employeeId}`)
+      const employee = response.data
+
+      // Ensure bankDetailsDTO exists for viewing
+      if (!employee.bankDetailsDTO) {
+        employee.bankDetailsDTO = {
+          accountName: "",
+          accountNumber: "",
+          paymentReference: "",
+          bankName: "",
+          sortCode: "",
+          bankAddress: "",
+          bankPostCode: "",
+          telephone: "",
+          paymentLeadDays: 0,
+          isRTIReturnsIncluded: false,
+        }
+      }
+
+      setSelectedEmployee(employee)
+      setEditData(employee)
+      setIsViewing(true)
+      setIsEditing(false)
+      setActiveTab("personal")
+    } catch (error) {
+      console.error("Failed to fetch employee details:", error)
+      alert("Unable to fetch employee data. Please try again later.")
+    }
+  }
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this employee?")
+
+    if (!id) {
+      console.error("No employee ID provided for deletion.")
+      return
+    }
+
+    if (confirmDelete) {
+      try {
+        console.log("Deleting employee with ID:", id)
+
+        await axios.delete(`http://localhost:8080/api/employee-details/delete/${id}`)
+        alert("Employee deleted successfully!")
+        fetchEmployees() 
+      } catch (error) {
+        console.error("Failed to delete employee:", error)
+        alert("Failed to delete employee. Please try again.")
+      }
+    }
+  }
+
+  const handleInputChange = (field, value) => {
+    if (field.startsWith("bankDetailsDTO.")) {
+      const bankField = field.split(".")[1]
+      setEditData((prev) => ({
+        ...prev,
+        bankDetailsDTO: {
+          ...prev.bankDetailsDTO,
+          [bankField]: value,
+        },
+      }))
+    } else {
+      setEditData((prev) => ({
+        ...prev,
+        [field]: value,
+      }))
+    }
+  }
+
+  const handleUpdate = async (e) => {
+    console.log(editData)
+    e.preventDefault()
+
+    // Step 1: If not on final tab, move to next tab
+    if (activeTab !== "autoEnrolment") {
+      const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+      if (currentIndex < tabs.length - 1) {
+        setActiveTab(tabs[currentIndex + 1].id)
+      }
+      return
+    }
+
+    if (!selectedEmployee || !selectedEmployee.id) {
+      console.error("No employee selected for update")
+      alert("No employee selected for update")
+      return
+    }
+
+    console.log("Updating employee data:", editData)
+
+    // Step 2: On final tab — submit the form with API call
+    try {
+      console.log("Sending data:", editData)
+      const response = await axios.put(
+        `http://localhost:8080/api/employee-details/update/${selectedEmployee.id}`,
+        editData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      if (response.status === 200) {
+        alert("Employee details updated successfully!")
+
+        // Reset states and refresh data
+        setIsEditing(false)
+        setSelectedEmployee(null)
+        setEditData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          dateOfBirth: "",
+          employeeId: "",
+          address: "",
+          gender: "",
+          postCode: "",
+          employeeDepartment: "",
+          employmentStartedDate: "",
+          employmentEndDate: null,
+          employmentType: "FULL_TIME",
+          employerId: "",
+          payPeriod: company?.payPeriod || "MONTHLY",
+         annualIncomeOfEmployee: "",
+          bankDetailsDTO: {
+            accountName: "",
+            accountNumber: "",
+            paymentReference: "",
+            bankName: "",
+            sortCode: "",
+            bankAddress: "",
+            bankPostCode: "",
+            telephone: "",
+            paymentLeadDays: 0,
+            isRTIReturnsIncluded: false,
+          },
+          taxCode: "1257L",
+          nationalInsuranceNumber: "",
+          niLetter: "",
+          studentLoan: "NONE",
+          region: "",
+          isEmergencyCode: false,
+          isPostgraduateLoan: false,
+          autoEnrolmentEligible: true,
+          isDirector: false,
+          pensionScheme: "WORKPLACE_PENSION",
+          employeeContribution: 5,
+          employerContribution: 3,
+        })
+
+        fetchEmployees() // Refresh the employee list
+      } else {
+        alert("Failed to update employee. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error updating employee:", error)
+      alert("There was an error updating the employee.")
+    }
   }
 
   const handleCancel = () => {
-    localStorage.removeItem("selectedEmployee")
     setIsEditing(false)
+    setIsViewing(false)
     setSelectedEmployee(null)
-    setEditData({})
+    setActiveTab("personal")
+    // Reset edit data
+    setEditData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      dateOfBirth: "",
+      employeeId: "",
+      address: "",
+      gender: "",
+      postCode: "",
+      employeeDepartment: "",
+      employmentStartedDate: "",
+      employmentEndDate: null,
+      employmentType: "FULL_TIME",
+      employerId: "",
+      payPeriod: company?.payPeriod || "MONTHLY",
+      annualIncomeOfEmployee: "",
+      bankDetailsDTO: {
+        accountName: "",
+        accountNumber: "",
+        paymentReference: "",
+        bankName: "",
+        sortCode: "",
+        bankAddress: "",
+        bankPostCode: "",
+        telephone: "",
+        paymentLeadDays: 0,
+        isRTIReturnsIncluded: false,
+      },
+      taxCode: "1257L",
+      nationalInsuranceNumber: "",
+      niLetter: "",
+      studentLoan: "NONE",
+      region: "",
+      isEmergencyCode: false,
+      isPostgraduateLoan: false,
+      autoEnrolmentEligible: true,
+      isDirector: false,
+      pensionScheme: "WORKPLACE_PENSION",
+      employeeContribution: 5,
+      employerContribution: 3,
+    })
+  }
+
+  // const getIcon = (iconName) => {
+  //   const icons = {
+  //     user: (
+  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //         <path
+  //           strokeLinecap="round"
+  //           strokeLinejoin="round"
+  //           strokeWidth={2}
+  //           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+  //         />
+  //       </svg>
+  //     ),
+  //     briefcase: (
+  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //         <path
+  //           strokeLinecap="round"
+  //           strokeLinejoin="round"
+  //           strokeWidth={2}
+  //           d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
+  //         />
+  //       </svg>
+  //     ),
+  //     currency: (
+  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //         <path
+  //           strokeLinecap="round"
+  //           strokeLinejoin="round"
+  //           strokeWidth={2}
+  //           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+  //         />
+  //       </svg>
+  //     ),
+  //     document: (
+  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //         <path
+  //           strokeLinecap="round"
+  //           strokeLinejoin="round"
+  //           strokeWidth={2}
+  //           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+  //         />
+  //       </svg>
+  //     ),
+  //     shield: (
+  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  //         <path
+  //           strokeLinecap="round"
+  //           strokeLinejoin="round"
+  //           strokeWidth={2}
+  //           d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+  //         />
+  //       </svg>
+  //     ),
+  //   }
+  //   return icons[iconName] || icons.user
+  // }
+
+  const renderPersonalDetails = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">First Name</label>
+          <input
+            type="text"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.firstName}
+            onChange={(e) => handleInputChange("firstName", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Last Name</label>
+          <input
+            type="text"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.lastName}
+            onChange={(e) => handleInputChange("lastName", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.email}
+            onChange={(e) => handleInputChange("email", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+          <input
+            type="date"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.dateOfBirth}
+            onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employee ID</label>
+          <input
+            type="text"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employeeId}
+            onChange={(e) => handleInputChange("employeeId", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Post Code</label>
+          <input
+            type="text"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.postCode}
+            onChange={(e) => handleInputChange("postCode", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Address</label>
+          <input
+            type="text"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.address}
+            onChange={(e) => handleInputChange("address", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Gender</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.gender}
+            onChange={(e) => handleInputChange("gender", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="">Select</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+            </select>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderEmployment = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employee Department</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employeeDepartment}
+            onChange={(e) => handleInputChange("employeeDepartment", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employer ID</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employerId}
+            onChange={(e) => handleInputChange("employerId", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employment Start Date</label>
+          <input
+            type="date"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employmentStartedDate}
+            onChange={(e) => handleInputChange("employmentStartedDate", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employment Type</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employmentType}
+            onChange={(e) => handleInputChange("employmentType", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="FULL_TIME">Full Time</option>
+            <option value="PART_TIME">Part Time</option>
+            <option value="CONTRACT">Contract</option>
+            <option value="TEMPORARY">Temporary</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Employment End Date</label>
+          <input
+            type="date"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.employmentEndDate || ""}
+            onChange={(e) => handleInputChange("employmentEndDate", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderPay = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Annual Income (£)</label>
+          <input
+            type="number"
+            step="0.01"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.annualIncomeOfEmployee}
+            onChange={(e) => handleInputChange("annualIncomeOfEmployee", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Pay Period</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.payPeriod}
+            onChange={(e) => handleInputChange("payPeriod", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="WEEKLY">Weekly</option>
+            <option value="FORTNIGHTLY">Fortnightly</option>
+            <option value="MONTHLY">Monthly</option>
+            <option value="QUARTERLY">Quarterly</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Account Name</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.accountName || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  accountName: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Account Number</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.accountNumber || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  accountNumber: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Sort Code</label>
+          <input
+            type="text"
+            maxLength={6}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.sortCode || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  sortCode: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Bank Name</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.bankName || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankName: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Bank Address</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.bankAddress || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankAddress: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Bank Post Code</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.bankPostCode || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankPostCode: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Telephone</label>
+          <input
+            type="tel"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.telephone || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  telephone: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Payment Reference</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.paymentReference || ""}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  paymentReference: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Payment Lead Days</label>
+          <input
+            type="number"
+            min="0"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.bankDetailsDTO?.paymentLeadDays || 0}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  paymentLeadDays: e.target.value,
+                },
+              }))
+            }
+            disabled={isViewing}
+          />
+        </div>
+
+        <div className="flex items-center mt-6">
+          <input
+            type="checkbox"
+            checked={editData.bankDetailsDTO?.isRTIReturnsIncluded || false}
+            onChange={(e) =>
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  isRTIReturnsIncluded: e.target.checked,
+                },
+              }))
+            }
+            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+            disabled={isViewing}
+          />
+          <label className="ml-2 text-sm font-medium text-gray-700">Include in RTI Returns</label>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderTaxNI = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Tax Code</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.taxCode}
+            onChange={(e) => handleInputChange("taxCode", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">National Insurance Number</label>
+          <input
+            type="text"
+            placeholder="AB123456C"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.nationalInsuranceNumber}
+            onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.niLetter}
+            onChange={(e) => handleInputChange("niLetter", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="A">Category A</option>
+            <option value="M">Category M</option>
+            <option value="C">Category C</option>
+            <option value="X">Category X</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Student Loan</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.studentLoan}
+            onChange={(e) => handleInputChange("studentLoan", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="NONE">None</option>
+            <option value="PLAN_1">Plan 1</option>
+            <option value="PLAN_2">Plan 2</option>
+           </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Region</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.region}
+            onChange={(e) => handleInputChange("region", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="">Select</option>
+            <option value="SCOTLAND">Scotland</option>
+            <option value="ENGLAND">England</option>
+            <option value="NORTHERN_IRELAND">Northern Ireland</option>
+            <option value="WALES">Wales</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex items-center mt-6">
+        <input
+          type="checkbox"
+          checked={editData.isEmergencyCode}
+          onChange={(e) =>
+            setEditData((prev) => ({
+              ...prev,
+              isEmergencyCode: e.target.checked,
+            }))
+          }
+          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+          disabled={isViewing}
+        />
+        <label className="ml-2 text-sm font-medium text-gray-700">Emergency Tax Code</label>
+      </div>
+
+      <div className="flex items-center mt-6">
+        <input
+          type="checkbox"
+          checked={editData.isPostgraduateLoan}
+          onChange={(e) =>
+            setEditData((prev) => ({
+              ...prev,
+              isPostgraduateLoan: e.target.checked,
+            }))
+          }
+          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+          disabled={isViewing}
+        />
+        <label className="ml-2 text-sm font-medium text-gray-700">Postgraduate Loan</label>
+      </div>
+    </div>
+  )
+
+  const renderAutoEnrolment = () => (
+    <div className="space-y-6">
+      <div>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            checked={editData.autoEnrolmentEligible}
+            onChange={(e) => handleInputChange("autoEnrolmentEligible", e.target.checked)}
+            disabled={false}
+          />
+          <span className="ml-2 text-sm text-gray-700">Eligible for Auto Enrolment</span>
+        </label>
+      </div>
+
+      {editData.autoEnrolmentEligible && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Pension Scheme</label>
+            <select
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={editData.pensionScheme}
+              onChange={(e) => handleInputChange("pensionScheme", e.target.value)}
+              disabled={isViewing}
+            >
+              <option value="">-- Select --</option>
+              <option value="WORKPLACE_PENSION">Workplace Pension</option>
+              <option value="NEST">NEST</option>
+              <option value="STAKEHOLDER">Stakeholder Pension</option>
+            </select>
+
+            <div className="mt-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  checked={editData.isDirector}
+                  onChange={(e) => handleInputChange("isDirector", e.target.checked)}
+                  disabled={isViewing}
+                />
+                <span className="ml-2 text-sm text-gray-700">Is Director</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Employee Contribution (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                value={editData.employeeContribution}
+                onChange={(e) => handleInputChange("employeeContribution", Number.parseFloat(e.target.value) || 0)}
+                disabled={isViewing}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Employer Contribution (%)</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                value={editData.employerContribution}
+                onChange={(e) => handleInputChange("employerContribution", Number.parseFloat(e.target.value) || 0)}
+                disabled={isViewing}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  )
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "personal":
+        return renderPersonalDetails()
+      case "employment":
+        return renderEmployment()
+      case "pay":
+        return renderPay()
+      case "taxNI":
+        return renderTaxNI()
+      case "autoEnrolment":
+        return renderAutoEnrolment()
+      default:
+        return renderPersonalDetails()
+    }
+  }
+
+  if ((isViewing || isEditing) && selectedEmployee) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{isViewing ? "View Employee" : "Edit Employee"}</h1>
+                <p className="text-sm text-gray-600">
+                  {isViewing ? "Employee information" : "Update employee information"}
+                </p>
+              </div>
+              <button
+                onClick={handleCancel}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                {isViewing ? "Back to List" : "Cancel"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
+            {/* Sidebar */}
+            <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
+              <nav className="space-y-1">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`${
+                      activeTab === tab.id
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                        : "border-transparent text-gray-900 hover:bg-gray-50 hover:text-gray-900"
+                    } group border-l-4 px-3 py-2 flex items-center text-sm font-medium w-full text-left`}
+                  >
+                    {/* <span
+                      className={`${
+                        activeTab === tab.id ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
+                      } flex-shrink-0 -ml-1 mr-3`}
+                    >
+                      {getIcon(tab.icon)}
+                    </span> */}
+                    <span className="truncate">{tab.name}</span>
+                  </button>
+                ))}
+              </nav>
+            </aside>
+
+            {/* Main content */}
+            <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
+              <form onSubmit={handleUpdate}>
+                <div className="shadow sm:rounded-md sm:overflow-hidden">
+                  <div className="bg-white py-6 px-4 space-y-6 sm:p-6">
+                    <div>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900">
+                        {tabs.find((tab) => tab.id === activeTab)?.name}
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {isViewing
+                          ? "Employee information for this section."
+                          : "Please update the required information for this section."}
+                      </p>
+                    </div>
+
+                    {renderTabContent()}
+                  </div>
+
+                  {!isViewing && (
+                    <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                      <div className="flex justify-between">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+                            if (currentIndex > 0) {
+                              setActiveTab(tabs[currentIndex - 1].id)
+                            }
+                          }}
+                          disabled={activeTab === "personal"}
+                          className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+
+                        <div className="space-x-3">
+                          {activeTab !== "autoEnrolment" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+                                console.log(activeTab)
+                                console.log(currentIndex)
+                                setActiveTab(tabs[currentIndex + 1].id)
+                              }}
+                              className="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                              Next
+                            </button>
+                          )}
+
+                          {activeTab === "autoEnrolment" && (
+                            <button
+                              type="submit"
+                              className="bg-green-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                              Update Employee
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
@@ -56,7 +1145,7 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
               <p className="text-sm text-gray-600">Manage all employee information</p>
             </div>
             <button
-              onClick={() => navigate("/employer")}
+              onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Back to Dashboard
@@ -67,47 +1156,24 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          {selectedEmployee && !isEditing && (
-  <div className="bg-white shadow rounded-md p-6 mb-6">
-    <h2 className="text-xl font-bold text-gray-800 mb-4">Selected Employee Details</h2>
-    <p><strong>Name:</strong> {selectedEmployee.firstName} {selectedEmployee.personalDetails.lastName}</p>
-    <p><strong>Email:</strong> {selectedEmployee.email}</p>
-    <p><strong>Address:</strong> {selectedEmployee.address}</p>
-    <p><strong>Post Code:</strong> {selectedEmployee.postCode}</p>
-    <p><strong>Employee ID:</strong> {selectedEmployee.employeeId}</p>
-    <p><strong>Job Title:</strong> {selectedEmployee.jobTitle || "No job title"}</p>
-    <div className="mt-4">
-      <button
-        onClick={() => handleEdit(selectedEmployee)}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Edit Again
-      </button>
-    </div>
-  </div>
-)}
-
           {employees.length === 0 ? (
             <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {/* <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                 />
-              </svg>
+              </svg> */}
               <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
               <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p>
-              <div className="mt-6">
-                
-              </div>
             </div>
           ) : (
             <div className="bg-white shadow overflow-hidden sm:rounded-md">
               <ul className="divide-y divide-gray-200">
                 {employees.map((employee) => (
-                  <li key={employee.id}>
+                  <li key={employee.employeeId}>
                     <div className="px-4 py-4 sm:px-6">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
@@ -127,7 +1193,7 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
                             </div>
                             <div className="mt-2 flex">
                               <div className="flex items-center text-sm text-gray-500">
-                                <svg
+                                {/* <svg
                                   className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                                   fill="none"
                                   stroke="currentColor"
@@ -139,11 +1205,11 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
                                     strokeWidth={2}
                                     d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                                   />
-                                </svg>
+                                </svg> */}
                                 {employee.email}
                               </div>
                               <div className="ml-6 flex items-center text-sm text-gray-500">
-                                <svg
+                                {/* <svg
                                   className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                                   fill="none"
                                   stroke="currentColor"
@@ -155,36 +1221,39 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
                                     strokeWidth={2}
                                     d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
                                   />
-                                </svg>
-                                ID: {employee.employeeId}
+                                </svg> */}
+                                {/* ID: {employee.employeeId} */}
                               </div>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <button
-                            onClick={() => handleEdit(employee)}
+                            onClick={() => handleView(employee.employeeId)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            View
+                          </button>
+
+                          <button
+                            onClick={() => handleEdit(employee.employeeId)}
                             className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
                             Edit
                           </button>
+                          
                           <button
-                            onClick={() => {
-  setSelectedEmployee(employee);
-  setIsEditing(false);
-  localStorage.setItem("selectedEmployee", JSON.stringify(employee));
-}}
-
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            onClick={() => handleDelete(employee.id)}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           >
-                            View Details
+                            Delete
                           </button>
                         </div>
                       </div>
 
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex">
-                          <p className="flex items-center text-sm text-gray-500">
+                          {/* <p className="flex items-center text-sm text-gray-500">
                             <svg
                               className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                               fill="none"
@@ -205,10 +1274,10 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
                               />
                             </svg>
                             {employee.address}, {employee.postCode}
-                          </p>
+                          </p> */}
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          <svg
+                          {/* <svg
                             className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                             fill="none"
                             stroke="currentColor"
@@ -218,10 +1287,10 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 1m7-1l1 1m-1-1v6a2 2 0 01-2 2H10a2 2 0 01-2-2V8m6 0V7"
+                              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
                             />
-                          </svg>
-                          {employee.jobTitle || "No job title"}
+                          </svg> */}
+                          {/* <span>{employee.employeeDepartment || "No department"}</span> */}
                         </div>
                       </div>
                     </div>
@@ -232,77 +1301,6 @@ const EmployeeDetails = ({ onUpdateEmployee }) => {
           )}
         </div>
       </div>
-
-      {/* Edit Modal */}
-      {isEditing && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Edit Employee Details</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                    value={editData.firstName || ""}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, firstName: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                    value={editData.lastName || ""}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, lastName: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email</label>
-                  <input
-                    type="email"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                    value={editData.email || ""}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Address</label>
-                  <textarea
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                    value={editData.address || ""}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, address: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Post Code</label>
-                  <input
-                    type="text"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                    value={editData.postCode || ""}
-                    onChange={(e) => setEditData((prev) => ({ ...prev, postCode: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={handleCancel}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSave}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

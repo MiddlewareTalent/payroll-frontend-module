@@ -19,7 +19,7 @@ const AddEmployee = ({ onAddEmployee, company }) => {
   employmentType: "FULL_TIME",
   employerId: "",
   payPeriod: company?.payPeriod || "MONTHLY",
-  grossIncome:"",
+  annualIncomeOfEmployee:"",
 
   bankDetailsDTO: {
     accountName: "",
@@ -36,16 +36,23 @@ const AddEmployee = ({ onAddEmployee, company }) => {
 
   taxCode: "1257L",
   nationalInsuranceNumber: "",
-  NICategoryLetter: "A",
-  studentLoan: "NONE",
+  niLetter: "A",
   region:"",
   isEmergencyCode:false,
-  isPostgraduateLoan:false,
+  postGraduateLoanDto:{
+    hasPostgraduateLoan:false,
+  postgraduateLoanPlanType:"NONE",
+  },
   autoEnrolmentEligible: true,
   isDirector:false,
   pensionScheme: "WORKPLACE_PENSION",
   employeeContribution: 5,
   employerContribution: 3,
+  studentLoanDto:{
+    hasStudentLoan:false,
+  studentLoanPlanType:"NONE",
+  },
+  otherEmployeeDetails:null,
 });
 
 
@@ -111,6 +118,8 @@ const AddEmployee = ({ onAddEmployee, company }) => {
     if (response.status === 201) {
       alert("Employee added successfully");
 
+        localStorage.setItem("employeeId", formData.employeeId);
+
       // Call onAddEmployee callback if provided (optional)
       if (typeof onAddEmployee === "function") {
         onAddEmployee(formData);
@@ -118,15 +127,20 @@ const AddEmployee = ({ onAddEmployee, company }) => {
 
       navigate("/employer-dashboard"); // Navigate after success
     } else {
+      
       alert("Failed to add employee. Please try again.");
     }
   } catch (error) {
+    if(error.status===500){
+        alert(error.response.data);
+      }
+      else{
+          alert("There was an error adding the employee.");
+      }
     console.error("Error adding employee:", error);
-    alert("There was an error adding the employee.");
+    
   }
 };
-
-
 
   const getIcon = (iconName) => {
     const icons = {
@@ -276,8 +290,8 @@ const AddEmployee = ({ onAddEmployee, company }) => {
     onChange={(e) => handleInputChange("gender", e.target.value)}
   >
     <option value="">Select</option>
-    <option value="MALE">Male</option>
-    <option value="FEMALE">Female</option>
+    <option value="MALE">MALE</option>
+    <option value="FEMALE">FEMALE</option>
    <option value="OTHER">Other</option>
     <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
   </select>
@@ -357,12 +371,8 @@ const AddEmployee = ({ onAddEmployee, company }) => {
             value={formData.workingCompanyName}
             onChange={(e) => handleInputChange( "workingCompanyName", e.target.value)}
           />
-        </div>
-
-        
-      </div>
-
-      
+        </div>  
+      </div> 
     </div>
   )
 
@@ -370,14 +380,14 @@ const AddEmployee = ({ onAddEmployee, company }) => {
   <div className="space-y-6">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Gross Income (£)</label>
+        <label className="block text-sm font-medium text-gray-700">Annual Income (£)</label>
         <input
-          type="number"
+          type="text"
           step="0.01"
           required
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-          value={formData.grossIncome}
-          onChange={(e) => handleInputChange("grossIncome", e.target.value)}
+          value={formData.annualIncomeOfEmployee}
+          onChange={(e) => handleInputChange("annualIncomeOfEmployee", e.target.value)}
         />
       </div>
       <div>
@@ -586,7 +596,6 @@ const AddEmployee = ({ onAddEmployee, company }) => {
 
 const renderTaxNI = () => (
   <div className="space-y-6">
-    {/* First grid for Tax Code and National Insurance Number */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-medium text-gray-700">Tax Code</label>
@@ -607,22 +616,21 @@ const renderTaxNI = () => (
           onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value)}
         />
       </div>
-    </div>  {/* <-- Close first grid here */}
+    </div>  
 
-    {/* Second grid for NI Category and Student Loan */}
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
         <select
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-          value={formData.NICategoryLetter}
-          onChange={(e) => handleInputChange("NICategoryLetter", e.target.value)}
+          value={formData.niLetter}
+          onChange={(e) => handleInputChange("niLetter", e.target.value)}
         >
-          <option value="A">Category A</option>
-          <option value="B">Category B</option>
-          <option value="C">Category C</option>
-          <option value="H">Category H</option>
-          <option value="M">Category M</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="H">H</option>
+          <option value="M">M</option>
         </select>
       </div>
       <div>
@@ -633,13 +641,14 @@ const renderTaxNI = () => (
           onChange={(e) => handleInputChange("studentLoan", e.target.value)}
         >
           <option value="NONE">None</option>
-          <option value="PLAN_1">Plan 1</option>
-          <option value="PLAN_2">Plan 2</option>
+          <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
+          <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
+          <option value="STUDENT_LOAN_PLAN_3">Plan 3</option>
           <option value="POSTGRADUATE">Postgraduate</option>
-        </select>
-        
+        </select>  
       </div>
-      <div>
+      
+<div>
   <label className="block text-sm font-medium text-gray-700">Region</label>
   <select
     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
@@ -690,8 +699,6 @@ const renderTaxNI = () => (
     Postgraduate Loan
   </label>
 </div>
-
-
     </div>
   </div>
 )
@@ -794,8 +801,6 @@ const renderTaxNI = () => (
     )}
   </div>
 );
-
-
  const renderTabContent = () => {
   switch (activeTab) {
     case "personal":
@@ -812,10 +817,6 @@ const renderTaxNI = () => (
       return renderPersonalDetails();
   }
 }
-
-
-  
-
   console.log(activeTab);
 
   return (
@@ -829,7 +830,7 @@ const renderTaxNI = () => (
               <p className="text-sm text-gray-600">Complete all sections to register a new employee</p>
             </div>
             <button
-              onClick={() => navigate("/employee-details")}
+              onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Back to Dashboard
