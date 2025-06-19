@@ -1,9 +1,7 @@
-
-
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-const Reports = ({ employees, payslips, company }) => {
+const Reports = ({ employees = [], payslips = [] }) => {
   const navigate = useNavigate()
   const [selectedReport, setSelectedReport] = useState("summary")
 
@@ -12,7 +10,7 @@ const Reports = ({ employees, payslips, company }) => {
     { id: "p60", name: "P60 Forms", icon: "document" },
     { id: "p45", name: "P45 Forms", icon: "document" },
     { id: "rtiFps", name: "RTI FPS", icon: "upload" },
-    { id: "rtiEps", name: "RTI EPS", icon: "upload" },
+    // { id: "rtiEps", name: "RTI EPS", icon: "upload" },
     { id: "yearEnd", name: "Year End Report", icon: "calendar" },
   ]
 
@@ -20,42 +18,26 @@ const Reports = ({ employees, payslips, company }) => {
     const icons = {
       chart: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       ),
       document: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
       upload: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
         </svg>
       ),
       calendar: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 1m7-1l1 1m-1-1v6a2 2 0 01-2 2H10a2 2 0 01-2-2V8m6 0V7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-1 1m7-1l1 1m-1-1v6a2 2 0 01-2 2H10a2 2 0 01-2-2V8m6 0V7" />
         </svg>
       ),
     }
@@ -84,27 +66,28 @@ const Reports = ({ employees, payslips, company }) => {
     return totals
   }
 
-  const renderSummaryReport = () => {
+
+    const renderSummaryReport = () => {
     const totals = calculateTotals()
 
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* <div className="bg-white p-6 rounded-lg shadow"> */}
-            {/* <div className="flex items-center"> */}
-              {/* <div className="flex-shrink-0"> */}
-                {/* <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center"> */}
-                  {/* <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-500 rounded-md flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
                       d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
                     />
-                  </svg> */}
-                {/* </div> */}
-              {/* </div> */}
-              {/* <div className="ml-5 w-0 flex-1">
+                  </svg>
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Gross Pay</dt>
                   <dd className="text-lg font-medium text-gray-900">£{totals.grossPay.toFixed(2)}</dd>
@@ -181,10 +164,10 @@ const Reports = ({ employees, payslips, company }) => {
               </div>
             </div>
           </div>
-        </div> */}
+        </div>
 
         {/* Employee Breakdown */}
-        {/* <div className="bg-white shadow rounded-lg">
+        <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Employee Breakdown</h3>
             <div className="overflow-x-auto">
@@ -249,15 +232,15 @@ const Reports = ({ employees, payslips, company }) => {
                     )
                   })}
                 </tbody>
-              </table> */}
+              </table>
             </div>
           </div>
-        // </div>
-      // </div>
+        </div>
+       </div>
     )
   }
 
-  const renderP60Report = () => (
+    const renderP60Report = () => (
     <div className="bg-white shadow rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">P60 Forms</h3>
@@ -318,7 +301,7 @@ const Reports = ({ employees, payslips, company }) => {
     </div>
   )
 
-  const renderRTIReport = () => (
+   const renderRTIReport = () => (
     <div className="bg-white shadow rounded-lg">
       <div className="px-4 py-5 sm:p-6">
         <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">RTI Submissions</h3>
@@ -364,7 +347,7 @@ const Reports = ({ employees, payslips, company }) => {
     </div>
   )
 
-  const renderReportContent = () => {
+    const renderReportContent = () => {
     switch (selectedReport) {
       case "summary":
         return renderSummaryReport()
@@ -392,7 +375,8 @@ const Reports = ({ employees, payslips, company }) => {
     }
   }
 
-  return (
+
+    return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white shadow">
@@ -403,7 +387,7 @@ const Reports = ({ employees, payslips, company }) => {
               <p className="text-sm text-gray-600">HMRC and payroll reports</p>
             </div>
             <button
-              onClick={() => navigate("/employer")}
+              onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Back to Dashboard

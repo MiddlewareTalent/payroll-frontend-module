@@ -82,7 +82,7 @@ const Login = ({ onLogin }) => {
     if (formData.userType === "employee") {
       navigate("/employee-dashboard");
     } else {
-      navigate("/company-registration");
+      navigate("/employer-dashboard");
     }
   };
 

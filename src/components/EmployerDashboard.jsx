@@ -14,13 +14,13 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
 
 
   const navItems = [
-    {name:" Add Employer Details",path:"/add-company"},
-    {name:"  Employer Details",path:"/company-details"},
+    {name:" Add Company Details",path:"/add-company"},
+    {name:"  Company Details",path:"/company-details"},
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
     { name: "Payslips", path: "/payroll-run", icon: "calculator" },
+    { name: "PAYE", path: "/paye", icon: "chart" },
     { name: "Reports", path: "/reports", icon: "chart" },
-     { name: "PAYE", path: "/paye", icon: "chart" },
   ]
 
   const getIcon = (iconName) => {

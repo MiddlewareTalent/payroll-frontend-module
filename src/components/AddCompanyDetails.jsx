@@ -1,7 +1,7 @@
 import { useState } from "react"
 import axios from "axios"
 import { useNavigate } from "react-router-dom"
-
+ 
 const AddCompanyDetails = () => {
   const [formData, setFormData] = useState({
     employerName: "",
@@ -26,7 +26,8 @@ const AddCompanyDetails = () => {
     taxYear: "",
     payPeriod: "MONTHLY",
     region: "ENGLAND",
-
+    payDate:"",
+ 
     taxOfficeDto: {
       payeReference: "",
       accountsOfficeReference: "",
@@ -34,11 +35,11 @@ const AddCompanyDetails = () => {
       uniqueTaxRef: "",
       corporationTaxRef: "",
       payrollGivingRef: "",
-      serQualifiedThisYear: true,
+      serQualifiedThisYear: false,
       serQualifiedLastYear: false,
-      noRtiDueWarnings: true,
+      noRtiDueWarnings: false,
       claimNICAllowance: false,
-      claimEmploymentAllowance: true,
+      claimEmploymentAllowance: false,
       childSupportRef: "",
     },
     bankDetailsDTO: {
@@ -53,36 +54,36 @@ const AddCompanyDetails = () => {
       paymentLeadDays: "",
       isRTIReturnsIncluded: false,
     },
-
-    
+ 
+   
     termsDto: {
-      hoursWorkedPerWeek: 40,
+      hoursWorkedPerWeek: "",
       isPaidOvertime: false,
-      weeksNoticeRequired: 4,
-      daysSicknessOnFullPay: 30,
-      maleRetirementAge: 65,
-      femaleRetirementAge: 65,
-      mayJoinPensionScheme: false,
-      daysHolidayPerYear: 28,
-      maxDaysToCarryOver: 28,
+      weeksNoticeRequired: "",
+      daysSicknessOnFullPay: "",
+      maleRetirementAge: "",
+      femaleRetirementAge: "",
+      mayJoinPensionScheme: "",
+      daysHolidayPerYear: "",
+      maxDaysToCarryOver: "",
     },
   })
   const navigate = useNavigate()
-
+ 
   const [activeTab, setActiveTab] = useState("basic")
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
-
+ 
   const tabs = [
     { id: "basic", name: "Basic Information" },
     { id: "contact", name: "Contact Details" },
     { id: "company", name: "Company Details" },
-    { id: "system", name: "System Settings" },
+    // { id: "system", name: "System Settings" },
     { id: "financial", name: "Financial Details" },
     { id: "terms", name: "Terms & Conditions" },
   ]
-
+ 
   const handleInputChange = (field, value) => {
     if (field.startsWith("bankDetailsDTO.")) {
       const bankField = field.split(".")[1]
@@ -118,12 +119,12 @@ const AddCompanyDetails = () => {
       }))
     }
   }
-
+ 
   const handleSubmit = async (e) => {
   e.preventDefault();
   setError("");
   setSuccess("");
-
+ 
   // Move to next tab if not last tab
   if (activeTab !== "terms") {
     const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -132,12 +133,12 @@ const AddCompanyDetails = () => {
     }
     return;
   }
-
+ 
   setLoading(true);
-
+ 
   try {
     console.log("Submitting data:", formData);
-
+ 
     const response = await axios.post(
       "http://localhost:8080/api/v1/employer/register/employers",
       formData,
@@ -147,81 +148,24 @@ const AddCompanyDetails = () => {
         },
       }
     );
-
+ 
     if (response.status === 200 || response.status === 201) {
-      setSuccess("Employer details saved successfully!");
-      alert("Employer details saved successfully!");
+      setSuccess("Employer details added successfully!");
+      alert("Employer details added successfully!");
       // Optional: clear form or redirect here
     } else {
-      setError("Failed to save employer details.");
-      alert("Failed to save employer details.");
+      setError("Failed to add employer details.");
+      alert("Failed to add employer details.");
     }
   } catch (err) {
     console.error(err);
-    setError("Failed to save employer details.");
+    setError("Failed to add employer details.");
     alert("Error saving employer details.");
   } finally {
     setLoading(false);
   }
 };
-
-
-  // const getIcon = (iconName) => {
-  //   const icons = {
-  //     user: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-  //         />
-  //       </svg>
-  //     ),
-  //     briefcase: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
-  //         />
-  //       </svg>
-  //     ),
-  //     currency: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-  //         />
-  //       </svg>
-  //     ),
-  //     document: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-  //         />
-  //       </svg>
-  //     ),
-  //     shield: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-  //         />
-  //       </svg>
-  //     ),
-  //   }
-  //   return icons[iconName] || icons.user
-  // }
-
+ 
   const renderBasicInformation = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -248,7 +192,7 @@ const AddCompanyDetails = () => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Address</label>
@@ -271,7 +215,7 @@ const AddCompanyDetails = () => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Telephone </label>
@@ -284,6 +228,19 @@ const AddCompanyDetails = () => {
             placeholder="Enter telephone number"
           />
         </div>
+ 
+        <div>
+  <label className="block text-sm font-medium text-gray-700">Pay Date</label>
+  <input
+    type="date"
+    required
+    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+    value={formData.payDate}
+    onChange={(e) => handleInputChange("payDate", e.target.value)}
+    placeholder="Select pay date"
+  />
+</div>
+ 
         <div>
           <label className="block text-sm font-medium text-gray-700">Email </label>
           <input
@@ -298,7 +255,7 @@ const AddCompanyDetails = () => {
       </div>
     </div>
   )
-
+ 
   const renderContactDetails = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -323,7 +280,7 @@ const AddCompanyDetails = () => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">PDF Password</label>
@@ -346,7 +303,7 @@ const AddCompanyDetails = () => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Date PAYE Scheme Started</label>
@@ -369,7 +326,7 @@ const AddCompanyDetails = () => {
       </div>
     </div>
   )
-
+ 
   const renderCompanyDetails = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -395,7 +352,7 @@ const AddCompanyDetails = () => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Pay Period</label>
@@ -423,10 +380,10 @@ const AddCompanyDetails = () => {
           </select>
         </div>
       </div>
-
+ 
       <div className="space-y-4">
         <h4 className="text-md font-medium text-gray-900">Tax Office Details</h4>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">PAYE Reference</label>
@@ -449,7 +406,7 @@ const AddCompanyDetails = () => {
             />
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Unique Tax Ref</label>
@@ -472,7 +429,7 @@ const AddCompanyDetails = () => {
             />
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Payroll Giving Ref</label>
@@ -498,7 +455,7 @@ const AddCompanyDetails = () => {
             </select>
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">Child Support Reference</label>
@@ -511,7 +468,7 @@ const AddCompanyDetails = () => {
             />
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-center">
             <input
@@ -532,7 +489,7 @@ const AddCompanyDetails = () => {
             <label className="ml-2 text-sm font-medium text-gray-700">Ser Qualified Last Year</label>
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-center">
             <input
@@ -553,7 +510,7 @@ const AddCompanyDetails = () => {
             <label className="ml-2 text-sm font-medium text-gray-700">Claim NIC Allowance</label>
           </div>
         </div>
-
+ 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex items-center">
             <input
@@ -568,32 +525,32 @@ const AddCompanyDetails = () => {
       </div>
     </div>
   )
-
-  const renderSystemSettings = () => (
-    <div className="space-y-6">
-      {/* <h4 className="text-md font-medium text-gray-900">System Preferences</h4> */}
-      <div className="space-y-4">
-        {[
-          { name: "rtiBatchProcessing", label: "RTI Batch Processing" },
-          { name: "previousWorksNumberUnknown", label: "Previous Works Number Unknown" },
-          { name: "ensureUniqueWorksNumber", label: "Ensure Unique Works Number" },
-          { name: "warnBelowNationalMinimumWage", label: "Warn Below National Minimum Wage" },
-          { name: "showAgeOnHourlyTab", label: "Show Age On Hourly Tab" },
-        ].map((preference) => (
-          <div key={preference.name} className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData[preference.name]}
-              onChange={(e) => handleInputChange(preference.name, e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">{preference.label}</label>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-
+ 
+  // const renderSystemSettings = () => (
+  //   <div className="space-y-6">
+  //     {/* <h4 className="text-md font-medium text-gray-900">System Preferences</h4> */}
+  //     <div className="space-y-4">
+  //       {[
+  //         { name: "rtiBatchProcessing", label: "RTI Batch Processing" },
+  //         { name: "previousWorksNumberUnknown", label: "Previous Works Number Unknown" },
+  //         { name: "ensureUniqueWorksNumber", label: "Ensure Unique Works Number" },
+  //         { name: "warnBelowNationalMinimumWage", label: "Warn Below National Minimum Wage" },
+  //         { name: "showAgeOnHourlyTab", label: "Show Age On Hourly Tab" },
+  //       ].map((preference) => (
+  //         <div key={preference.name} className="flex items-center">
+  //           <input
+  //             type="checkbox"
+  //             checked={formData[preference.name]}
+  //             onChange={(e) => handleInputChange(preference.name, e.target.checked)}
+  //             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+  //           />
+  //           <label className="ml-2 text-sm font-medium text-gray-700">{preference.label}</label>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   </div>
+  // )
+ 
   const renderFinancialDetails = () => (
     <div className="space-y-8">
       <div>
@@ -621,7 +578,7 @@ const AddCompanyDetails = () => {
               />
             </div>
           </div>
-
+ 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Sort Code</label>
@@ -645,7 +602,7 @@ const AddCompanyDetails = () => {
               />
             </div>
           </div>
-
+ 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Bank Address</label>
@@ -668,7 +625,7 @@ const AddCompanyDetails = () => {
               />
             </div>
           </div>
-
+ 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Telephone</label>
@@ -691,7 +648,7 @@ const AddCompanyDetails = () => {
               />
             </div>
           </div>
-
+ 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700">Payment Lead Days</label>
@@ -718,22 +675,21 @@ const AddCompanyDetails = () => {
       </div>
     </div>
   )
-
+ 
   const renderTermsConditions = () => (
     <div className="space-y-6">
       <h4 className="text-md font-medium text-gray-900">Employment Terms</h4>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Hours Worked Per Week</label>
           <input
             type="number"
             min="0"
-            max="168"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.hoursWorkedPerWeek}
             onChange={(e) => handleInputChange("termsDto.hoursWorkedPerWeek", Number.parseInt(e.target.value) || 0)}
-            placeholder="40"
+            // placeholder="40"
           />
         </div>
         <div>
@@ -744,11 +700,11 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.weeksNoticeRequired}
             onChange={(e) => handleInputChange("termsDto.weeksNoticeRequired", Number.parseInt(e.target.value) || 0)}
-            placeholder="4"
+            // placeholder="4"
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Days Sickness on Full Pay</label>
@@ -758,7 +714,7 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.daysSicknessOnFullPay}
             onChange={(e) => handleInputChange("termsDto.daysSicknessOnFullPay", Number.parseInt(e.target.value) || 0)}
-            placeholder="30"
+            // placeholder="30"
           />
         </div>
         <div>
@@ -769,11 +725,11 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.daysHolidayPerYear}
             onChange={(e) => handleInputChange("termsDto.daysHolidayPerYear", Number.parseInt(e.target.value) || 0)}
-            placeholder="28"
+            // placeholder="28"
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Male Retirement Age</label>
@@ -784,7 +740,7 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.maleRetirementAge}
             onChange={(e) => handleInputChange("termsDto.maleRetirementAge", Number.parseInt(e.target.value) || 0)}
-            placeholder="65"
+            // placeholder="65"
           />
         </div>
         <div>
@@ -796,11 +752,11 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.femaleRetirementAge}
             onChange={(e) => handleInputChange("termsDto.femaleRetirementAge", Number.parseInt(e.target.value) || 0)}
-            placeholder="65"
+            // placeholder="65"
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Max Days to Carry Over</label>
@@ -810,12 +766,12 @@ const AddCompanyDetails = () => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.termsDto.maxDaysToCarryOver}
             onChange={(e) => handleInputChange("termsDto.maxDaysToCarryOver", Number.parseInt(e.target.value) || 0)}
-            placeholder="28"
+            // placeholder="28"
           />
         </div>
       </div>
-
-      <div className="space-y-4">
+ 
+      {/* <div className="space-y-4">
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -834,10 +790,10 @@ const AddCompanyDetails = () => {
           />
           <label className="ml-2 text-sm font-medium text-gray-700">May Join Pension Scheme</label>
         </div>
-      </div>
+      </div> */}
     </div>
   )
-
+ 
   const renderTabContent = () => {
     switch (activeTab) {
       case "basic":
@@ -856,7 +812,7 @@ const AddCompanyDetails = () => {
         return renderBasicInformation()
     }
   }
-
+ 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -876,7 +832,7 @@ const AddCompanyDetails = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* Alerts */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -885,7 +841,7 @@ const AddCompanyDetails = () => {
           </div>
         </div>
       )}
-
+ 
       {success && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
           <div className="bg-green-50 border border-green-200 rounded-md p-4">
@@ -893,7 +849,7 @@ const AddCompanyDetails = () => {
           </div>
         </div>
       )}
-
+ 
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Sidebar */}
@@ -921,7 +877,7 @@ const AddCompanyDetails = () => {
               ))}
             </nav>
           </aside>
-
+ 
           {/* Main content */}
           <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
             <form onSubmit={handleSubmit}>
@@ -935,10 +891,10 @@ const AddCompanyDetails = () => {
                       Please fill in all required information for this section.
                     </p>
                   </div>
-
+ 
                   {renderTabContent()}
                 </div>
-
+ 
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                   <div className="flex justify-between">
                     <button
@@ -954,7 +910,7 @@ const AddCompanyDetails = () => {
                     >
                       Previous
                     </button>
-
+ 
                     <div className="space-x-3">
                       {activeTab !== "terms" && (
                         <button
@@ -968,7 +924,7 @@ const AddCompanyDetails = () => {
                           Next
                         </button>
                       )}
-
+ 
                       {activeTab === "terms" && (
                         <button
                           type="submit"
@@ -989,5 +945,6 @@ const AddCompanyDetails = () => {
     </div>
   )
 }
-
+ 
 export default AddCompanyDetails
+ 

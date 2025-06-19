@@ -5,6 +5,7 @@ import axios from "axios";
 const EmployeeDashboard = ({ payslips }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [latestPaySlip, setLatestPaySlip]=useState(null);
 
    const handleLogout = () => {
   localStorage.removeItem("user");
@@ -46,7 +47,9 @@ const EmployeeDashboard = ({ payslips }) => {
       const fetchPayslip = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
-        setPayslip(response.data);
+        setPayslip(()=>response.data);
+        setLatestPaySlip(()=>response.data[response.data.length-1])
+        console.log("latest",latestPaySlip);
         console.log(response.data);
       } catch (error) {
         console.error("Error fetching payslip:", error);
@@ -73,10 +76,10 @@ const EmployeeDashboard = ({ payslips }) => {
   }
   }, [employee]);
 
-  // Filter payslips for this employee once employee is loaded
-  const employeePayslips = employee
-    ? payslips.filter((slip) => slip.employeeId === employee.employeeId)
-    : [];
+  // // // Filter payslips for this employee once employee is loaded
+  // const employeePayslips = employee
+  //   ? payslips.filter((slip) => slip.employeeId === employee.employeeId)
+  //   : [];
 
 
   if (!employee) {
@@ -96,7 +99,7 @@ const EmployeeDashboard = ({ payslips }) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900">Employee not found</h2>
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/employee-dashboard")}
             className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
           >
             Back to Dashboard
@@ -219,21 +222,25 @@ const EmployeeDashboard = ({ payslips }) => {
                       <span className="text-sm text-gray-500">Total Payslips</span>
                       <span className="text-sm font-medium text-gray-900">{payslip.length}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">YTD Annual Salary</span>
+                     <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Pay Period</span>
                       <span className="text-sm font-medium text-gray-900">
-                        £{employee.annualIncomeOfEmployee || 0}</span>
+                        {latestPaySlip!==null ? latestPaySlip.payPeriod : 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">YTD Tax Paid</span>
+                      <span className="text-sm text-gray-500">Earnings This Period</span>
                       <span className="text-sm font-medium text-gray-900">
-                        £{employees?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}</span>
+                        £{latestPaySlip!==null ?latestPaySlip.grossPayTotal : 0}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-sm text-gray-500">YTD NI Paid</span>
+                      <span className="text-sm text-gray-500">Tax Paid</span>
                       <span className="text-sm font-medium text-gray-900">
-                        £{employees?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}
-                      </span>
+                        £{latestPaySlip!==null ?latestPaySlip.incomeTaxTotal : 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">NI Paid</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        £{latestPaySlip!==null ?latestPaySlip.employeeNationalInsurance : 0}</span>
                     </div>
                   </div>
                 </div>
@@ -256,6 +263,17 @@ const EmployeeDashboard = ({ payslips }) => {
                       <span className="text-sm text-gray-500">NI Category</span>
                       <span className="text-sm font-medium text-gray-900">
                         {employee.niLetter || "Not set"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">YTD Tax Paid</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        £{employees?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">YTD NI Paid</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        £{employees?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}
                       </span>
                     </div>
                   </div>

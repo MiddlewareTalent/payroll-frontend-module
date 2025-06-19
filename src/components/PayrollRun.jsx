@@ -7,7 +7,6 @@ const PayrollRun = ({ onGeneratePayslip }) => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [generatedPayslips, setGeneratedPayslips] = useState([]);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -45,7 +44,7 @@ const PayrollRun = ({ onGeneratePayslip }) => {
           <div className="flex justify-between items-center py-6">
             <h1 className="text-2xl font-bold text-gray-900">Payroll Run</h1>
             <button
-              onClick={() => navigate("/employer")}
+              onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Back to Dashboard

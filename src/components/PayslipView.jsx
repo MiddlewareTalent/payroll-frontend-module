@@ -30,19 +30,31 @@ const PayslipView = () => {
   }, []);
 
   const handleDownload = async () => {
-    const element = document.getElementById("payslip-content");
-    if (!element) {
-      alert("Payslip content missing, can't download PDF.");
-      return;
-    }
+  const element = document.getElementById("payslip-content");
+  if (!element) {
+    alert("Payslip content missing, can't download PDF.");
+    return;
+  }
 
-    try {
-      await html2pdf().from(element).save();
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Error generating PDF. See console.");
-    }
-  };
+  try {
+    // Create a custom filename using employee name and reference
+    const filename = `Payslip_${payslip.firstName}_${payslip.lastName}_${payslip.paySlipReference}.pdf`;
+
+    await html2pdf()
+      .set({
+        margin: [0,0.5,0,0.5],// [top, left, bottom, right]
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      })
+      .from(element)
+      .save();
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("Error generating PDF. See console.");
+  }
+};
 
   if (loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading payslip...</div>;
@@ -54,7 +66,7 @@ const PayslipView = () => {
         <div style={{ textAlign: 'center' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>Payslip not found</h2>
           <button
-            onClick={() => navigate("/employer")}
+            onClick={() => navigate(-1)}
             style={{ marginTop: '1rem', backgroundColor: '#4F46E5', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', border: 'none', cursor: 'pointer' }}
           >
             Back to Dashboard
@@ -82,7 +94,7 @@ const PayslipView = () => {
                 Download PDF
               </button>
               <button
-                onClick={() => navigate("/employer")}
+                onClick={() => navigate(-1)}
                 style={{ backgroundColor: '#4B5563', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: '500', border: 'none', cursor: 'pointer' }}
               >
                 Back to Dashboard
@@ -95,30 +107,14 @@ const PayslipView = () => {
       {/* Payslip Content */}
       <div
         id="payslip-content"
-        style={{
-          maxWidth: '64rem',
-          margin: '1.5rem auto',
-          padding: '2rem',
-          backgroundColor: '#ffffff',
-          borderRadius: '0.5rem',
-          color: '#000000',
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-          fontSize: '1rem',
-          lineHeight: '1.5',
-        }}
-      >
+        style={{ maxWidth: '64rem',  margin: '1.5rem auto',  padding: '2rem', backgroundColor: '#ffffff',  borderRadius: '0.5rem', color: '#000000',  border: '4px solid #6B7280',  fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",  fontSize: '1rem', lineHeight: '1.5', }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>PAYSLIP</h2>
           <p style={{ color: '#4B5563' }}>Pay Period: {payslip.payPeriod}</p>
           <p style={{ color: '#4B5563' }}>Tax Year: {payslip.taxYear}</p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2rem',
-          marginBottom: '2rem',
-        }}>
+        <div style={{ display: 'grid',  gridTemplateColumns: '1fr 1fr',  gap: '2rem', marginBottom: '2rem', }}>
           <div>
             <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '1rem' }}>Employee Details</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -126,7 +122,7 @@ const PayslipView = () => {
               <p><strong>Employee ID:</strong> {payslip.employeeId}</p>
               <p><strong>NI Number:</strong> {payslip.ni_Number}</p>
               <p><strong>Tax Code:</strong> {payslip.taxCode}</p>
-              <p><strong>Working Company Name:</strong> {payslip.workingCompanyName}</p>
+              <p><strong>Company Name:</strong> {payslip.workingCompanyName}</p>
             </div>
           </div>
 
@@ -193,15 +189,7 @@ const PayslipView = () => {
               </div>
             </div>
 
-            <div style={{
-              backgroundColor: '#ECFDF5',
-              padding: '1rem',
-              borderRadius: '0.5rem',
-              border: '2px solid #A7F3D0',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
+            <div style={{ backgroundColor: '#ECFDF5',padding: '1rem',borderRadius: '0.5rem',  border: '2px solid #A7F3D0', display: 'flex',justifyContent: 'space-between',alignItems: 'center'}}>
               <span style={{ fontSize: '1.125rem', fontWeight: '700', color: '#065F46' }}>Net Pay (Take Home)</span>
               <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#065F46' }}>£{payslip.takeHomePayTotal}</span>
             </div>

@@ -44,7 +44,7 @@ export default function Paye() {
 
             </div>
             <button
-              onClick={() => navigate("/employer")}
+              onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Back to Dashboard

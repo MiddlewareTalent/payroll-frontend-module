@@ -3,7 +3,7 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios";
 
-const AddEmployee = ({ onAddEmployee, company }) => {
+const AddEmployee = ({ onAddEmployee }) => {
   const [formData, setFormData] = useState({
   firstName: "",
   lastName: "",
@@ -18,7 +18,7 @@ const AddEmployee = ({ onAddEmployee, company }) => {
   employmentEndDate:null,
   employmentType: "FULL_TIME",
   employerId: "",
-  payPeriod: company?.payPeriod || "MONTHLY",
+  payPeriod: "MONTHLY",
   annualIncomeOfEmployee:"",
 
   bankDetailsDTO: {
