@@ -56,7 +56,7 @@ export default function Paye() {
       <table className="w-full table-auto border-collapse text-center">
         <thead>
           <tr className="bg-gray-100 text-gray-700">
-            <th className="py-3 px-4 border">Total PAYE YTD</th>
+            <th className="py-3 px-4 border">Total INCOME TAX YTD</th>
             <th className="py-3 px-4 border">Total Employees NI YTD</th>
             <th className="py-3 px-4 border">Total Employers NI YTD</th>
           </tr>

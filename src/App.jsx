@@ -11,6 +11,7 @@ import AddCompanyDetails from "./components/AddCompanyDetails";
 import CompanyDetails from "./components/CompanyDetails";
 import PayslipView from "./components/PayslipView";
 import Paye from "./components/Paye";
+import DummyP60form from './components/DummyP60form'
 
 
 function App() {
@@ -41,8 +42,10 @@ const [employees, setEmployees] = useState([]);
           <Route path="/employee-details"element={<EmployeeDetails/>}/>
           <Route path="/employee-dashboard"element={<EmployeeDashboard/>}/>
           <Route path="/company-details"element={<CompanyDetails/>}/>
+          <Route path="/add-company/" element={<CompanyDetails />} />
           <Route  path="/payslip/:paySlipRef" element={<PayslipView />} />
           <Route path="/paye" element={<Paye/>}/>
+          <Route path='/P60Form' element={<DummyP60form/>}/>
          </Routes>
       </div>
     </Router>

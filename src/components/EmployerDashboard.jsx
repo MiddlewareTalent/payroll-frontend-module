@@ -1,11 +1,14 @@
-
+import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-
-const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
+import axios from "axios"
+const EmployerDashboard = ({payslips = [] }) => {
   
 
   const navigate = useNavigate()
   const location = useLocation()
+  const [allEmployees, setAllEmployees] = useState([]);
+  const [employers, setAllEmployers] = useState([]);
+  const [allPayslips, setAllPayslips] = useState([]);
 
   const handleLogout = () => {
   localStorage.removeItem("user");
@@ -14,8 +17,8 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
 
 
   const navItems = [
-    {name:" Add Company Details",path:"/add-company"},
-    {name:"  Company Details",path:"/company-details"},
+    // {name:"Add Company Details",path:"/add-company"},
+    {name:"Company Details",path:"/company-details"},
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
     { name: "Payslips", path: "/payroll-run", icon: "calculator" },
@@ -84,7 +87,48 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
     return icons[iconName] || icons.home
   }
 
-  
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees");
+        console.log("employees Data fetched:", response.data);  
+        setAllEmployees(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
+  useEffect(() => {
+    const fetchAllPayslips = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/payslip/all/total/payslips");
+        console.log("Payslip Data fetched:", response.data);  
+        setAllPayslips(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchAllPayslips();
+  }, []);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers");
+        console.log("employers Data fetched:", response.data); 
+        setAllEmployers(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
+//   if (employers.length === 0 || allEmployees.length === 0 || allPayslips.length === 0) {
+//   return <div className="text-center mt-10 text-gray-500">Loading dashboard data...</div>;
+// }
 
 
   return (
@@ -95,7 +139,7 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
           <div className="flex justify-between items-center py-6">
   <div>
     <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
-    <p className="text-sm text-gray-600">{company?.companyName}</p>
+    {/* <p className="text-sm text-gray-600">{company?.companyName}</p> */}
   </div>
 
   <button
@@ -151,7 +195,7 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Employees</dt>
-                      <dd className="text-lg font-medium text-gray-900">{employees?.length || 0}
+                      <dd className="text-lg font-medium text-gray-900">{allEmployees?.length || 0}
                       </dd>
                     </dl>
                   </div>
@@ -175,7 +219,7 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Payslips</dt>
-                      <dd className="text-lg font-medium text-gray-900">{payslips?.length || 0}</dd>
+                      <dd className="text-lg font-medium text-gray-900">{allPayslips?.length || 0}</dd>
                     </dl>
                   </div>
                 </div>
@@ -197,11 +241,17 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">This Month</dt>
-                      <dd className="text-lg font-medium text-gray-900">
-                        £
-                        {payslips.reduce((sum, slip) => sum + Number.parseFloat(slip.grossPayTotal || 0), 0).toFixed(2)}
-                      </dd>
+                      <dt className="text-sm font-medium text-gray-500 truncate">This Month Gross Pay</dt>
+                     {/* {employers!==null && <dd className="text-lg font-medium text-gray-900"> £ {employers[0]?.otherEmployerDetailsDto?.totalPaidAmountYTD.toFixed(2)}</dd>} */}
+                     <dd className="text-lg font-medium text-gray-900">
+  £{" "}
+  {
+    employers[0]?.otherEmployerDetailsDto?.totalPaidAmountYTD != null
+      ? employers[0].otherEmployerDetailsDto.totalPaidAmountYTD.toFixed(2)
+      : "0.00"
+  }
+</dd>
+
                     </dl>
                   </div>
                 </div>
@@ -224,7 +274,9 @@ const EmployerDashboard = ({ company = {}, employees = [], payslips = [] }) => {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Pay Period</dt>
-                      <dd className="text-lg font-medium text-gray-900">{company?.payPeriod}</dd>
+                    
+                       <dd className="text-lg font-medium text-gray-900">{allEmployees[0]?.payPeriod || "Not Available"}</dd>
+                     
                     </dl>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 //AddEmployee.jsx
-import { useState } from "react"
+import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios";
 
@@ -20,6 +20,10 @@ const AddEmployee = ({ onAddEmployee }) => {
   employerId: "",
   payPeriod: "MONTHLY",
   annualIncomeOfEmployee:"",
+  p45Document:"",
+  hasP45DocumentSubmitted:false,
+  starterChecklistDocument:"",
+  hasStarterChecklistDocumentSubmitted:false,
 
   bankDetailsDTO: {
     accountName: "",
@@ -36,11 +40,14 @@ const AddEmployee = ({ onAddEmployee }) => {
 
   taxCode: "1257L",
   nationalInsuranceNumber: "",
-  niLetter: "A",
+  niLetter: "",
+  taxYear:"",
+  totalPersonalAllowance:12570,
+  previouslyUsedPersonalAllowance:0,
   region:"",
   isEmergencyCode:false,
   postGraduateLoanDto:{
-    hasPostgraduateLoan:false,
+  hasPostgraduateLoan:false,
   postgraduateLoanPlanType:"NONE",
   },
   autoEnrolmentEligible: true,
@@ -49,7 +56,7 @@ const AddEmployee = ({ onAddEmployee }) => {
   employeeContribution: 5,
   employerContribution: 3,
   studentLoanDto:{
-    hasStudentLoan:false,
+  hasStudentLoan:false,
   studentLoanPlanType:"NONE",
   },
   otherEmployeeDetails:null,
@@ -57,8 +64,9 @@ const AddEmployee = ({ onAddEmployee }) => {
 
 
   const [activeTab, setActiveTab] = useState("personal")
-   const navigate = useNavigate()
-    
+  const navigate = useNavigate()
+  const [warnings, setWarnings] = useState([]);
+  
    
   const tabs = [
     { id: "personal", name: "Personal Details", icon: "user" },
@@ -68,14 +76,15 @@ const AddEmployee = ({ onAddEmployee }) => {
     { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
 
-  const handleInputChange = (field, value) => {
-  if (field.startsWith("bankDetailsDTO.")) {
-    const bankField = field.split(".")[1];  
+const handleInputChange = (field, value) => {
+  const keys = field.split(".");
+  if (keys.length === 2) {
+    const [parentKey, childKey] = keys;
     setFormData((prev) => ({
       ...prev,
-      bankDetailsDTO: {
-        ...prev.bankDetailsDTO,
-        [bankField]: value,
+      [parentKey]: {
+        ...prev[parentKey],
+        [childKey]: value,
       },
     }));
   } else {
@@ -85,7 +94,6 @@ const AddEmployee = ({ onAddEmployee }) => {
     }));
   }
 };
-
 
  const handleSubmit = async (e) => {
   console.log(formData);
@@ -293,7 +301,6 @@ const AddEmployee = ({ onAddEmployee }) => {
     <option value="MALE">MALE</option>
     <option value="FEMALE">FEMALE</option>
    <option value="OTHER">Other</option>
-    <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
   </select>
 </div>
 
@@ -603,7 +610,7 @@ const renderTaxNI = () => (
           type="text"
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
           value={formData.taxCode}
-          onChange={(e) => handleInputChange("taxCode", e.target.value)}
+          onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
         />
       </div>
       <div>
@@ -613,7 +620,7 @@ const renderTaxNI = () => (
           placeholder="AB123456C"
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
           value={formData.nationalInsuranceNumber}
-          onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value)}
+          onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value.toUpperCase())}
         />
       </div>
     </div>  
@@ -626,6 +633,7 @@ const renderTaxNI = () => (
           value={formData.niLetter}
           onChange={(e) => handleInputChange("niLetter", e.target.value)}
         >
+        <option value="">Select</option>
           <option value="A">A</option>
           <option value="B">B</option>
           <option value="C">C</option>
@@ -633,18 +641,56 @@ const renderTaxNI = () => (
           <option value="M">M</option>
         </select>
       </div>
+
+      <div className="flex items-center mt-6">
+  <input
+    type="checkbox"
+    checked={formData.isEmergencyCode}
+    onChange={(e) =>
+      setFormData(prev => ({
+        ...prev,
+        isEmergencyCode: e.target.checked,
+      }))
+    }
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+  />
+  <label className="ml-2 text-sm font-medium text-gray-700">
+    Emergency Tax Code
+  </label>
+</div>  
+
+<div className="flex items-center mt-6">
+  <input
+    type="checkbox"
+    checked={formData.studentLoanDto.hasStudentLoan}
+       onChange={(e) =>
+        setFormData(prev => ({
+          ...prev,
+          studentLoanDto: {
+            ...prev.studentLoanDto,
+            hasStudentLoan: e.target.checked,
+          },
+        }))
+    }
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+  />
+  <label className="ml-2 text-sm font-medium text-gray-700">
+    Student Loan
+  </label>
+</div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700">Student Loan</label>
         <select
           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-          value={formData.studentLoan}
-          onChange={(e) => handleInputChange("studentLoan", e.target.value)}
+          value={formData.studentLoanDto.studentLoanPlanType}
+          onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
         >
+          <option value="">Select</option>
           <option value="NONE">None</option>
           <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
           <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
           <option value="STUDENT_LOAN_PLAN_3">Plan 3</option>
-          <option value="POSTGRADUATE">Postgraduate</option>
         </select>  
       </div>
       
@@ -663,35 +709,31 @@ const renderTaxNI = () => (
   </select>
 </div>
 
-
-<div className="flex items-center mt-6">
-  <input
-    type="checkbox"
-    checked={formData.isEmergencyCode}
-    onChange={(e) =>
-      setFormData(prev => ({
-        ...prev,
-        isEmergencyCode: e.target.checked,
-      }))
-    }
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-  />
-  <label className="ml-2 text-sm font-medium text-gray-700">
-    Emergency Tax Code
-  </label>
+<div>
+  <label className="block text-sm font-medium text-gray-700">Tax Year</label>
+  <select
+    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+    value={formData.taxYear}
+    onChange={(e) => handleInputChange("taxYear", e.target.value)}
+  >
+    <option value="">Select</option>
+    <option value="2025-2026">2025-2026</option>
+    <option value="2024-2025">2024-2025</option>
+    <option value="2023-2024">2023-2024</option>
+  </select>
 </div>
-
-
-
 <div className="flex items-center mt-6">
   <input
     type="checkbox"
-    checked={formData.isPostgraduateLoan}
+    checked={formData.postGraduateLoanDto.hasPostgraduateLoan}
     onChange={(e) =>
       setFormData(prev => ({
-        ...prev,
-        isPostgraduateLoan: e.target.checked,
-      }))
+          ...prev,
+          postGraduateLoanDto: {
+            ...prev.postGraduateLoanDto,
+            hasPostgraduateLoan: e.target.checked,
+          },
+        }))
     }
     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
   />
@@ -699,6 +741,19 @@ const renderTaxNI = () => (
     Postgraduate Loan
   </label>
 </div>
+
+ <div>
+        <label className="block text-sm font-medium text-gray-700">Postgraduate Loan</label>
+        <select
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+          value={formData.postGraduateLoanDto.postgraduateLoanPlanType}
+          onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
+        >
+          <option value="">Select</option>
+          <option value="NONE">None</option>
+          <option value="POSTGRADUATE_LOAN_PLAN_3">POSTGRADUATE_LOAN_PLAN_3</option>
+        </select>  
+      </div>
     </div>
   </div>
 )

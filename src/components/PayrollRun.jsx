@@ -12,7 +12,7 @@ const PayrollRun = ({ onGeneratePayslip }) => {
     const fetchEmployees = async () => {
       try {
         const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees");
-        console.log("Data fetched:", response.data);
+        console.log("allEmployees Data fetched:", response.data);
         setEmployees(response.data);
       } catch (error) {
         console.error("Failed to fetch employees:", error);

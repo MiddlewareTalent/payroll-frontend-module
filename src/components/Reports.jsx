@@ -1,9 +1,19 @@
-import { useState } from "react"
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom"
+import axios from "axios"
 
-const Reports = ({ employees = [], payslips = [] }) => {
+
+const Reports = ({ payslips = [] }) => {
   const navigate = useNavigate()
   const [selectedReport, setSelectedReport] = useState("summary")
+  const [employee, setEmployee] = useState(null);
+  const [latestPaySlip, setLatestPaySlip]=useState(null);
+  const [employees, setEmployees] = useState([]);
+  const [paySlip,setPayslip] = useState([]);
+  const [payeData, setPayeData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [employers,  setAllEmployers] = useState([]);
+
 
   const reports = [
     { id: "summary", name: "Payroll Summary", icon: "chart" },
@@ -13,6 +23,70 @@ const Reports = ({ employees = [], payslips = [] }) => {
     // { id: "rtiEps", name: "RTI EPS", icon: "upload" },
     { id: "yearEnd", name: "Year End Report", icon: "calendar" },
   ]
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/employee-details/allEmployees`);
+        console.log("Data fetched:", response.data);
+        setEmployees(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+  }
+  fetchEmployees();
+  },[]);
+
+   useEffect(() => {
+    if(employee!==null){
+      const fetchPayslip = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
+        setPayslip(()=>response.data);
+        setLatestPaySlip(()=>response.data[response.data.length-1])
+        console.log("latest",latestPaySlip);
+        console.log(response.data);
+      } catch (error) {
+        console.error("Error fetching payslip:", error);
+        setPayslip(null);
+      } 
+    };
+    fetchPayslip();
+    } 
+  }, [employee]);
+
+  useEffect(() => {
+    axios.get('http://localhost:8080/api/v1/employer/allEmployers')
+      .then(response => {
+        if (response.data && response.data.length > 0) {
+          const otherDetails = response.data[0].otherEmployerDetailsDto;
+          setPayeData({
+            totalPAYEYTD: otherDetails.totalPAYEYTD,
+            totalEmployeesNIYTD: otherDetails.totalEmployeesNIYTD,
+            totalEmployersNIYTD: otherDetails.totalEmployersNIYTD
+          });
+        }
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching PAYE data:', error);
+        setLoading(false);
+      });
+  }, []);
+
+   useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers");
+        console.log("employers Data fetched:", response.data); 
+        setAllEmployers(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
+
 
   const getIcon = (iconName) => {
     const icons = {
@@ -90,7 +164,9 @@ const Reports = ({ employees = [], payslips = [] }) => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Gross Pay</dt>
-                  <dd className="text-lg font-medium text-gray-900">£{totals.grossPay.toFixed(2)}</dd>
+                 
+                    {employers!==null && <dd className="text-lg font-medium text-gray-900"> £ {employers[0]?.otherEmployerDetailsDto?.totalPaidAmountYTD.toFixed(2)}</dd>}
+                    
                 </dl>
               </div>
             </div>
@@ -113,7 +189,7 @@ const Reports = ({ employees = [], payslips = [] }) => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Income Tax</dt>
-                  <dd className="text-lg font-medium text-gray-900">£{totals.incomeTax.toFixed(2)}</dd>
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalPAYEYTD.toFixed(2)}</dd>}
                 </dl>
               </div>
             </div>
@@ -133,10 +209,10 @@ const Reports = ({ employees = [], payslips = [] }) => {
                   </svg>
                 </div>
               </div>
-              <div className="ml-5 w-0 flex-1">
+              <div className="ml-4 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total NI (Employee)</dt>
-                  <dd className="text-lg font-medium text-gray-900">£{totals.nationalInsurance.toFixed(2)}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total NI(Employee)</dt>
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalEmployeesNIYTD}</dd>}
                 </dl>
               </div>
             </div>
@@ -158,8 +234,8 @@ const Reports = ({ employees = [], payslips = [] }) => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Net Pay</dt>
-                  <dd className="text-lg font-medium text-gray-900">£{totals.netPay.toFixed(2)}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total NI(Employer)</dt>
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalEmployersNIYTD.toFixed(2)}</dd>}
                 </dl>
               </div>
             </div>
@@ -177,9 +253,9 @@ const Reports = ({ employees = [], payslips = [] }) => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Employee
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payslips
-                    </th>
+                    </th> */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Gross Pay
                     </th>
@@ -189,19 +265,19 @@ const Reports = ({ employees = [], payslips = [] }) => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       NI
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Net Pay
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {employees.map((employee) => {
                     const empPayslips = payslips.filter(
-                      (slip) => slip.employeeId === employee.personalDetails.employeeId,
+                      (slip) => slip.employeeId === employee.employeeId,
                     )
                     const empTotals = empPayslips.reduce(
                       (acc, slip) => {
-                        acc.gross += Number.parseFloat(slip.grossPayTotal || 0)
+                        acc.gross += Number.parseFloat(slip.annualIncomeOfEmployee || 0)
                         acc.tax += Number.parseFloat(slip.incomeTaxTotal || 0)
                         acc.ni += Number.parseFloat(slip.nationalInsurance || 0)
                         acc.net += Number.parseFloat(slip.takeHomePayTotal || 0)
@@ -213,21 +289,21 @@ const Reports = ({ employees = [], payslips = [] }) => {
                     return (
                       <tr key={employee.id}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {employee.personalDetails.firstName} {employee.personalDetails.lastName}
+                          {employee.firstName} {employee.lastName}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{empPayslips.length}</td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paySlip.length}</td> */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          £{empTotals.gross.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          £{empTotals.tax.toFixed(2)}
+                          £{employee?.otherEmployeeDetailsDTO?.totalEarningsAmountYTD|| 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          £{empTotals.ni.toFixed(2)}
+                         £{employee?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                         £{employee?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}
+                        </td>
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           £{empTotals.net.toFixed(2)}
-                        </td>
+                        </td> */}
                       </tr>
                     )
                   })}
@@ -253,7 +329,7 @@ const Reports = ({ employees = [], payslips = [] }) => {
         ) : (
           <div className="space-y-4">
             {employees.map((employee) => {
-              const empPayslips = payslips.filter((slip) => slip.employeeId === employee.personalDetails.employeeId)
+              const empPayslips = payslips.filter((slip) => slip.employeeId === employee.employeeId)
               const yearTotals = empPayslips.reduce(
                 (acc, slip) => {
                   acc.gross += Number.parseFloat(slip.grossPayTotal || 0)
@@ -265,31 +341,37 @@ const Reports = ({ employees = [], payslips = [] }) => {
               )
 
               return (
+    //             <P60Form
+    //   key={employee.employeeId}
+    //   employee={employee}
+    //   employer={employers[0]}
+    //   totals={yearTotals}
+    // />
                 <div key={employee.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex justify-between items-center">
                     <div>
                       <h4 className="font-medium text-gray-900">
-                        {employee.personalDetails.firstName} {employee.personalDetails.lastName}
+                        {employee.firstName} {employee.lastName}
                       </h4>
-                      <p className="text-sm text-gray-500">Employee ID: {employee.personalDetails.employeeId}</p>
+                      <p className="text-sm text-gray-500">Employee ID: {employee.employeeId}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-500">Tax Year: {company.taxYear}</p>
+                      <p className="text-sm text-gray-500">Tax Year: {employers[0].taxYear}</p>
                       <button className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
                     </div>
                   </div>
                   <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-gray-500">Total Gross: </span>
-                      <span className="font-medium">£{yearTotals.gross.toFixed(2)}</span>
+                      <span className="font-medium">£{employee?.otherEmployeeDetailsDTO?.totalEarningsAmountYTD|| 0}</span>
                     </div>
                     <div>
                       <span className="text-gray-500">Total Tax: </span>
-                      <span className="font-medium">£{yearTotals.tax.toFixed(2)}</span>
+                      <span className="font-medium">£ {employee?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}</span>
                     </div>
                     <div>
                       <span className="text-gray-500">Total NI: </span>
-                      <span className="font-medium">£{yearTotals.ni.toFixed(2)}</span>
+                      <span className="font-medium">£{employee?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -396,7 +478,7 @@ const Reports = ({ employees = [], payslips = [] }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-1">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Sidebar */}
           <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">

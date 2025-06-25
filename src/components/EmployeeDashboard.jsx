@@ -16,7 +16,7 @@ const EmployeeDashboard = ({ payslips }) => {
   const [payslip, setPayslip] = useState([]);
   const [employees, setEmployees] = useState([]);
   const paySlipRefs=useParams("paySlipRef");
-  console.log(paySlipRefs.paySlipRef)
+  // console.log(paySlipRefs.paySlipRef)
 
 
   useEffect(() => {
@@ -49,8 +49,8 @@ const EmployeeDashboard = ({ payslips }) => {
         const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
         setPayslip(()=>response.data);
         setLatestPaySlip(()=>response.data[response.data.length-1])
-        console.log("latest",latestPaySlip);
-        console.log(response.data);
+        // console.log("latest",latestPaySlip);
+        console.log("letest payslip data", response.data);
       } catch (error) {
         console.error("Error fetching payslip:", error);
         setPayslip(null);
