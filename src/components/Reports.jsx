@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import Cookies from "js-cookie";
+import { useLocation } from "react-router-dom";
 
 
 const Reports = ({ payslips = [] }) => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
   const [selectedReport, setSelectedReport] = useState("summary")
   const [employee, setEmployee] = useState(null);
   const [latestPaySlip, setLatestPaySlip]=useState(null);
@@ -22,7 +25,18 @@ const Reports = ({ payslips = [] }) => {
     { id: "rtiFps", name: "RTI FPS", icon: "upload" },
     // { id: "rtiEps", name: "RTI EPS", icon: "upload" },
     { id: "yearEnd", name: "Year End Report", icon: "calendar" },
+    {id:"hmrclogin", name:"HMRC Login", icon: "upload" }
   ]
+
+  const handleGenerateP60 = () => {
+    navigate("/P60Form"); // this opens DummyP60Form.jsx via routing
+  };
+
+  useEffect(() => {
+    if (location.state?.from === "p60") {
+      setSelectedReport("p60");
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -86,6 +100,18 @@ const Reports = ({ payslips = [] }) => {
     };
     fetchEmployees();
   }, []);
+
+
+useEffect(() => {
+  const queryParams = new URLSearchParams(location.search);
+  const token = queryParams.get("token");
+
+  if (token) {
+    Cookies.set("hmrc_token", token, { expires: 1 }); // Set for 1 day
+    // Clean up URL
+    window.history.replaceState({}, document.title, "/reports");
+  }
+}, [location]);
 
 
   const getIcon = (iconName) => {
@@ -357,7 +383,7 @@ const Reports = ({ payslips = [] }) => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">Tax Year: {employers[0].taxYear}</p>
-                      <button className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
+                      <button  onClick={handleGenerateP60} className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
                     </div>
                   </div>
                   <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
@@ -486,7 +512,15 @@ const Reports = ({ payslips = [] }) => {
               {reports.map((report) => (
                 <button
                   key={report.id}
-                  onClick={() => setSelectedReport(report.id)}
+                  // onClick={() => setSelectedReport(report.id)}
+                  onClick={() => {
+  if (report.id === "hmrclogin") {
+    const scope = "hello";
+    window.location.href = `http://localhost:8080/oauth/login/${scope}`; // Redirect to backend OAuth
+  } else {
+    setSelectedReport(report.id);
+  }
+}}
                   className={`${
                     selectedReport === report.id
                       ? "bg-indigo-50 border-indigo-500 text-indigo-700"

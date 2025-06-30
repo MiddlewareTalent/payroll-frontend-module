@@ -104,3 +104,26 @@
 }
 
 
+@media print {
+  .page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  #p60-content {
+    break-inside: avoid;
+  }
+
+  .section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+@layer utilities {
+  @media print {
+    .page-break { page-break-before: always; break-before: page; }
+    .section { page-break-inside: avoid; break-inside: avoid; }
+  }
+}
+

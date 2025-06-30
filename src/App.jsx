@@ -12,6 +12,8 @@ import CompanyDetails from "./components/CompanyDetails";
 import PayslipView from "./components/PayslipView";
 import Paye from "./components/Paye";
 import DummyP60form from './components/DummyP60form'
+import P60formBlue from "./components/P60formBlue";
+import AccessToken from "./components/AccessToken";
 
 
 function App() {
@@ -35,17 +37,21 @@ const [employees, setEmployees] = useState([]);
   element={!user ? <Login onLogin={handleLogin} employees={employees} /> : user==="employee" ?<EmployeeDashboard/>:<EmployerDashboard/>}
 />
           <Route path="/employer-dashboard" element={<EmployerDashboard/>}/>
+          <Route path="/access-token/:code" element={<AccessToken/>}/>
           <Route path="/reports" element={<Reports />} />
           <Route path="/add-company" element={<AddCompanyDetails />} />
-          <Route path="/payroll-run"element={<PayrollRun/>}/>
-          <Route path="/add-employee"element={<AddEmployee/>}/>
-          <Route path="/employee-details"element={<EmployeeDetails/>}/>
-          <Route path="/employee-dashboard"element={<EmployeeDashboard/>}/>
+          <Route path="/payroll-run" element={<PayrollRun/>}/>
+          <Route path="/add-employee" element={<AddEmployee/>}/>
+          <Route path="/employee-details" element={<EmployeeDetails/>}/>
+          <Route path="/employee-dashboard" element={<EmployeeDashboard/>}/>
+          <Route path="/employee-dashboard/payslips" element={<EmployeeDashboard />} />
+          <Route path="/employee-dashboard/p60" element={<EmployeeDashboard />} />
           <Route path="/company-details"element={<CompanyDetails/>}/>
           <Route path="/add-company/" element={<CompanyDetails />} />
           <Route  path="/payslip/:paySlipRef" element={<PayslipView />} />
           <Route path="/paye" element={<Paye/>}/>
           <Route path='/P60Form' element={<DummyP60form/>}/>
+          <Route path='/P60FormBlue' element={<P60formBlue/>}/>
          </Routes>
       </div>
     </Router>

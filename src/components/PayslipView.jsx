@@ -76,6 +76,22 @@ const PayslipView = () => {
     );
   }
 
+  if (!loading && payslips.length === 0) {
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#F9FAFB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#111827' }}>No payslip generated till now.</h2>
+        <button
+          onClick={() => navigate(-1)}
+          style={{ marginTop: '1rem', backgroundColor: '#4F46E5', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', border: 'none', cursor: 'pointer' }}
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
+  );
+}
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F9FAFB' }}>
       {/* Header */}
