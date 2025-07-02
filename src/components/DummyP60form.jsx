@@ -891,6 +891,9 @@ const DummyP60form = () => {
             {isGeneratingPDF ? "Generating PDF..." : "Download P60 PDF"}
           </button>
         </div> */}
+        <div style={{textAlign:"center", marginTop: "30px"}}>
+        <p style={{fontSize:"10px", color:"#1e3a8a", margin:"0"}}>P60 (Substitute)(2025 to 2026)</p>
+      </div>
       </div>
     </div>
     </div>

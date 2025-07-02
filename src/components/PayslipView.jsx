@@ -76,7 +76,7 @@ const PayslipView = () => {
     );
   }
 
-  if (!loading && payslips.length === 0) {
+  if (!loading && payslip.length === 0) {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#F9FAFB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>

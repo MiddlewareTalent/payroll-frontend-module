@@ -405,9 +405,8 @@ const handleInputChange = (field, value) => {
           onChange={(e) => handleInputChange("payPeriod", e.target.value)}  
         >
           <option value="WEEKLY">Weekly</option>
-          <option value="FORTNIGHTLY">Fortnightly</option>
           <option value="MONTHLY">Monthly</option>
-          <option value="QUARTERLY">Quarterly</option>
+          <option value="YEARLY">yearly</option>
         </select>
       </div>
       </div>
