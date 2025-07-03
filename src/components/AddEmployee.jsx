@@ -50,11 +50,11 @@ const AddEmployee = ({ onAddEmployee }) => {
   hasPostgraduateLoan:false,
   postgraduateLoanPlanType:"NONE",
   },
-  autoEnrolmentEligible: true,
-  isDirector:false,
-  pensionScheme: "WORKPLACE_PENSION",
-  employeeContribution: 5,
-  employerContribution: 3,
+  hasPensionEligible: true,
+  // isDirector:false,
+  // pensionScheme: "WORKPLACE_PENSION",
+  // employeeContribution: 5,
+  // employerContribution: 3,
   studentLoanDto:{
   hasStudentLoan:false,
   studentLoanPlanType:"NONE",
@@ -73,7 +73,7 @@ const AddEmployee = ({ onAddEmployee }) => {
     { id: "employment", name: "Employment", icon: "briefcase" },
     { id: "pay", name: "Pay", icon: "currency" },
     { id: "taxNI", name: "Tax & NI", icon: "document" },
-    { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
+    // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
 
 const handleInputChange = (field, value) => {
@@ -100,14 +100,14 @@ const handleInputChange = (field, value) => {
   e.preventDefault();
 
   // Step 1: If not on final tab, move to next tab
-  if (activeTab !== "autoEnrolment") {
-    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1].id);
-    }
-    return;
-  }
-  console.log("Submitting employee data:", formData);
+  // if (activeTab !== "autoEnrolment") {
+  //   const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  //   if (currentIndex < tabs.length - 1) {
+  //     setActiveTab(tabs[currentIndex + 1].id);
+  //   }
+  //   return;
+  // }
+  // console.log("Submitting employee data:", formData);
 
   // Step 2: On final tab — submit the form with API call
   try {
@@ -298,8 +298,8 @@ const handleInputChange = (field, value) => {
     onChange={(e) => handleInputChange("gender", e.target.value)}
   >
     <option value="">Select</option>
-    <option value="MALE">MALE</option>
-    <option value="FEMALE">FEMALE</option>
+    <option value="MALE">Male</option>
+    <option value="FEMALE">Female</option>
    <option value="OTHER">Other</option>
   </select>
 </div>
@@ -640,8 +640,23 @@ const renderTaxNI = () => (
           <option value="M">M</option>
         </select>
       </div>
+      <div>
+  <label className="block text-sm font-medium text-gray-700">Region</label>
+  <select
+    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+    value={formData.region}
+    onChange={(e) => handleInputChange("region", e.target.value)}
+  >
+    <option value="">Select</option>
+    <option value="SCOTLAND">Scotland</option>
+    <option value="ENGLAND">England</option>
+    <option value="NORTHERN_IRELAND">Northern Ireland</option>
+    <option value="WALES">Wales</option>
+  </select>
+</div>
 
-      <div className="flex items-center mt-6">
+<div className="flex flex-row gap-20">
+ <label className="flex items-center mt-6">
   <input
     type="checkbox"
     checked={formData.isEmergencyCode}
@@ -653,12 +668,12 @@ const renderTaxNI = () => (
     }
     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
   />
-  <label className="ml-2 text-sm font-medium text-gray-700">
+  <span className="ml-2 text-sm font-medium text-gray-700">
     Emergency Tax Code
-  </label>
-</div>  
+  </span>
+</label>   
 
-<div className="flex items-center mt-6">
+<label className="flex items-center mt-6">
   <input
     type="checkbox"
     checked={formData.studentLoanDto.hasStudentLoan}
@@ -673,9 +688,10 @@ const renderTaxNI = () => (
     }
     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
   />
-  <label className="ml-2 text-sm font-medium text-gray-700">
+  <span className="ml-2 text-sm font-medium text-gray-700">
     Student Loan
-  </label>
+  </span>
+</label>
 </div>
 
       <div>
@@ -693,20 +709,8 @@ const renderTaxNI = () => (
         </select>  
       </div>
       
-<div>
-  <label className="block text-sm font-medium text-gray-700">Region</label>
-  <select
-    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-    value={formData.region}
-    onChange={(e) => handleInputChange("region", e.target.value)}
-  >
-    <option value="">Select</option>
-    <option value="SCOTLAND">Scotland</option>
-    <option value="ENGLAND">England</option>
-    <option value="NORTHERN_IRELAND">Northern Ireland</option>
-    <option value="WALES">Wales</option>
-  </select>
-</div>
+
+
 
 <div>
   <label className="block text-sm font-medium text-gray-700">Tax Year</label>
@@ -721,9 +725,11 @@ const renderTaxNI = () => (
     <option value="2023-2024">2023-2024</option>
   </select>
 </div>
-<div className="flex items-center mt-6">
+
+<label className="flex items-center mt-6">
   <input
     type="checkbox"
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
     checked={formData.postGraduateLoanDto.hasPostgraduateLoan}
     onChange={(e) =>
       setFormData(prev => ({
@@ -734,12 +740,13 @@ const renderTaxNI = () => (
           },
         }))
     }
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
   />
-  <label className="ml-2 text-sm font-medium text-gray-700">
+  
+  <span className="ml-2 text-sm font-medium text-gray-700">
     Postgraduate Loan
+  </span>  
   </label>
-</div>
+
 
  <div>
         <label className="block text-sm font-medium text-gray-700">Postgraduate Loan</label>
@@ -753,14 +760,7 @@ const renderTaxNI = () => (
           <option value="POSTGRADUATE_LOAN_PLAN_3">POSTGRADUATE_LOAN_PLAN_3</option>
         </select>  
       </div>
-    </div>
-  </div>
-)
-
-
-  const renderAutoEnrolment = () => (
-  <div className="space-y-6">
-    <div>
+      
       <label className="flex items-center">
         <input
           type="checkbox"
@@ -770,91 +770,113 @@ const renderTaxNI = () => (
             handleInputChange("autoEnrolmentEligible", e.target.checked)
           }
         />
-        <span className="ml-2 text-sm text-gray-700">
+        <span className="ml-2 text-sm text-gray-700 font-medium">
           Eligible for Auto Enrolment
         </span>
       </label>
+    
     </div>
-
-    {formData.autoEnrolmentEligible && (
-      <>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Pension Scheme
-          </label>
-          <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.pensionScheme}
-            onChange={(e) =>
-              handleInputChange("pensionScheme", e.target.value)
-            }
-          >
-            <option value="">-- Select --</option>
-            <option value="WORKPLACE_PENSION">Workplace Pension</option>
-            <option value="NEST">NEST</option>
-            <option value="STAKEHOLDER">Stakeholder Pension</option>
-          </select>
-
-          <div className="mt-4">
-  <label className="flex items-center">
-    <input
-      type="checkbox"
-      className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-      checked={formData.isDirector}
-      onChange={(e) =>
-        handleInputChange("isDirector", e.target.checked)
-      }
-    />
-    <span className="ml-2 text-sm text-gray-700">Is Director</span>
-  </label>
-</div>
-
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Employee Contribution (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.employeeContribution}
-              onChange={(e) =>
-                handleInputChange(
-                  "employeeContribution",
-                  parseFloat(e.target.value) || 0
-                )
-              }
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Employer Contribution (%)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.employerContribution}
-              onChange={(e) =>
-                handleInputChange(
-                  "employerContribution",
-                  parseFloat(e.target.value) || 0
-                )
-              }
-            />
-          </div>
-        </div>
-      </>
-    )}
   </div>
-);
+)
+
+
+//   const renderAutoEnrolment = () => (
+//   <div className="space-y-6">
+//     <div>
+//       <label className="flex items-center">
+//         <input
+//           type="checkbox"
+//           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+//           checked={formData.autoEnrolmentEligible}
+//           onChange={(e) =>
+//             handleInputChange("autoEnrolmentEligible", e.target.checked)
+//           }
+//         />
+//         <span className="ml-2 text-sm text-gray-700">
+//           Eligible for Auto Enrolment
+//         </span>
+//       </label>
+//     </div>
+
+//     {formData.autoEnrolmentEligible && (
+//       <>
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700">
+//             Pension Scheme
+//           </label>
+//           <select
+//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//             value={formData.pensionScheme}
+//             onChange={(e) =>
+//               handleInputChange("pensionScheme", e.target.value)
+//             }
+//           >
+//             <option value="">-- Select --</option>
+//             <option value="WORKPLACE_PENSION">Workplace Pension</option>
+//             <option value="NEST">NEST</option>
+//             <option value="STAKEHOLDER">Stakeholder Pension</option>
+//           </select>
+
+//           <div className="mt-4">
+//   <label className="flex items-center">
+//     <input
+//       type="checkbox"
+//       className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+//       checked={formData.isDirector}
+//       onChange={(e) =>
+//         handleInputChange("isDirector", e.target.checked)
+//       }
+//     />
+//     <span className="ml-2 text-sm text-gray-700">Is Director</span>
+//   </label>
+// </div>
+
+//         </div>
+
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700">
+//               Employee Contribution (%)
+//             </label>
+//             <input
+//               type="number"
+//               min="0"
+//               max="100"
+//               step="0.1"
+//               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//               value={formData.employeeContribution}
+//               onChange={(e) =>
+//                 handleInputChange(
+//                   "employeeContribution",
+//                   parseFloat(e.target.value) || 0
+//                 )
+//               }
+//             />
+//           </div>
+//           <div>
+//             <label className="block text-sm font-medium text-gray-700">
+//               Employer Contribution (%)
+//             </label>
+//             <input
+//               type="number"
+//               min="0"
+//               max="100"
+//               step="0.1"
+//               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//               value={formData.employerContribution}
+//               onChange={(e) =>
+//                 handleInputChange(
+//                   "employerContribution",
+//                   parseFloat(e.target.value) || 0
+//                 )
+//               }
+//             />
+//           </div>
+//         </div>
+//       </>
+//     )}
+//   </div>
+// );
  const renderTabContent = () => {
   switch (activeTab) {
     case "personal":
@@ -955,7 +977,7 @@ const renderTaxNI = () => (
                     </button>
 
                     <div className="space-x-3">
-                      {activeTab !== "autoEnrolment" && 
+                      {activeTab !== "taxNI" && 
                         <button
                           type="button"
                           onClick={() => {
@@ -971,7 +993,7 @@ const renderTaxNI = () => (
                           Next
                         </button>}
                        
-                        {activeTab === "autoEnrolment" && <button
+                        {activeTab === "taxNI" && <button
                           type="submit"
                           className="bg-green-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                         >

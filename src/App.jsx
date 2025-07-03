@@ -50,7 +50,7 @@ const [employees, setEmployees] = useState([]);
           <Route path="/add-company/" element={<CompanyDetails />} />
           <Route  path="/payslip/:paySlipRef" element={<PayslipView />} />
           <Route path="/paye" element={<Paye/>}/>
-          <Route path='/P60Form' element={<DummyP60form/>}/>
+          <Route path='/P60Form/:employeeId' element={<DummyP60form/>}/>
           <Route path='/P60FormBlue' element={<P60formBlue/>}/>
          </Routes>
       </div>

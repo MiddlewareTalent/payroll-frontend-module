@@ -8,6 +8,11 @@ const EmployeeDashboard = ({ payslips }) => {
   const location = useLocation();
   const [latestPaySlip, setLatestPaySlip]=useState(null);
   const [view, setView] = useState("dashboard");
+  const [employee, setEmployee] = useState(null);
+  const [payslip, setPayslip] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const paySlipRefs=useParams("paySlipRef");
+  // console.log(paySlipRefs.paySlipRef)
 
 useEffect(() => {
   if (location.pathname === "/employee-dashboard/payslips") {
@@ -92,12 +97,6 @@ const navItems = [
     return icons[iconName] || icons.home
   }
  
-
-  const [employee, setEmployee] = useState(null);
-  const [payslip, setPayslip] = useState([]);
-  const [employees, setEmployees] = useState([]);
-  const paySlipRefs=useParams("paySlipRef");
-  // console.log(paySlipRefs.paySlipRef)
 
 
   useEffect(() => {
@@ -451,8 +450,8 @@ const navItems = [
                 <p className="text-center text-gray-500 py-4">P60 Forms not found</p>
                  {/* {payslip.length === 0 && (
         <p className="text-center text-gray-500 py-4">P60 Forms not found</p>
-      )} */}
-       {/* {payslip.length > 0 && (
+      )}
+       {payslip.length > 0 && (
                 <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-300 rounded-lg shadow">
           <thead className="bg-gray-100 text-gray-700">

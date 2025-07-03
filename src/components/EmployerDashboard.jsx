@@ -22,7 +22,7 @@ const EmployerDashboard = ({payslips = [] }) => {
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
     { name: "Payslips", path: "/payroll-run", icon: "calculator" },
-    { name: "PAYE", path: "/paye", icon: "chart" },
+    // { name: "PAYE", path: "/paye", icon: "chart" },
     { name: "Reports", path: "/reports", icon: "chart" },
   ]
 

@@ -28,8 +28,8 @@ const Reports = ({ payslips = [] }) => {
     {id:"hmrclogin", name:"HMRC Login", icon: "upload" }
   ]
 
-  const handleGenerateP60 = () => {
-    navigate("/P60Form"); // this opens DummyP60Form.jsx via routing
+  const handleGenerateP60 = (employeeId) => {
+    navigate(`/P60Form/${employeeId}`); // this opens DummyP60Form.jsx via routing
   };
 
   useEffect(() => {
@@ -383,7 +383,7 @@ useEffect(() => {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-500">Tax Year: {employers[0].taxYear}</p>
-                      <button  onClick={handleGenerateP60} className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
+                      <button  onClick={()=>handleGenerateP60(employee.employeeId)} className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
                     </div>
                   </div>
                   <div className="mt-4 grid grid-cols-3 gap-4 text-sm">

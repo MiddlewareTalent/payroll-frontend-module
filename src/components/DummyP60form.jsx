@@ -1,9 +1,11 @@
-import { useState } from "react"
-import { Navigate, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
 import Reports from "./Reports"
+import axios from "axios"
 
 const DummyP60form = () => {
   const navigate=useNavigate();
+  const {employeeId}=useParams("employeeId");
   // State for all form fields
   const [formData, setFormData] = useState({
     taxYear: "",
@@ -41,6 +43,8 @@ const DummyP60form = () => {
   })
 
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+  const [employee,setEmployee]=useState(null);
+  const [employer, setEmployer] = useState(null);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -48,6 +52,34 @@ const DummyP60form = () => {
       [field]: value,
     }))
   }
+
+   useEffect(() => {
+  if(employeeId!==null){
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/employee-details/employee/${employeeId}`);
+        console.log("Employee Data fetched:", response.data);
+        setEmployee(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }
+  }, [employeeId]);
+
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers");
+        console.log("employers Data fetched:", response.data[0]); 
+        setEmployer(response.data[0]);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
   const handleNICChange = (rowIndex, field, value) => {
     setFormData((prev) => ({
@@ -161,7 +193,7 @@ const DummyP60form = () => {
         
         <div style="display: flex; align-items: center; background: #f97316; color: white; margin: 0 0 15px 0;  padding: 2px; margin-bottom: 10px; margin-right:10px;">
           <span style="margin-right:20px; margin-bottom:10px; padding:10px;">Tax year to 5 April</span>
-          <span style="background: white; color: black; padding-bottom:10px; padding-left:10px; padding-right:10px; margin:5px 0; border: 1px solid #ccc;">${formData.taxYear || ""}</span>
+          <span style="background: white; color: black; padding-bottom:10px; padding-left:10px; padding-right:10px; margin:5px 0; border: 1px solid #ccc;">${employer.taxYear || ""}</span>
         </div>
         
         <p style="color: #1e3a8a; font-weight: bold; margin: 10px 0;">This is a printed copy of an eP60</p>
@@ -189,13 +221,13 @@ const DummyP60form = () => {
             <td style="width: 50%; padding: 4px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">Surname</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${formData.surname || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${employee.firstName || ""}</div>
               </div>
             </td>
             <td style="width: 50%; padding: 4px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">Forenames or initials</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${formData.forenames || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${employee.lastName || ""}</div>
               </div>
             </td>
           </tr>
@@ -203,7 +235,7 @@ const DummyP60form = () => {
             <td style="padding: 4px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">National Insurance number</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${formData.nationalInsurance || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; height: 24px;">${employee.nationalInsuranceNumber || ""}</div>
               </div>
             </td>
             <td style="padding: 4px; vertical-align: top;">
@@ -238,13 +270,13 @@ const DummyP60form = () => {
       <td style="padding: 4px; vertical-align: top;">
         <div style="font-weight: bold; margin-bottom: 10px;">* In this employment (Pay)</div>
         <div style="border: 1px solid #ccc; padding: 4px; background: white; height: 24px; display: flex; align-items: center; padding-bottom:10px;">
-          ${formData.currentPay || "&nbsp;"}
+          ${employee.annualIncomeOfEmployee || "&nbsp;"}
         </div>
       </td>
       <td style="padding: 4px; vertical-align: top;">
         <div style="font-weight: bold; margin-bottom: 10px;">Tax deducted</div>
         <div style="border: 1px solid #ccc; padding: 4px; background: white; height: 24px; display: flex; align-items: center; padding-bottom:10px;">
-          ${formData.currentTax || "&nbsp;"}
+          ${employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany || "&nbsp;"}
         </div>
       </td>
     </tr>
@@ -252,13 +284,13 @@ const DummyP60form = () => {
       <td style="padding: 4px; vertical-align: top;">
         <div style="font-weight: bold; margin-bottom: 10px;">Total for year (Pay)</div>
         <div style="border: 1px solid #ccc; padding: 4px; background: white; height: 24px; display: flex; align-items: center; padding-bottom:10px;">
-          ${formData.totalPay || "&nbsp;"}
+          ${employee.annualIncomeOfEmployee|| "&nbsp;"}
         </div>
       </td>
       <td style="padding: 4px; vertical-align: top;">
         <div style="font-weight: bold; margin-bottom: 10px;">Tax deducted</div>
         <div style="border: 1px solid #ccc; padding: 4px; background: white; height: 24px; display: flex; align-items: center; padding-bottom:10px;">
-          ${formData.totalTax || "&nbsp;"}
+          ${employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany || "&nbsp;"}
         </div>
       </td>
     </tr>
@@ -266,7 +298,7 @@ const DummyP60form = () => {
       <td style="padding: 4px; vertical-align: top;">
         <div style="font-weight: bold; margin-bottom: 10px;">Final tax code</div>
         <div style="border: 1px solid #ccc; padding: 4px; background: white; height: 24px; display: flex; align-items: center; padding-bottom:10px;">
-          ${formData.finalTaxCode || "&nbsp;"}
+          ${employee.taxCode || "&nbsp;"}
         </div>
       </td>
       <td style="padding: 4px;"></td>
@@ -295,13 +327,13 @@ const DummyP60form = () => {
       <tbody>
         ${formData.nicRows
           .map(
-            (row) => `
-            <tr>
-              <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${row.tableLetter || ""}</td>
+            (row, i) => `
+            <tr key={i}>
+              <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${i === 0 ? employee.niLetter : ""}</td>
               <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${row.earningsLEL || ""}</td>
               <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${row.earningsPT || ""}</td>
               <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${row.earningsUEL || ""}</td>
-              <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${row.contributions || ""}</td>
+              <td style="border: 1px solid #ccc; padding: 8px; text-align: center;">${i === 0 ? employee.otherEmployeeDetailsDTO.totalEmployeeNIContributionInCompany : ""}</td>
             </tr>
           `
           )
@@ -364,13 +396,13 @@ const DummyP60form = () => {
             <td style="width: 50%; padding: 5px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">Student Loan deductions</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${formData.studentLoanDeductions || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${employee.studentLoanDto.totalDeductionAmountInStudentLoan || ""}</div>
               </div>
             </td>
             <td style="width: 50%; padding: 5px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">Postgraduate Loan deductions</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${formData.postgraduateLoanDeductions || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${employee.postGraduateLoanDto.totalDeductionAmountInPostgraduateLoan || ""}</div>
               </div>
             </td>
           </tr>
@@ -378,7 +410,7 @@ const DummyP60form = () => {
             <td colspan="2" style="padding: 5px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">To employee</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 40px; white-space: pre-wrap;">${formData.toEmployee || ""}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 40px; white-space: pre-wrap;">${`${employee.firstName} ${employee.lastName}\n${employee.address}`}</div>
               </div>
             </td>
           </tr>
@@ -389,12 +421,12 @@ const DummyP60form = () => {
       <div style="border: 1px solid #ccc; padding: 15px; background: #fff7ed; margin-bottom: 15px; page-break-inside: avoid;  break-inside: avoid;">
         <div style="margin-bottom: 15px;">
           <div style="font-weight: bold; margin-bottom: 10px;">Your employer's full name and address (including postcode)</div>
-          <div style="border: 1px solid #ccc; padding: 8px; background: white; min-height: 60px; white-space: pre-wrap;">${formData.employerDetails || ""}</div>
+          <div style="border: 1px solid #ccc; padding: 8px; background: white; min-height: 60px; white-space: pre-wrap;">${`${employer.employerName}\n${employer.employerAddress}\n${employer.employerPostCode}`}</div>
         </div>
         
         <div style="margin-bottom: 15px;">
           <div style="font-weight: bold; margin-bottom: 10px;">Employer PAYE reference</div>
-          <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${formData.employerPAYE || ""}</div>
+          <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${employer.taxOfficeDto.payeReference || ""}</div>
         </div>
 
         <h4 style="color: #1e3a8a; font-weight: bold; margin: 15px 0 10px 0; font-size: 14px;">Certificate by Employer/Paying Office</h4>
@@ -456,7 +488,7 @@ const DummyP60form = () => {
           </div>
         </div>
       </div>
-      <div style={{ backgroundColor: "#f3f4f6", padding: "2rem", minHeight: "100vh" }}>
+      {employer!==null && employee!==null && <div style={{ backgroundColor: "#f3f4f6", padding: "2rem", minHeight: "100vh" }}>
       <div
         style={{
           backgroundColor: "#fff",
@@ -479,7 +511,7 @@ const DummyP60form = () => {
             Tax year to 5 April 
             <input
               type="text"
-              value={formData.taxYear}
+              value={employer.taxYear}
               onChange={(e) => handleInputChange("taxYear", e.target.value)}
               style={{padding:"2px", maxWidth: "100px", marginLeft:"20px", backgroundColor: "white", color: "black",  borderRadius: "4px"}}
               // placeholder="e.g., 2025"
@@ -521,7 +553,7 @@ const DummyP60form = () => {
               Surname
               <input
                 type="text"
-                value={formData.surname}
+                value={employee.firstName}
                 onChange={(e) => handleInputChange("surname", e.target.value)}
                 style={inputStyle}
               />
@@ -530,7 +562,7 @@ const DummyP60form = () => {
               Forenames or initials
               <input
                 type="text"
-                value={formData.forenames}
+                value={employee.lastName}
                 onChange={(e) => handleInputChange("forenames", e.target.value)}
                 style={inputStyle}
               />
@@ -539,7 +571,7 @@ const DummyP60form = () => {
               National Insurance number
               <input
                 type="text"
-                value={formData.nationalInsurance}
+                value={employee.nationalInsuranceNumber}
                 onChange={(e) => handleInputChange("nationalInsurance", e.target.value)}
                 style={inputStyle}
               />
@@ -592,7 +624,7 @@ const DummyP60form = () => {
               * In this employment (Pay)
               <input
                 type="text"
-                value={formData.currentPay}
+                value={employee.annualIncomeOfEmployee}
                 onChange={(e) => handleInputChange("currentPay", e.target.value)}
                 style={inputStyle}
               />
@@ -601,7 +633,7 @@ const DummyP60form = () => {
               Tax deducted
               <input
                 type="text"
-                value={formData.currentTax}
+                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany}
                 onChange={(e) => handleInputChange("currentTax", e.target.value)}
                 style={inputStyle}
               />
@@ -610,7 +642,7 @@ const DummyP60form = () => {
               Total for year (Pay)
               <input
                 type="text"
-                value={formData.totalPay}
+                value={employee.annualIncomeOfEmployee}
                 onChange={(e) => handleInputChange("totalPay", e.target.value)}
                 style={inputStyle}
               />
@@ -619,7 +651,7 @@ const DummyP60form = () => {
               Tax deducted
               <input
                 type="text"
-                value={formData.totalTax}
+                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany}
                 onChange={(e) => handleInputChange("totalTax", e.target.value)}
                 style={inputStyle}
               />
@@ -628,7 +660,7 @@ const DummyP60form = () => {
               Final tax code
               <input
                 type="text"
-                value={formData.finalTaxCode}
+                value={employee.taxCode}
                 onChange={(e) => handleInputChange("finalTaxCode", e.target.value)}
                 style={inputStyle}
               />
@@ -681,50 +713,72 @@ const DummyP60form = () => {
                 </tr>
               </thead>
               <tbody>
-                {formData.nicRows.map((row, i) => (
-                  <tr key={i}>
-                    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                      <input
-                        type="text"
-                        value={row.tableLetter}
-                        onChange={(e) => handleNICChange(i, "tableLetter", e.target.value)}
-                        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
-                      />
-                    </td>
-                    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                      <input
-                        type="text"
-                        value={row.earningsLEL}
-                        onChange={(e) => handleNICChange(i, "earningsLEL", e.target.value)}
-                        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
-                      />
-                    </td>
-                    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                      <input
-                        type="text"
-                        value={row.earningsPT}
-                        onChange={(e) => handleNICChange(i, "earningsPT", e.target.value)}
-                        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
-                      />
-                    </td>
-                    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                      <input
-                        type="text"
-                        value={row.earningsUEL}
-                        onChange={(e) => handleNICChange(i, "earningsUEL", e.target.value)}
-                        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
-                      />
-                    </td>
-                    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
-                      <input
-                        type="text"
-                        value={row.contributions}
-                        onChange={(e) => handleNICChange(i, "contributions", e.target.value)}
-                        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
-                      />
-                    </td>
-                  </tr>
-                ))}
+               {formData.nicRows.map((row, i) => (
+  <tr key={i}>
+    {/* NI Letter - Only in first row */}
+    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+      <input
+        type="text"
+        value={i === 0 ? employee.niLetter : ""}
+        onChange={(e) => handleNICChange(i, "niLetter", e.target.value)}
+        style={{
+          width: "100%",
+          border: "none",
+          padding: "5px",
+          fontSize: "12px",
+          textAlign:"center",
+        }}
+      />
+    </td>
+
+    {/* Earnings LEL */}
+    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+      <input
+        type="text"
+        value={row.earningsLEL}
+        onChange={(e) => handleNICChange(i, "earningsLEL", e.target.value)}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+      />
+    </td>
+
+    {/* Earnings PT */}
+    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+      <input
+        type="text"
+        value={row.earningsPT}
+        onChange={(e) => handleNICChange(i, "earningsPT", e.target.value)}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+      />
+    </td>
+
+    {/* Earnings UEL */}
+    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+      <input
+        type="text"
+        value={row.earningsUEL}
+        onChange={(e) => handleNICChange(i, "earningsUEL", e.target.value)}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+      />
+    </td>
+
+    <td style={{ border: "1px solid #ccc", padding: "5px" }}>
+  <input
+    type="text"
+    value={i === 0 ? employee.otherEmployeeDetailsDTO.totalEmployeeNIContributionInCompany : ""}
+    onChange={(e) => handleNICChange(i, "contributions", e.target.value)}
+    style={{
+      width: "100%",
+      border: "none",
+      padding: "5px",
+      fontSize: "12px",
+      textAlign:"center",
+    }}
+  />
+</td>
+
+  </tr>
+))}
+
               </tbody>
             </table>
           </div>
@@ -810,7 +864,7 @@ const DummyP60form = () => {
               Student Loan deductions in this employment <br/>(whole £s only)
               <input
                 type="text"
-                value={formData.studentLoanDeductions}
+                value={employee.studentLoanDto.totalDeductionAmountInStudentLoan}
                 onChange={(e) => handleInputChange("studentLoanDeductions", e.target.value)}
                 style={inputStyle}
               />
@@ -819,7 +873,7 @@ const DummyP60form = () => {
               Postgraduate Loan deductions in this employment <br/> (whole £s only)
               <input
                 type="text"
-                value={formData.postgraduateLoanDeductions}
+                value={employee.postGraduateLoanDto.totalDeductionAmountInPostgraduateLoan}
                 onChange={(e) => handleInputChange("postgraduateLoanDeductions", e.target.value)}
                 style={inputStyle}
               />
@@ -828,7 +882,7 @@ const DummyP60form = () => {
           <label style={labelStyle}>
             To employee
             <textarea
-              value={formData.toEmployee}
+             value={`${employee.firstName} ${employee.lastName}\n${employee.address}`}
               onChange={(e) => handleInputChange("toEmployee", e.target.value)}
               style={{ ...inputStyle, height: "80px", resize: "vertical" }}
             />
@@ -849,7 +903,7 @@ const DummyP60form = () => {
             Your employer's full name and address (including postcode)
             <textarea
               rows="4"
-              value={formData.employerDetails}
+              value={`${employer.employerName}\n${employer.employerAddress}\n${employer.employerPostCode}`}
               onChange={(e) => handleInputChange("employerDetails", e.target.value)}
               style={{ ...inputStyle, height: "100px", resize: "vertical" }}
             />
@@ -859,7 +913,7 @@ const DummyP60form = () => {
             Employer PAYE reference
             <input
               type="text"
-              value={formData.employerPAYE}
+              value={employer.taxOfficeDto.payeReference}
               onChange={(e) => handleInputChange("employerPAYE", e.target.value)}
               style={inputStyle}
             />
@@ -895,7 +949,7 @@ const DummyP60form = () => {
         <p style={{fontSize:"10px", color:"#1e3a8a", margin:"0"}}>P60 (Substitute)(2025 to 2026)</p>
       </div>
       </div>
-    </div>
+    </div>}
     </div>
   )
 }

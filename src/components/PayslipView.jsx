@@ -191,6 +191,14 @@ const PayslipView = () => {
                   <span style={{ fontWeight: '500' }}>£{payslip.employersNationalInsurance}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Employee Pension Contribution</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.employeePensionContribution}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Employer Pension Contribution</span>
+                  <span style={{ fontWeight: '500' }}>£{payslip.employerPensionContribution}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Student Loan Deduction Amount</span>
                   <span style={{ fontWeight: '500' }}>£{payslip.studentLoanDeductionAmount}</span>
                 </div>
