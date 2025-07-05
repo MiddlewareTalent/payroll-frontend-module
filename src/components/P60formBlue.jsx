@@ -3,11 +3,11 @@ const P60formBlue = () => {
     return (
         <div className="p-10 bg-white">
         <p className="flex justify-end text-sm text-blue-950">This is a printed copy of an eP60</p>
-        <div className="flex flex-col bg-blue-100">
-        <div className="flex flex-row border-b-white gap-3bg-blue-100">
-            <div className="bg-blue-100 w-full">
+        <div className="flex flex-col bg-red-100">
+        <div className="flex flex-row border-b-white gap-3 bg-red-100">
+            <div className="bg-red-100 w-full">
             <h1 className="text-2xl text-blue-950 bg-white mt-3 ml-3 mr-3">P60 End of Year Certificate</h1>
-            <div className="flex flex-direction:row  bg-blue-950 ml-3 mr-3">
+            <div className="flex flex-direction:row  bg-amber-500 ml-3 mr-3">
                 <h2 className="text-xl text-white p-1 ml-3">Tax year to 5 April</h2>
                 <input className="bg-white w-18 h-7 m-2" type="text"/>
             </div>
@@ -34,8 +34,8 @@ const P60formBlue = () => {
                         for your tax return, if you get one</p>
                 </div>
             </div>
-            <div className="bg-blue-100 w-screen gap-10">
-                <h1 className="bg-blue-950 text-white text-xl mb-2 pl-2">Employee’s details</h1>
+            <div className="bg-red-100 w-screen gap-10">
+                <h1 className="bg-amber-500 text-white text-xl mb-2 pl-2">Employee’s details</h1>
                 <form className="text-sm text-blue-950 gap-10">
                     <div className="flex flex-col gap-3">
                     <div className="">
@@ -59,7 +59,7 @@ const P60formBlue = () => {
                     </div>
                 </form>
                 <div>
-                    <h2 className="bg-blue-950 text-white text-xl pl-2  mt-2 mb-2">Pay and Income Tax details</h2>
+                    <h2 className="bg-amber-500 text-white text-xl pl-2  mt-2 mb-2">Pay and Income Tax details</h2>
                     <form className="flex flex-col gap-3 text-sm pl-5 pr-23 text-blue-950">
                         <p className="text-sm font-bold ml-63"><span>Pay</span><span className="ml-35">Tax deducted</span></p>
                         <p className="ml-65">£ <span className="ml-45">£</span></p>
@@ -88,7 +88,7 @@ const P60formBlue = () => {
             </div>
         </div>
         <div >
-           <h1 className=" bg-blue-950 text-white ml-3 pl-2 text-xl">National Insurance contributions in this employment</h1>
+           <h1 className=" bg-amber-500 text-white ml-3 pl-2 text-xl">National Insurance contributions in this employment</h1>
            <div className="flex flex-row text-sm gap-3 pt-3 text-blue-950">
                     <div className="flex flex-col pl-5">
                     <label className="mb-18">NIC table ltter</label>
@@ -133,7 +133,7 @@ const P60formBlue = () => {
            
         </div>
         <div className="mb-5">
-            <h1 className=" bg-blue-950 text-white ml-3 pl-2 text-xl mt-3">Statutory payments <span className="text-sm">included in the pay ‘In this employment’ figure above</span></h1>
+            <h1 className=" bg-amber-500 text-white ml-3 pl-2 text-xl mt-3">Statutory payments <span className="text-sm">included in the pay ‘In this employment’ figure above</span></h1>
             <div className="flex flex-row text-sm text-blue-950">
             <div className="flex flex-row">
                 <label className="pr-10 pl-5 mt-5">Statutory Maternity Pay</label>
@@ -163,9 +163,9 @@ const P60formBlue = () => {
             </div>
             </div>
         </div>
-        <div className="flex flex-row border-b-white gap-3bg-blue-100">
-            <div className="bg-blue-100 w-full">
-            <div className="flex flex-direction:row  bg-blue-950 ml-3 mr-3">
+        <div className="flex flex-row border-b-white gap-3bg-red-100">
+            <div className="bg-red-100 w-full">
+            <div className="flex flex-direction:row  bg-amber-500 ml-3 mr-3">
                 <h2 className="text-xl text-white p-1 ml-3 ">Other details</h2>
             </div>
             <form className="text-sm">
@@ -185,7 +185,7 @@ const P60formBlue = () => {
             </div>
             </form>
             </div>
-            <div className="bg-blue-100 w-screen gap-10">
+            <div className="bg-red-100 w-screen gap-10">
                 <hr className="h-5 text-blue-950"/>
                 <form className="text-sm gap-10">
                     <div className="flex flex-col gap-3">

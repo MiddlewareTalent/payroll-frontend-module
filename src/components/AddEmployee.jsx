@@ -2,6 +2,7 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios";
+import Select from 'react-select';
 
 const AddEmployee = ({ onAddEmployee }) => {
   const [formData, setFormData] = useState({
@@ -76,6 +77,48 @@ const AddEmployee = ({ onAddEmployee }) => {
     { id: "taxNI", name: "Tax & NI", icon: "document" },
     // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
+
+  const NICategoryLetters = [
+    {value:'A', label:'A'},
+    {value:'M', label:'M'},
+    {value:'C', label:'C'},
+    {value:'X', label:'X'},
+    {value:'B', label:'B'},
+    {value:'D', label:'D'},
+    {value:'E', label:'E'},
+    {value:'F', label:'F'},
+    {value:'H', label:'H'},
+    {value:'I', label:'I'},
+    {value:'J', label:'J'},
+    {value:'K', label:'K'},
+    {value:'L', label:'L'},
+    {value:'N', label:'N'},
+    {value:'S', label:'S'},
+    {value:'V', label:'V'},
+    {value:'Z', label:'Z'}
+  ]
+
+  const departmentOptions = [
+  { value: 'HR', label: 'HR' },
+  { value: 'IT', label: 'IT' },
+  { value: 'SALES', label: 'SALES' },
+  { value: 'MARKETING', label: 'MARKETING' },
+  { value: 'FINANCE', label: 'FINANCE' },
+  { value: 'OPERATIONS', label: 'OPERATIONS' },
+  { value: 'LEGAL', label: 'LEGAL' },
+  { value: 'ADMINISTRATION', label: 'ADMINISTRATION' },
+  { value: 'RESEARCH_AND_DEVELOPMENT', label: 'RESEARCH AND DEVELOPMENT' },
+  { value: 'CUSTOMER_SERVICE', label: 'CUSTOMER SERVICE' },
+  { value: 'PROCUREMENT', label: 'PROCUREMENT' },
+  { value: 'LOGISTICS', label: 'LOGISTICS' },
+  { value: 'ENGINEERING', label: 'ENGINEERING' },
+  { value: 'MANUFACTURING', label: 'MANUFACTURING' },
+  { value: 'QUALITY_ASSURANCE', label: 'QUALITY ASSURANCE' },
+  { value: 'BUSINESS_ANALYSIS', label: 'BUSINESS ANALYSIS' },
+  { value: 'PROJECT_MANAGEMENT', label: 'PROJECT MANAGEMENT' },
+  { value: 'DATA_ANALYSIS', label: 'DATA ANALYSIS' },
+  { value: 'DEVELOPMENT', label: 'DEVELOPMENT' },
+];
 
    const validateCurrentTab = (tabId) => {
   const newErrors = {};
@@ -500,14 +543,23 @@ const validateForm = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
        
         <div>
-          <label className="block text-sm font-medium text-gray-700">Employee Department</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employeeDepartment}
-            onChange={(e) => handleInputChange( "employeeDepartment", e.target.value.toUpperCase())}
-          />
-        </div>
+  <label className="block text-sm font-medium text-gray-700">Employee Department</label>
+  <Select
+  options={departmentOptions}
+  value={departmentOptions.find((option) => option.value === formData.employeeDepartment)}
+  onChange={(selectedOption) => handleInputChange('employeeDepartment', selectedOption?.value || '')}
+  className="mt-1 text-sm"
+  styles={{
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '120px', // Show around 4 items, then scroll
+    }),
+  }}
+  placeholder="Select department..."
+  isSearchable
+/>
+</div>
+
 
         <div>
           <label className="block text-sm font-medium text-gray-700">Employer ID</label>
@@ -815,18 +867,20 @@ const renderTaxNI = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
-        <select
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-          value={formData.niLetter}
-          onChange={(e) => handleInputChange("niLetter", e.target.value)}
-        >
-        <option value="">Select</option>
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="H">H</option>
-          <option value="M">M</option>
-        </select>
+        <Select
+  options={NICategoryLetters}
+  value={NICategoryLetters.find((option) => option.value === formData.niLetter)}
+  onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
+  className="mt-1 text-sm"
+  styles={{
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '120px', // Show around 4 items, then scroll
+    }),
+  }}
+  placeholder="Select NI Category Letter..."
+  isSearchable
+/>
       </div>
       <div>
   <label className="block text-sm font-medium text-gray-700">Region</label>

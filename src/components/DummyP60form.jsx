@@ -410,7 +410,7 @@ const DummyP60form = () => {
             <td colspan="2" style="padding: 5px; vertical-align: top;">
               <div style="margin-bottom: 10px;">
                 <div style="font-weight: bold; margin-bottom: 10px;">To employee</div>
-                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 40px; white-space: pre-wrap;">${`${employee.firstName} ${employee.lastName}\n${employee.address}`}</div>
+                <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 40px; white-space: pre-wrap;">${`${employee.firstName} ${employee.lastName}\n${employee.address} \n${employee.postCode}`}</div>
               </div>
             </td>
           </tr>
@@ -508,7 +508,7 @@ const DummyP60form = () => {
         {/* Tax Year */}
         <div style={{ padding: "1rem", backgroundColor: "#f97316" }}>
           <label style={{ color: "white", marginRight:"10px" }}>
-            Tax year to 5 April 
+            Tax year to 5 April
             <input
               type="text"
               value={employer.taxYear}
@@ -882,7 +882,7 @@ const DummyP60form = () => {
           <label style={labelStyle}>
             To employee
             <textarea
-             value={`${employee.firstName} ${employee.lastName}\n${employee.address}`}
+             value={`${employee.firstName} ${employee.lastName}\n${employee.address}\n${employee.postCode}`}
               onChange={(e) => handleInputChange("toEmployee", e.target.value)}
               style={{ ...inputStyle, height: "80px", resize: "vertical" }}
             />
@@ -925,26 +925,6 @@ const DummyP60form = () => {
           Statutory Parental Bereavement Pay or Statutory Adoption Pay is included.
         </p>
         </div>
-
-        {/* <div style={{ textAlign: "center", marginTop: "3rem" }}>
-          <button
-            onClick={handleDownload}
-            disabled={isGeneratingPDF}
-            style={{
-              backgroundColor: isGeneratingPDF ? "#9ca3af" : "#16a34a",
-              color: "white",
-              padding: "1rem 2rem",
-              borderRadius: "8px",
-              border: "none",
-              cursor: isGeneratingPDF ? "not-allowed" : "pointer",
-              fontSize: "16px",
-              fontWeight: "bold",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            {isGeneratingPDF ? "Generating PDF..." : "Download P60 PDF"}
-          </button>
-        </div> */}
         <div style={{textAlign:"center", marginTop: "30px"}}>
         <p style={{fontSize:"10px", color:"#1e3a8a", margin:"0"}}>P60 (Substitute)(2025 to 2026)</p>
       </div>

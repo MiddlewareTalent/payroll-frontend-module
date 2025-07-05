@@ -10,6 +10,7 @@ const AddCompanyDetails = () => {
     employerPostCode: "",
     employerTelephone: "",
     employerEmail: "",
+    employerGender:"",
     contactForename: "",
     contactSurname: "",
     pdfPassword: "",
@@ -252,6 +253,20 @@ const AddCompanyDetails = () => {
             placeholder="Enter email address"
           />
         </div>
+        <div>
+  <label className="block text-sm font-medium text-gray-700">Gender</label>
+  <select
+    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+    value={formData.employerGender}
+    onChange={(e) => handleInputChange("employerGender", e.target.value)}
+  >
+    <option value="">Select</option>
+    <option value="MALE">Male</option>
+    <option value="FEMALE">Female</option>
+   <option value="OTHER">Other</option>
+  </select>
+</div>
+
       </div>
     </div>
   )
@@ -361,9 +376,9 @@ const AddCompanyDetails = () => {
             value={formData.payPeriod}
             onChange={(e) => handleInputChange("payPeriod", e.target.value)}
           >
-            <option value="MONTHLY">Monthly</option>
             <option value="WEEKLY">Weekly</option>
-            <option value="FORTNIGHTLY">Fortnightly</option>
+            <option value="MONTHLY">Monthly</option>
+            <option value="YEARLY">Yearly</option>
           </select>
         </div>
         <div>
