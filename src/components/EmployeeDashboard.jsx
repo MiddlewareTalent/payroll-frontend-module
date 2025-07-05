@@ -193,7 +193,7 @@ const navItems = [
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow border-b border-gray-200">
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex items-center justify-between py-6">
+    <div className="flex items-center justify-between py-6 overflow-x-auto">
       
       {/* Left - Dashboard Title */}
       <div className="flex-shrink-0">
@@ -207,7 +207,7 @@ const navItems = [
 
 
       {/* Center - Navigation */}
-      <nav className="flex space-x-8 flex-grow justify-center">
+      <nav className="flex space-x-8 ml-10 mr-10 flex-grow justify-center">
         {navItems.map((item) => (
           <button
             key={item.name}

@@ -18,7 +18,7 @@ const AddEmployee = ({ onAddEmployee }) => {
   employmentEndDate:null,
   employmentType: "FULL_TIME",
   employerId: "",
-  payPeriod: "MONTHLY",
+  payPeriod: "",
   annualIncomeOfEmployee:"",
   p45Document:"",
   hasP45DocumentSubmitted:false,
@@ -38,7 +38,7 @@ const AddEmployee = ({ onAddEmployee }) => {
     isRTIReturnsIncluded: false,
   }, 
 
-  taxCode: "1257L",
+  taxCode: "",
   nationalInsuranceNumber: "",
   niLetter: "",
   taxYear:"",
@@ -50,7 +50,7 @@ const AddEmployee = ({ onAddEmployee }) => {
   hasPostgraduateLoan:false,
   postgraduateLoanPlanType:"NONE",
   },
-  hasPensionEligible: true,
+  hasPensionEligible: false,
   // isDirector:false,
   // pensionScheme: "WORKPLACE_PENSION",
   // employeeContribution: 5,
@@ -66,6 +66,7 @@ const AddEmployee = ({ onAddEmployee }) => {
   const [activeTab, setActiveTab] = useState("personal")
   const navigate = useNavigate()
   const [warnings, setWarnings] = useState([]);
+  const [errors, setErrors] = useState({});
   
    
   const tabs = [
@@ -75,6 +76,160 @@ const AddEmployee = ({ onAddEmployee }) => {
     { id: "taxNI", name: "Tax & NI", icon: "document" },
     // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
+
+   const validateCurrentTab = (tabId) => {
+  const newErrors = {};
+  const newWarnings = [];
+
+  if (tabId === "pay") {
+    if (!formData.annualIncomeOfEmployee) {
+      newErrors.annualIncomeOfEmployee = "Annual income is required.";
+    }
+    if (!formData.payPeriod) {
+      newErrors.payPeriod = "Pay period is required.";
+    }
+
+    if (!formData.bankDetailsDTO?.accountName) {
+      newErrors.accountName = "Account name is required.";
+    }
+    if (!formData.bankDetailsDTO?.accountNumber) {
+      newErrors.accountNumber = "Account number is required.";
+    }
+    if (!formData.bankDetailsDTO?.sortCode || formData.bankDetailsDTO?.sortCode.length !== 6) {
+      newErrors.sortCode = "Sort code must be 6 digits.";
+    }
+    if (!formData.bankDetailsDTO?.bankName) {
+      newErrors.bankName = "Bank Name is required.";
+    }
+  }
+ setErrors(newErrors);
+  setWarnings(newWarnings);
+
+  return Object.keys(newErrors).length === 0;
+};
+
+// const validateTaxAndLoanDetails = () => {
+//   const newErrors = {};
+//   if (!formData.taxCode) {
+//     newErrors.taxCode = "Tax code is required.";
+//   }
+//   if (!formData.nationalInsuranceNumber) {
+//     newErrors.nationalInsuranceNumber = "National Insurance Number is required.";
+//   }
+//    if (!formData.niLetter) {
+//     newErrors.niLetter = "NI Category Letter is required.";
+//   }
+//   if (!formData.region) {
+//     newErrors.region = "Region is required.";
+//   }
+//   if (!formData.taxYear) {
+//     newErrors.taxYear = "Tax Year is required.";
+//   }
+
+//   // ✅ Student Loan checks
+//   const hasStudentLoan = formData.studentLoanDto.hasStudentLoan;
+//   const studentLoanPlan = formData.studentLoanDto.studentLoanPlanType;
+
+//   if (hasStudentLoan && studentLoanPlan === "NONE") {
+//     newErrors.studentLoanPlanType = "Please select a student loan plan type.";
+//   }
+
+//   if (!hasStudentLoan && studentLoanPlan !== "NONE") {
+//     newErrors.studentLoanCheckbox = "Please check the student loan checkbox if a plan type is selected.";
+//   }
+
+//   // ✅ Postgraduate Loan (optional, same logic if needed)
+//   const hasPostgradLoan = formData.postGraduateLoanDto.hasPostgraduateLoan;
+//   const postgradLoanPlan = formData.postGraduateLoanDto.postgraduateLoanPlanType;
+
+//   if (hasPostgradLoan && postgradLoanPlan === "NONE") {
+//     newErrors.postgraduateLoanPlanType = "Please select a postgraduate loan plan type.";
+//   }
+
+//   if (!hasPostgradLoan && postgradLoanPlan !== "NONE") {
+//     newErrors.postgraduateLoanCheckbox = "Please check the postgraduate loan checkbox if a plan type is selected.";
+//   }
+
+//   setErrors(newErrors);
+//   return Object.keys(newErrors).length === 0;
+// };
+
+const validateTaxAndLoanDetails = () => {
+  const newErrors = {};
+  const newWarnings = [];
+
+  // 🔹 Format taxCode and NI Number
+  const emergencyTaxCodes = ["1257L X", "1257L W1", "1257L M1"];
+  const rawTaxCode = formData.taxCode?.trim().toUpperCase() || "";
+  const formattedTaxCode = rawTaxCode.replace(/(1257L)([XMW1]+)/, "$1 $2");
+  const formattedNINumber = formData.nationalInsuranceNumber?.trim().toUpperCase() || "";
+
+  // Apply formatted values if needed
+  if (formData.taxCode !== formattedTaxCode) {
+    setFormData((prev) => ({ ...prev, taxCode: formattedTaxCode }));
+  }
+  if (formData.nationalInsuranceNumber !== formattedNINumber) {
+    setFormData((prev) => ({ ...prev, nationalInsuranceNumber: formattedNINumber }));
+  }
+
+  // 🔸 Basic required field validations
+  if (!formattedTaxCode) {
+    newErrors.taxCode = "Tax code is required.";
+  }
+  if (!formattedNINumber) {
+    newErrors.nationalInsuranceNumber = "National Insurance Number is required.";
+  }
+  if (!formData.niLetter) {
+    newErrors.niLetter = "NI Category Letter is required.";
+  }
+  if (!formData.region) {
+    newErrors.region = "Region is required.";
+  }
+  if (!formData.taxYear) {
+    newErrors.taxYear = "Tax Year is required.";
+  }
+
+  // 🔹 Student Loan
+  const hasStudentLoan = formData.studentLoanDto.hasStudentLoan;
+  const studentLoanPlan = formData.studentLoanDto.studentLoanPlanType;
+
+  if (hasStudentLoan && studentLoanPlan === "NONE") {
+    newErrors.studentLoanPlanType = "Please select a student loan plan type.";
+  }
+  if (!hasStudentLoan && studentLoanPlan !== "NONE") {
+    newErrors.studentLoanCheckbox = "Please check the student loan checkbox if a plan type is selected.";
+  }
+
+  // 🔹 Postgraduate Loan (Optional)
+  const hasPostgradLoan = formData.postGraduateLoanDto.hasPostgraduateLoan;
+  const postgradLoanPlan = formData.postGraduateLoanDto.postgraduateLoanPlanType;
+
+  if (hasPostgradLoan && postgradLoanPlan === "NONE") {
+    newErrors.postgraduateLoanPlanType = "Please select a postgraduate loan plan type.";
+  }
+  if (!hasPostgradLoan && postgradLoanPlan !== "NONE") {
+    newErrors.postgraduateLoanCheckbox = "Please check the postgraduate loan checkbox if a plan type is selected.";
+  }
+
+  // 🔸 Emergency tax code warning
+  if (emergencyTaxCodes.includes(formattedTaxCode) && !formData.isEmergencyCode) {
+    newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
+  }
+
+  // 🔸 Region mismatches
+  if (formattedTaxCode.startsWith("S") && formData.region !== "SCOTLAND") {
+    newWarnings.push("Tax code starts with 'S' Please select region Scotland.");
+  }
+  if (formattedTaxCode.startsWith("C") && formData.region !== "WALES") {
+    newWarnings.push("Tax code starts with 'C' Please select region Wales.");
+  }
+
+  // Set and return
+  setErrors(newErrors);
+  setWarnings(newWarnings);
+
+  return Object.keys(newErrors).length === 0;
+};
 
 const handleInputChange = (field, value) => {
   const keys = field.split(".");
@@ -95,9 +250,41 @@ const handleInputChange = (field, value) => {
   }
 };
 
+const handleNext = () => {
+  const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+
+  // Validate based on current tab
+  let isFormValid = true;
+
+  if (activeTab === "taxNI") {
+    isValid = validateForm() && validateTaxAndLoanDetails();
+  } else if (activeTab === "autoEnrolment") {
+    isValid = validateForm();
+  } else {
+    isValid = true; // Assume no validation for personal/employment/pay
+  }
+
+  if (!isValid) return; // Stop here if validation fails
+
+  // Move to next tab
+  if (currentIndex < tabs.length - 1) {
+    setActiveTab(tabs[currentIndex + 1].id);
+  }
+};
+
+const validateForm = () => {
+  // Simple example: validate each tab in sequence (you can customize this)
+  return validateCurrentTab("pay") && validateTaxAndLoanDetails();
+};
+
  const handleSubmit = async (e) => {
   console.log(formData);
   e.preventDefault();
+
+   const isFormValid = validateForm();
+    const isTaxValid = validateTaxAndLoanDetails();
+    if (!isFormValid || !isTaxValid) return;
+
 
   // Step 1: If not on final tab, move to next tab
   // if (activeTab !== "autoEnrolment") {
@@ -318,7 +505,7 @@ const handleInputChange = (field, value) => {
             type="text"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.employeeDepartment}
-            onChange={(e) => handleInputChange( "employeeDepartment", e.target.value)}
+            onChange={(e) => handleInputChange( "employeeDepartment", e.target.value.toUpperCase())}
           />
         </div>
 
@@ -404,6 +591,7 @@ const handleInputChange = (field, value) => {
           value={formData.payPeriod} 
           onChange={(e) => handleInputChange("payPeriod", e.target.value)}  
         >
+          <option value="">Select</option>
           <option value="WEEKLY">Weekly</option>
           <option value="MONTHLY">Monthly</option>
           <option value="YEARLY">yearly</option>
@@ -701,7 +889,6 @@ const renderTaxNI = () => (
           value={formData.studentLoanDto.studentLoanPlanType}
           onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
         >
-          <option value="">Select</option>
           <option value="NONE">None</option>
           <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
           <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
@@ -755,9 +942,8 @@ const renderTaxNI = () => (
           value={formData.postGraduateLoanDto.postgraduateLoanPlanType}
           onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
         >
-          <option value="">Select</option>
           <option value="NONE">None</option>
-          <option value="POSTGRADUATE_LOAN_PLAN_3">POSTGRADUATE_LOAN_PLAN_3</option>
+          <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
         </select>  
       </div>
       
@@ -982,6 +1168,17 @@ const renderTaxNI = () => (
                           type="button"
                           onClick={() => {
                             const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+                            // ✅ Validate current tab before allowing to proceed
+    const currentTabId = tabs[currentIndex].id;
+
+    const isValid =
+      currentTabId === "taxNI"
+        ? validateTaxAndLoanDetails()
+        : validateCurrentTab(currentTabId);
+
+    if (!isValid) return; // ❌ If validation fails, don't proceed
+
+
                             console.log(activeTab)
                             console.log(currentIndex)
                             
@@ -1007,6 +1204,21 @@ const renderTaxNI = () => (
             </form>
           </div>
         </div>
+         {warnings.length > 0 && (
+  <div className="bg-yellow-100 text-yellow-800 p-2 rounded mb-4">
+    {warnings.map((msg, i) => (
+      <div key={i}>⚠️ {msg}</div>
+    ))}
+  </div>
+)}
+{Object.values(errors).length > 0 && (
+  <div className="bg-red-100 text-red-800 p-2 rounded mb-4">
+    {Object.entries(errors).map(([key, msg], i) => (
+      <div key={i}>❌ {msg}</div>
+    ))}
+  </div>
+)}
+
       </div>
     </div>
   )

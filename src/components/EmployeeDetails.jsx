@@ -4,7 +4,6 @@ import axios from "axios"
 
 const EmployeeDetails = () => {
   const navigate = useNavigate()
-  const company = { payPeriod: "MONTHLY" }
 
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -25,7 +24,7 @@ const EmployeeDetails = () => {
     employmentEndDate: null,
     employmentType: "FULL_TIME",
     employerId: "",
-    payPeriod: company?.payPeriod || "MONTHLY",
+    payPeriod:"MONTHLY",
     annualIncomeOfEmployee: "",
 
     bankDetailsDTO: {
@@ -41,7 +40,7 @@ const EmployeeDetails = () => {
       isRTIReturnsIncluded: false,
     },
 
-    studentLoanDTO: {
+    studentLoanDto: {
     hasStudentLoan: false,
     monthlyDeductionAmountInStudentLoan: "",
     weeklyDeductionAmountInStudentLoan: "",
@@ -50,7 +49,7 @@ const EmployeeDetails = () => {
     studentLoanPlanType: "NONE",
     },
 
-    postGraduateLoanDTO: {
+    postGraduateLoanDto: {
     hasPostgraduateLoan: false,
     monthlyDeductionAmountInPostgraduateLoan: "",
     weeklyDeductionAmountInPostgraduateLoan: "",
@@ -64,11 +63,11 @@ const EmployeeDetails = () => {
     niLetter: "",
     region: "",
     isEmergencyCode: false,
-    autoEnrolmentEligible: true,
-    isDirector: false,
-    pensionScheme: "WORKPLACE_PENSION",
-    employeeContribution: 5,
-    employerContribution: 3,
+    hasPensionEligible: false,
+    // isDirector: false,
+    // pensionScheme: "WORKPLACE_PENSION",
+    // employeeContribution: 5,
+    // employerContribution: 3,
   })
 
   const tabs = [
@@ -76,7 +75,7 @@ const EmployeeDetails = () => {
     { id: "employment", name: "Employment", icon: "briefcase" },
     { id: "pay", name: "Pay", icon: "currency" },
     { id: "taxNI", name: "Tax & NI", icon: "document" },
-    { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
+    // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
 
   useEffect(() => {
@@ -192,35 +191,27 @@ const EmployeeDetails = () => {
   }
 
   const handleInputChange = (field, value) => {
-    if (field.startsWith("bankDetailsDTO.")) {
-      const bankField = field.split(".")[1]
-      setEditData((prev) => ({
-        ...prev,
-        bankDetailsDTO: {
-          ...prev.bankDetailsDTO,
-          [bankField]: value,
-        },
-      }))
-    } else {
-      setEditData((prev) => ({
-        ...prev,
-        [field]: value,
-      }))
-    }
+  const keys = field.split(".");
+  if (keys.length === 2) {
+    const [parentKey, childKey] = keys;
+    setEditData((prev) => ({
+      ...prev,
+      [parentKey]: {
+        ...prev[parentKey],
+        [childKey]: value,
+      },
+    }));
+  } else {
+    setEditData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   }
+};
 
   const handleUpdate = async (e) => {
     console.log(editData)
     e.preventDefault()
-
-    // Step 1: If not on final tab, move to next tab
-    if (activeTab !== "autoEnrolment") {
-      const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
-      if (currentIndex < tabs.length - 1) {
-        setActiveTab(tabs[currentIndex + 1].id)
-      }
-      return
-    }
 
     if (!selectedEmployee || !selectedEmployee.id) {
       console.error("No employee selected for update")
@@ -263,7 +254,7 @@ const EmployeeDetails = () => {
           employmentEndDate: null,
           employmentType: "FULL_TIME",
           employerId: "",
-          payPeriod: company?.payPeriod || "MONTHLY",
+          payPeriod: "",
          annualIncomeOfEmployee: "",
           bankDetailsDTO: {
             accountName: "",
@@ -277,6 +268,14 @@ const EmployeeDetails = () => {
             paymentLeadDays: 0,
             isRTIReturnsIncluded: false,
           },
+          studentLoanDto:{
+  hasStudentLoan:false,
+  studentLoanPlanType:"NONE",
+  },
+  postGraduateLoanDto:{
+  hasPostgraduateLoan:false,
+  postgraduateLoanPlanType:"NONE",
+  },
           taxCode: "1257L",
           nationalInsuranceNumber: "",
           niLetter: "",
@@ -284,11 +283,11 @@ const EmployeeDetails = () => {
           region: "",
           isEmergencyCode: false,
           isPostgraduateLoan: false,
-          autoEnrolmentEligible: true,
-          isDirector: false,
-          pensionScheme: "WORKPLACE_PENSION",
-          employeeContribution: 5,
-          employerContribution: 3,
+          hasPensionEligible: false,
+          // isDirector: false,
+          // pensionScheme: "WORKPLACE_PENSION",
+          // employeeContribution: 5,
+          // employerContribution: 3,
         })
 
         fetchEmployees() // Refresh the employee list
@@ -321,7 +320,7 @@ const EmployeeDetails = () => {
       employmentEndDate: null,
       employmentType: "FULL_TIME",
       employerId: "",
-      payPeriod: company?.payPeriod || "MONTHLY",
+      payPeriod: "",
       annualIncomeOfEmployee: "",
       bankDetailsDTO: {
         accountName: "",
@@ -338,76 +337,26 @@ const EmployeeDetails = () => {
       taxCode: "1257L",
       nationalInsuranceNumber: "",
       niLetter: "",
-      studentLoan: "NONE",
       region: "",
       isEmergencyCode: false,
-      isPostgraduateLoan: false,
-      autoEnrolmentEligible: true,
-      isDirector: false,
-      pensionScheme: "WORKPLACE_PENSION",
-      employeeContribution: 5,
-      employerContribution: 3,
+      studentLoanDto:{
+  hasStudentLoan:false,
+  studentLoanPlanType:"NONE",
+  },
+  postGraduateLoanDto:{
+  hasPostgraduateLoan:false,
+  postgraduateLoanPlanType:"NONE",
+  },
+      hasPensionEligible: false,
+      // isDirector: false,
+      // pensionScheme: "WORKPLACE_PENSION",
+      // employeeContribution: 5,
+      // employerContribution: 3,
     })
   }
 
-  // const getIcon = (iconName) => {
-  //   const icons = {
-  //     user: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-  //         />
-  //       </svg>
-  //     ),
-  //     briefcase: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
-  //         />
-  //       </svg>
-  //     ),
-  //     currency: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-  //         />
-  //       </svg>
-  //     ),
-  //     document: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-  //         />
-  //       </svg>
-  //     ),
-  //     shield: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-  //         />
-  //       </svg>
-  //     ),
-  //   }
-  //   return icons[iconName] || icons.user
-  // }
-
   const renderPersonalDetails = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 space-x-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">First Name</label>
@@ -577,6 +526,16 @@ const EmployeeDetails = () => {
             disabled={isViewing}
           />
         </div>
+         <div>
+          <label className="block text-sm font-medium text-gray-700">Working Company Name</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.workingCompanyName}
+            onChange={(e) => handleInputChange( "workingCompanyName", e.target.value)}
+            disabled={isViewing}
+          />
+        </div>  
       </div>
     </div>
   )
@@ -849,22 +808,6 @@ const EmployeeDetails = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Student Loan</label>
-          <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.studentLoan}
-            onChange={(e) => handleInputChange("studentLoan", e.target.value)}
-            disabled={isViewing}
-          >
-            <option value="NONE">None</option>
-            <option value="PLAN_1">Plan 1</option>
-            <option value="PLAN_2">Plan 2</option>
-           </select>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
           <label className="block text-sm font-medium text-gray-700">Region</label>
           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
@@ -881,117 +824,208 @@ const EmployeeDetails = () => {
         </div>
       </div>
 
-      <div className="flex items-center mt-6">
-        <input
-          type="checkbox"
-          checked={editData.isEmergencyCode}
-          onChange={(e) =>
-            setEditData((prev) => ({
-              ...prev,
-              isEmergencyCode: e.target.checked,
-            }))
-          }
-          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-          disabled={isViewing}
-        />
-        <label className="ml-2 text-sm font-medium text-gray-700">Emergency Tax Code</label>
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-row gap-20">
+ <label className="flex items-center mt-6">
+  <input
+    type="checkbox"
+    checked={editData.isEmergencyCode}
+    onChange={(e) =>
+      setEditData(prev => ({
+        ...prev,
+        isEmergencyCode: e.target.checked,
+      }))
+    }
+    disabled={isViewing}
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+  />
+  <span className="ml-2 text-sm font-medium text-gray-700">
+    Emergency Tax Code
+  </span>
+</label>   
 
-      <div className="flex items-center mt-6">
+<label className="flex items-center mt-6">
+  <input
+    type="checkbox"
+    checked={editData.studentLoanDto.hasStudentLoan}
+       onChange={(e) =>
+        setEditData(prev => ({
+          ...prev,
+          studentLoanDto: {
+            ...prev.studentLoanDto,
+            hasStudentLoan: e.target.checked,
+          },
+        }))
+    }
+    disabled={isViewing}
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+  />
+  <span className="ml-2 text-sm font-medium text-gray-700">
+    Student Loan
+  </span>
+</label>
+</div>
+         <div>
+          <label className="block text-sm font-medium text-gray-700">Student Loan Plan</label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.studentLoanDto.studentLoanPlanType}
+            onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
+            disabled={isViewing}
+          >
+            <option value="NONE">None</option>
+            <option value="PLAN_1">Plan 1</option>
+            <option value="PLAN_2">Plan 2</option>
+           </select>
+        </div>
+      </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+     <div>
+  <label className="block text-sm font-medium text-gray-700">Tax Year</label>
+  <select
+    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+    value={editData.taxYear}
+    onChange={(e) => handleInputChange("taxYear", e.target.value)}
+    disabled={isViewing}
+  >
+    <option value="">Select</option>
+    <option value="2025-2026">2025-2026</option>
+    <option value="2024-2025">2024-2025</option>
+    <option value="2023-2024">2023-2024</option>
+  </select>
+  </div>
+
+  <label className="flex items-center mt-6">
+  <input
+    type="checkbox"
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+    checked={editData.postGraduateLoanDto.hasPostgraduateLoan}
+    onChange={(e) =>
+      setEditData(prev => ({
+          ...prev,
+          postGraduateLoanDto: {
+            ...prev.postGraduateLoanDto,
+            hasPostgraduateLoan: e.target.checked,
+          },
+        }))
+    }
+    disabled={isViewing}
+  />
+  
+  <span className="ml-2 text-sm font-medium text-gray-700">
+    Postgraduate Loan
+  </span>  
+  </label>
+</div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <div>
+        <label className="block text-sm font-medium text-gray-700">Postgraduate Loan Plan</label>
+        <select
+          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+          value={editData.postGraduateLoanDto.postgraduateLoanPlanType}
+          onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
+          disabled={isViewing}
+        >
+          <option value="">Select</option>
+          <option value="NONE">None</option>
+          <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan plan 3</option>
+        </select>  
+      </div>
+       <label className="flex items-center">
         <input
           type="checkbox"
-          checked={editData.isPostgraduateLoan}
+          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          checked={editData.hasPensionEligible}
           onChange={(e) =>
-            setEditData((prev) => ({
-              ...prev,
-              isPostgraduateLoan: e.target.checked,
-            }))
+            handleInputChange("hasPensionEligible", e.target.checked)
           }
-          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
           disabled={isViewing}
         />
-        <label className="ml-2 text-sm font-medium text-gray-700">Postgraduate Loan</label>
-      </div>
+        <span className="ml-2 text-sm text-gray-700 font-medium">
+          Eligible for Auto Enrolment
+        </span>
+      </label>
+</div>
     </div>
   )
 
-  const renderAutoEnrolment = () => (
-    <div className="space-y-6">
-      <div>
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            checked={editData.autoEnrolmentEligible}
-            onChange={(e) => handleInputChange("autoEnrolmentEligible", e.target.checked)}
-            disabled={false}
-          />
-          <span className="ml-2 text-sm text-gray-700">Eligible for Auto Enrolment</span>
-        </label>
-      </div>
+  // const renderAutoEnrolment = () => (
+  //   <div className="space-y-6">
+  //     <div>
+  //       <label className="flex items-center">
+  //         <input
+  //           type="checkbox"
+  //           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+  //           checked={editData.autoEnrolmentEligible}
+  //           onChange={(e) => handleInputChange("autoEnrolmentEligible", e.target.checked)}
+  //           disabled={false}
+  //         />
+  //         <span className="ml-2 text-sm text-gray-700">Eligible for Auto Enrolment</span>
+  //       </label>
+  //     </div>
 
-      {editData.autoEnrolmentEligible && (
-        <>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Pension Scheme</label>
-            <select
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={editData.pensionScheme}
-              onChange={(e) => handleInputChange("pensionScheme", e.target.value)}
-              disabled={isViewing}
-            >
-              <option value="">-- Select --</option>
-              <option value="WORKPLACE_PENSION">Workplace Pension</option>
-              <option value="NEST">NEST</option>
-              <option value="STAKEHOLDER">Stakeholder Pension</option>
-            </select>
+  //     {editData.autoEnrolmentEligible && (
+  //       <>
+  //         <div>
+  //           <label className="block text-sm font-medium text-gray-700">Pension Scheme</label>
+  //           <select
+  //             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+  //             value={editData.pensionScheme}
+  //             onChange={(e) => handleInputChange("pensionScheme", e.target.value)}
+  //             disabled={isViewing}
+  //           >
+  //             <option value="">-- Select --</option>
+  //             <option value="WORKPLACE_PENSION">Workplace Pension</option>
+  //             <option value="NEST">NEST</option>
+  //             <option value="STAKEHOLDER">Stakeholder Pension</option>
+  //           </select>
 
-            <div className="mt-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  checked={editData.isDirector}
-                  onChange={(e) => handleInputChange("isDirector", e.target.checked)}
-                  disabled={isViewing}
-                />
-                <span className="ml-2 text-sm text-gray-700">Is Director</span>
-              </label>
-            </div>
-          </div>
+  //           <div className="mt-4">
+  //             <label className="flex items-center">
+  //               <input
+  //                 type="checkbox"
+  //                 className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+  //                 checked={editData.isDirector}
+  //                 onChange={(e) => handleInputChange("isDirector", e.target.checked)}
+  //                 disabled={isViewing}
+  //               />
+  //               <span className="ml-2 text-sm text-gray-700">Is Director</span>
+  //             </label>
+  //           </div>
+  //         </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Employee Contribution (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={editData.employeeContribution}
-                onChange={(e) => handleInputChange("employeeContribution", Number.parseFloat(e.target.value) || 0)}
-                disabled={isViewing}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Employer Contribution (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={editData.employerContribution}
-                onChange={(e) => handleInputChange("employerContribution", Number.parseFloat(e.target.value) || 0)}
-                disabled={isViewing}
-              />
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  )
+  //         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  //           <div>
+  //             <label className="block text-sm font-medium text-gray-700">Employee Contribution (%)</label>
+  //             <input
+  //               type="number"
+  //               min="0"
+  //               max="100"
+  //               step="0.1"
+  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+  //               value={editData.employeeContribution}
+  //               onChange={(e) => handleInputChange("employeeContribution", Number.parseFloat(e.target.value) || 0)}
+  //               disabled={isViewing}
+  //             />
+  //           </div>
+  //           <div>
+  //             <label className="block text-sm font-medium text-gray-700">Employer Contribution (%)</label>
+  //             <input
+  //               type="number"
+  //               min="0"
+  //               max="100"
+  //               step="0.1"
+  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+  //               value={editData.employerContribution}
+  //               onChange={(e) => handleInputChange("employerContribution", Number.parseFloat(e.target.value) || 0)}
+  //               disabled={isViewing}
+  //             />
+  //           </div>
+  //         </div>
+  //       </>
+  //     )}
+  //   </div>
+  // )
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -1113,7 +1147,7 @@ const EmployeeDetails = () => {
                             </button>
                           )}
 
-                          {activeTab === "autoEnrolment" && (
+                          {activeTab === "taxNI" && (
                             <button
                               type="submit"
                               className="bg-green-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
@@ -1169,8 +1203,8 @@ const EmployeeDetails = () => {
               <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p>
             </div>
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-x-auto">
+              <ul className="divide-y divide-gray-200 ">
                 {employees.map((employee) => (
                   <li key={employee.employeeId}>
                     <div className="px-4 py-4 sm:px-6">
@@ -1226,10 +1260,10 @@ const EmployeeDetails = () => {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-end space-x-2">
                           <button
                             onClick={() => handleView(employee.employeeId)}
-                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            className="inline-flex items-center px-3 py-2 ml-10 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                           >
                             View
                           </button>
