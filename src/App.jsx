@@ -17,13 +17,17 @@ import AccessToken from "./components/AccessToken";
 
 
 function App() {
-  const [user, setUser] = useState(null);
- 
+ const [user, setUser] = useState(() => {
+  const savedUser = localStorage.getItem("user");
+  return savedUser ? JSON.parse(savedUser) : null;
+});
 const [employees, setEmployees] = useState([]);
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
+const handleLogin = (userData) => {
+  localStorage.setItem("user", JSON.stringify(userData));
+  setUser(userData);
+};
+
 
   return (
    

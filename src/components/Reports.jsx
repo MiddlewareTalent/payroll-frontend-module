@@ -10,12 +10,12 @@ const Reports = ({ payslips = [] }) => {
   const location = useLocation();
   const [selectedReport, setSelectedReport] = useState("summary")
   const [employee, setEmployee] = useState(null);
-  const [latestPaySlip, setLatestPaySlip]=useState(null);
-  const [employees, setEmployees] = useState([]);
-  const [paySlip,setPayslip] = useState([]);
+  // const [latestPaySlip, setLatestPaySlip]=useState(null);
+  // const [paySlip,setPayslip] = useState([]);
   const [payeData, setPayeData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [employers,  setAllEmployers] = useState([]);
+  const [allEmployees, setAllEmployees] = useState([]);
 
 
   const reports = [
@@ -38,36 +38,24 @@ const Reports = ({ payslips = [] }) => {
     }
   }, [location.state]);
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/api/employee-details/allEmployees`);
-        console.log("Data fetched:", response.data);
-        setEmployees(response.data);
-      } catch (error) {
-        console.error("Failed to fetch employees:", error);
-      }
-  }
-  fetchEmployees();
-  },[]);
 
-   useEffect(() => {
-    if(employee!==null){
-      const fetchPayslip = async () => {
-      try {
-        const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
-        setPayslip(()=>response.data);
-        setLatestPaySlip(()=>response.data[response.data.length-1])
-        console.log("latest",latestPaySlip);
-        console.log(response.data);
-      } catch (error) {
-        console.error("Error fetching payslip:", error);
-        setPayslip(null);
-      } 
-    };
-    fetchPayslip();
-    } 
-  }, [employee]);
+  //  useEffect(() => {
+  //   if(employee!==null){
+  //     const fetchPayslip = async () => {
+  //     try {
+  //       const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
+  //       setPayslip(()=>response.data);
+  //       setLatestPaySlip(()=>response.data[response.data.length-1])
+  //       console.log("latest",latestPaySlip);
+  //       console.log(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching payslip:", error);
+  //       setPayslip(null);
+  //     } 
+  //   };
+  //   fetchPayslip();
+  //   } 
+  // }, [employee]);
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/v1/employer/allEmployers')
@@ -75,11 +63,12 @@ const Reports = ({ payslips = [] }) => {
         if (response.data && response.data.length > 0) {
           const otherDetails = response.data[0].otherEmployerDetailsDto;
           setPayeData({
-            totalPAYEYTD: otherDetails.totalPAYEYTD,
-            totalEmployeesNIYTD: otherDetails.totalEmployeesNIYTD,
-            totalEmployersNIYTD: otherDetails.totalEmployersNIYTD
+            PayPeriodPAYE: otherDetails.currentPayPeriodPAYE,
+            EmployeesNIPP: otherDetails.currentPayPeriodEmployeesNI,
+            EmployersNIPP: otherDetails.currentPayPeriodEmployersNI
           });
         }
+        console.log("allEmployers api",response.data);
         setLoading(false);
       })
       .catch(error => {
@@ -101,6 +90,18 @@ const Reports = ({ payslips = [] }) => {
     fetchEmployees();
   }, []);
 
+   useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/payslip/all/employee-data");
+        console.log("employees payslips count:", response.data); 
+        setAllEmployees(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployees();
+  }, []);
 
 useEffect(() => {
   const queryParams = new URLSearchParams(location.search);
@@ -191,7 +192,7 @@ useEffect(() => {
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Gross Pay</dt>
                  
-                    {employers!==null && <dd className="text-lg font-medium text-gray-900"> £ {employers[0]?.otherEmployerDetailsDto?.totalPaidAmountYTD.toFixed(2)}</dd>}
+                    {employers!==null && <dd className="text-lg font-medium text-gray-900"> £ {employers[0]?.otherEmployerDetailsDto?.currentPayPeriodPaidGrossPay.toFixed(2)}</dd>}
                     
                 </dl>
               </div>
@@ -202,7 +203,7 @@ useEffect(() => {
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-red-500 rounded-md flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"> 
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -215,7 +216,7 @@ useEffect(() => {
               <div className="ml-5 w-0 flex-1">
                 <dl>
                   <dt className="text-sm font-medium text-gray-500 truncate">Total Income Tax</dt>
-                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalPAYEYTD.toFixed(2)}</dd>}
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.PayPeriodPAYE.toFixed(2)}</dd>}
                 </dl>
               </div>
             </div>
@@ -237,8 +238,8 @@ useEffect(() => {
               </div>
               <div className="ml-4 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total NI(Employee)</dt>
-                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalEmployeesNIYTD}</dd>}
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Employee NI</dt>
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.EmployeesNIPP.toFixed(2)}</dd>}
                 </dl>
               </div>
             </div>
@@ -260,8 +261,8 @@ useEffect(() => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total NI(Employer)</dt>
-                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.totalEmployersNIYTD.toFixed(2)}</dd>}
+                  <dt className="text-sm font-medium text-gray-500 truncate">Total Employer NI</dt>
+                  {payeData!==null && <dd className="text-lg font-medium text-gray-900">£{payeData.EmployersNIPP.toFixed(2)}</dd>}
                 </dl>
               </div>
             </div>
@@ -279,9 +280,9 @@ useEffect(() => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Employee
                     </th>
-                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payslips
-                    </th> */}
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Gross Pay
                     </th>
@@ -297,43 +298,27 @@ useEffect(() => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {employees.map((employee) => {
-                    const empPayslips = payslips.filter(
-                      (slip) => slip.employeeId === employee.employeeId,
-                    )
-                    const empTotals = empPayslips.reduce(
-                      (acc, slip) => {
-                        acc.gross += Number.parseFloat(slip.annualIncomeOfEmployee || 0)
-                        acc.tax += Number.parseFloat(slip.incomeTaxTotal || 0)
-                        acc.ni += Number.parseFloat(slip.nationalInsurance || 0)
-                        acc.net += Number.parseFloat(slip.takeHomePayTotal || 0)
-                        return acc
-                      },
-                      { gross: 0, tax: 0, ni: 0, net: 0 },
-                    )
+  {allEmployees.map((employee) => (
+    <tr key={employee.employeeId}>
+      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+        {employee.fullName}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {employee.countOfPaySlips}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        £{employee.totalGrossPay.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        £{employee.totalIncomeTax.toFixed(2)}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        £{employee.totalEmployeeNIC.toFixed(2)}
+      </td>
+    </tr>
+  ))}
+</tbody>
 
-                    return (
-                      <tr key={employee.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {employee.firstName} {employee.lastName}
-                        </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{paySlip.length}</td> */}
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          £{employee?.otherEmployeeDetailsDTO?.totalEarningsAmountYTD|| 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                         £{employee?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                         £{employee?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}
-                        </td>
-                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          £{empTotals.net.toFixed(2)}
-                        </td> */}
-                      </tr>
-                    )
-                  })}
-                </tbody>
               </table>
             </div>
           </div>
@@ -342,72 +327,57 @@ useEffect(() => {
     )
   }
 
-    const renderP60Report = () => (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">P60 Forms</h3>
-        <p className="text-sm text-gray-600 mb-6">
-          P60 forms show the total pay and tax deducted for each employee for the tax year.
-        </p>
+  const renderP60Report = () => (
+  <div className="bg-white shadow rounded-lg">
+    <div className="px-4 py-5 sm:p-6">
+      <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">P60 Forms</h3>
+      <p className="text-sm text-gray-600 mb-6">
+        P60 forms show the total pay and tax deducted for each employee for the tax year.
+      </p>
 
-        {employees.length === 0 ? (
-          <p className="text-sm text-gray-500">No employees to generate P60 forms for.</p>
-        ) : (
-          <div className="space-y-4">
-            {employees.map((employee) => {
-              const empPayslips = payslips.filter((slip) => slip.employeeId === employee.employeeId)
-              const yearTotals = empPayslips.reduce(
-                (acc, slip) => {
-                  acc.gross += Number.parseFloat(slip.grossPayTotal || 0)
-                  acc.tax += Number.parseFloat(slip.incomeTaxTotal || 0)
-                  acc.ni += Number.parseFloat(slip.nationalInsurance || 0)
-                  return acc
-                },
-                { gross: 0, tax: 0, ni: 0 },
-              )
-
-              return (
-    //             <P60Form
-    //   key={employee.employeeId}
-    //   employee={employee}
-    //   employer={employers[0]}
-    //   totals={yearTotals}
-    // />
-                <div key={employee.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium text-gray-900">
-                        {employee.firstName} {employee.lastName}
-                      </h4>
-                      <p className="text-sm text-gray-500">Employee ID: {employee.employeeId}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">Tax Year: {employers[0].taxYear}</p>
-                      <button  onClick={()=>handleGenerateP60(employee.employeeId)} className="text-sm text-indigo-600 hover:text-indigo-500">Generate P60</button>
-                    </div>
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500">Total Gross: </span>
-                      <span className="font-medium">£{employee?.otherEmployeeDetailsDTO?.totalEarningsAmountYTD|| 0}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Total Tax: </span>
-                      <span className="font-medium">£ {employee?.otherEmployeeDetailsDTO?.totalIncomeTaxPaidInCompany|| 0}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Total NI: </span>
-                      <span className="font-medium">£{employee?.otherEmployeeDetailsDTO?.totalEmployeeNIContributionInCompany || 0}</span>
-                    </div>
-                  </div>
+      {allEmployees.length === 0 ? (
+        <p className="text-sm text-gray-500">No employees to generate P60 forms for.</p>
+      ) : (
+        <div className="space-y-4">
+          {allEmployees.map((employee) => (
+            <div key={employee.employeeId} className="border border-gray-200 rounded-lg p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="font-medium text-gray-900">{employee.fullName}</h4>
+                  <p className="text-sm text-gray-500">Employee ID: {employee.employeeId}</p>
                 </div>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                <div className="text-right">
+                  <p className="text-sm text-gray-500">Tax Year: {employee?.taxYear}</p>
+                  <button
+                    onClick={() => handleGenerateP60(employee.employeeId)}
+                    className="text-sm text-indigo-600 hover:text-indigo-500"
+                  >
+                    Generate P60
+                  </button>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Total Gross: </span>
+                  <span className="font-medium">£{employee.totalGrossPay.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Total Tax: </span>
+                  <span className="font-medium">£{employee.totalIncomeTax.toFixed(2)}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Total NI: </span>
+                  <span className="font-medium">£{employee.totalEmployeeNIC.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  )
+  </div>
+)
+
 
    const renderRTIReport = () => (
     <div className="bg-white shadow rounded-lg">

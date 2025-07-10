@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import Select from "react-select/base"
 
 const EmployeeDetails = () => {
   const navigate = useNavigate()
@@ -10,6 +11,8 @@ const EmployeeDetails = () => {
   const [isViewing, setIsViewing] = useState(false)
   const [employees, setEmployees] = useState([])
   const [activeTab, setActiveTab] = useState("personal")
+  const [p45Form, setP45Form]= useState(null);
+  const [starterChecklist, setStarterChecklist]= useState(null);
   const [editData, setEditData] = useState({
     firstName: "",
     lastName: "",
@@ -26,6 +29,11 @@ const EmployeeDetails = () => {
     employerId: "",
     payPeriod:"MONTHLY",
     annualIncomeOfEmployee: "",
+    p45Document: "",
+    hasP45DocumentSubmitted: false,
+    starterChecklistDocument: "",
+    hasStarterChecklistDocumentSubmitted: false,
+
 
     bankDetailsDTO: {
       accountName: "",
@@ -76,6 +84,48 @@ const EmployeeDetails = () => {
     { id: "pay", name: "Pay", icon: "currency" },
     { id: "taxNI", name: "Tax & NI", icon: "document" },
     // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
+  ]
+
+  const departmentOptions = [
+  { value: 'HR', label: 'HR' },
+  { value: 'IT', label: 'IT' },
+  { value: 'SALES', label: 'SALES' },
+  { value: 'MARKETING', label: 'MARKETING' },
+  { value: 'FINANCE', label: 'FINANCE' },
+  { value: 'OPERATIONS', label: 'OPERATIONS' },
+  { value: 'LEGAL', label: 'LEGAL' },
+  { value: 'ADMINISTRATION', label: 'ADMINISTRATION' },
+  { value: 'RESEARCH_AND_DEVELOPMENT', label: 'RESEARCH AND DEVELOPMENT' },
+  { value: 'CUSTOMER_SERVICE', label: 'CUSTOMER SERVICE' },
+  { value: 'PROCUREMENT', label: 'PROCUREMENT' },
+  { value: 'LOGISTICS', label: 'LOGISTICS' },
+  { value: 'ENGINEERING', label: 'ENGINEERING' },
+  { value: 'MANUFACTURING', label: 'MANUFACTURING' },
+  { value: 'QUALITY_ASSURANCE', label: 'QUALITY ASSURANCE' },
+  { value: 'BUSINESS_ANALYSIS', label: 'BUSINESS ANALYSIS' },
+  { value: 'PROJECT_MANAGEMENT', label: 'PROJECT MANAGEMENT' },
+  { value: 'DATA_ANALYSIS', label: 'DATA ANALYSIS' },
+  { value: 'DEVELOPMENT', label: 'DEVELOPMENT' },
+];
+
+ const NICategoryLetters = [
+    {value:'A', label:'A'},
+    {value:'M', label:'M'},
+    {value:'C', label:'C'},
+    {value:'X', label:'X'},
+    {value:'B', label:'B'},
+    {value:'D', label:'D'},
+    {value:'E', label:'E'},
+    {value:'F', label:'F'},
+    {value:'H', label:'H'},
+    {value:'I', label:'I'},
+    {value:'J', label:'J'},
+    {value:'K', label:'K'},
+    {value:'L', label:'L'},
+    {value:'N', label:'N'},
+    {value:'S', label:'S'},
+    {value:'V', label:'V'},
+    {value:'Z', label:'Z'}
   ]
 
   useEffect(() => {
@@ -209,96 +259,128 @@ const EmployeeDetails = () => {
   }
 };
 
-  const handleUpdate = async (e) => {
-    console.log(editData)
-    e.preventDefault()
+const handleUpdate = async (e) => {
+  e.preventDefault();
 
-    if (!selectedEmployee || !selectedEmployee.id) {
-      console.error("No employee selected for update")
-      alert("No employee selected for update")
-      return
-    }
-
-    console.log("Updating employee data:", editData)
-
-    // Step 2: On final tab — submit the form with API call
-    try {
-      console.log("Sending data:", editData)
-      const response = await axios.put(
-        `http://localhost:8080/api/employee-details/update/${selectedEmployee.id}`,
-        editData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
-
-      if (response.status === 200) {
-        alert("Employee details updated successfully!")
-
-        // Reset states and refresh data
-        setIsEditing(false)
-        setSelectedEmployee(null)
-        setEditData({
-          firstName: "",
-          lastName: "",
-          email: "",
-          dateOfBirth: "",
-          employeeId: "",
-          address: "",
-          gender: "",
-          postCode: "",
-          employeeDepartment: "",
-          employmentStartedDate: "",
-          employmentEndDate: null,
-          employmentType: "FULL_TIME",
-          employerId: "",
-          payPeriod: "",
-         annualIncomeOfEmployee: "",
-          bankDetailsDTO: {
-            accountName: "",
-            accountNumber: "",
-            paymentReference: "",
-            bankName: "",
-            sortCode: "",
-            bankAddress: "",
-            bankPostCode: "",
-            telephone: "",
-            paymentLeadDays: 0,
-            isRTIReturnsIncluded: false,
-          },
-          studentLoanDto:{
-  hasStudentLoan:false,
-  studentLoanPlanType:"NONE",
-  },
-  postGraduateLoanDto:{
-  hasPostgraduateLoan:false,
-  postgraduateLoanPlanType:"NONE",
-  },
-          taxCode: "1257L",
-          nationalInsuranceNumber: "",
-          niLetter: "",
-          studentLoan: "NONE",
-          region: "",
-          isEmergencyCode: false,
-          isPostgraduateLoan: false,
-          hasPensionEligible: false,
-          // isDirector: false,
-          // pensionScheme: "WORKPLACE_PENSION",
-          // employeeContribution: 5,
-          // employerContribution: 3,
-        })
-
-        fetchEmployees() // Refresh the employee list
-      } else {
-        alert("Failed to update employee. Please try again.")
-      }
-    } catch (error) {
-      console.error("Error updating employee:", error)
-      alert("There was an error updating the employee.")
-    }
+  if (!selectedEmployee || !selectedEmployee.id) {
+    console.error("No employee selected for update");
+    alert("No employee selected for update");
+    return;
   }
+
+  try {
+    let updatedData = { ...editData }; // Create a temp copy
+
+    // Step 1: Upload files if they exist
+    if (p45Form || starterChecklist) {
+      const formDataUpload = new FormData();
+
+      if (p45Form) formDataUpload.append("p45Document", p45Form);
+      if (starterChecklist) formDataUpload.append("starterChecklist", starterChecklist);
+
+      try {
+        const fileData = await axios.post(
+          "http://localhost:8080/api/employee-details/upload-documents",
+          formDataUpload,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        console.log("Uploaded files:", fileData.data);
+
+        // Update the local temp object
+        updatedData = {
+          ...updatedData,
+          hasP45DocumentSubmitted: !!fileData.data["P45"],
+          p45Document: fileData.data["P45"] || updatedData.p45Document,
+          starterChecklistDocument: fileData.data["Checklist"] || updatedData.starterChecklistDocument,
+        };
+      } catch (uploadErr) {
+        console.error("Error uploading documents:", uploadErr);
+        alert("File upload failed. Please try again.");
+        return;
+      }
+    }
+
+    console.log("Final data to update:", updatedData);
+
+    // Step 2: Send PUT request with updatedData
+    const response = await axios.put(
+      `http://localhost:8080/api/employee-details/update/${selectedEmployee.id}`,
+      updatedData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.status === 200) {
+      alert("Employee details updated successfully!");
+
+      // Reset states and refresh
+      setIsEditing(false);
+      setSelectedEmployee(null);
+      setEditData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        dateOfBirth: "",
+        employeeId: "",
+        address: "",
+        gender: "",
+        postCode: "",
+        employeeDepartment: "",
+        employmentStartedDate: "",
+        employmentEndDate: null,
+        employmentType: "FULL_TIME",
+        employerId: "",
+        payPeriod: "",
+        annualIncomeOfEmployee: "",
+        p45Document: "",
+        hasP45DocumentSubmitted: false,
+        starterChecklistDocument: "",
+        hasStarterChecklistDocumentSubmitted: false,
+        bankDetailsDTO: {
+          accountName: "",
+          accountNumber: "",
+          paymentReference: "",
+          bankName: "",
+          sortCode: "",
+          bankAddress: "",
+          bankPostCode: "",
+          telephone: "",
+          paymentLeadDays: 0,
+          isRTIReturnsIncluded: false,
+        },
+        studentLoanDto: {
+          hasStudentLoan: false,
+          studentLoanPlanType: "NONE",
+        },
+        postGraduateLoanDto: {
+          hasPostgraduateLoan: false,
+          postgraduateLoanPlanType: "NONE",
+        },
+        taxCode: "1257L",
+        nationalInsuranceNumber: "",
+        niLetter: "",
+        studentLoan: "NONE",
+        region: "",
+        isEmergencyCode: false,
+        isPostgraduateLoan: false,
+        hasPensionEligible: false,
+      });
+
+      fetchEmployees(); // Refresh employee list
+    } else {
+      alert("Failed to update employee. Please try again.");
+    }
+  } catch (error) {
+    console.error("Error updating employee:", error);
+    alert("There was an error updating the employee.");
+  }
+};
 
   const handleCancel = () => {
     setIsEditing(false)
@@ -322,6 +404,11 @@ const EmployeeDetails = () => {
       employerId: "",
       payPeriod: "",
       annualIncomeOfEmployee: "",
+      p45Document: "",
+    hasP45DocumentSubmitted: false,
+    starterChecklistDocument: "",
+    hasStarterChecklistDocumentSubmitted: false,
+
       bankDetailsDTO: {
         accountName: "",
         accountNumber: "",
@@ -467,13 +554,21 @@ const EmployeeDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Employee Department</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.employeeDepartment}
-            onChange={(e) => handleInputChange("employeeDepartment", e.target.value)}
-            disabled={isViewing}
-          />
+          <Select
+  options={departmentOptions}
+  value={departmentOptions.find((option) => option.value === editData.employeeDepartment)}
+  onChange={(selectedOption) => handleInputChange('employeeDepartment', selectedOption?.value || '')}
+  
+  className="mt-1 text-sm"
+  styles={{
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '120px', // Show around 4 items, then scroll
+    }),
+  }}
+  placeholder="Select department..."
+  isSearchable
+/>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Employer ID</label>
@@ -795,17 +890,21 @@ const EmployeeDetails = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
-          <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.niLetter}
-            onChange={(e) => handleInputChange("niLetter", e.target.value)}
-            disabled={isViewing}
-          >
-            <option value="A">Category A</option>
-            <option value="M">Category M</option>
-            <option value="C">Category C</option>
-            <option value="X">Category X</option>
-          </select>
+          <Select
+  options={NICategoryLetters}
+  value={NICategoryLetters.find((option) => option.value === editData.niLetter)}
+  onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
+  disabled={isViewing}
+  className="mt-1 text-sm"
+  styles={{
+    menuList: (base) => ({
+      ...base,
+      maxHeight: '120px', // Show around 4 items, then scroll
+    }),
+  }}
+  placeholder="Select NI Category Letter..."
+  isSearchable
+/>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Region</label>
@@ -944,7 +1043,100 @@ const EmployeeDetails = () => {
         <span className="ml-2 text-sm text-gray-700 font-medium">
           Eligible for Auto Enrolment
         </span>
-      </label>
+</label>
+      {/* <div className="w-50 text-sm">
+      <label className=" text-gray-700 font-medium">Upload P45 Document </label>
+      <input type="file" 
+      disabled={isViewing}
+      onChange={(e) => setP45Form(e.target.files[0])} /> */}
+      {/* <input type="file" onClick={handleP45} className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
+      value={editData.p45Document}
+      disabled={isViewing}
+      onChange={(e)=>
+        handleInputChange("p45Document", e.target.value)
+      }
+      /> */}
+      {/* <input
+  type="file"
+  className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
+  name="p45Document"
+  accept=".pdf,.jpg,.jpeg,.png"
+  disabled={isViewing}
+  onClick={handleP45}
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditData((prev) => ({
+        ...prev,
+        p45Document: file,
+      }));
+    }
+  }}
+/> */}
+
+      {/* </div> */}
+      {/* <div className="w-50 text-sm">
+      <label className="text-gray-700 font-medium">Upload Starter Checklist</label> */}
+      {/* <input type="file" 
+      disabled={isViewing}
+      onChange={(e) => setStarterChecklist(e.target.files[0])} 
+      /> */}
+      {/* <input onClick={handleChecklist} type="file" className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
+      value={editData.starterChecklistDocument}
+      disabled={isViewing}
+      onChange={(e)=>
+        handleInputChange("starterChecklistDocument",e.target.value)
+      }
+      /> */}
+      {/* <input
+  type="file"
+  className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
+  name="starterChecklistDocument"
+  accept=".pdf,.jpg,.jpeg,.png"
+  disabled={isViewing}
+  onClick={handleChecklist}
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditData((prev) => ({
+        ...prev,
+        starterChecklistDocument: file,
+      }));
+    }
+  }}
+/> */}
+
+      {/* </div> */}
+
+      <div className="w-50 text-sm">
+  <label className="text-gray-700 font-medium">Upload P45 Document</label>
+  <input
+    type="file"
+    disabled={isViewing}
+    onChange={(e) => setP45Form(e.target.files[0])}
+  />
+  {editData.p45Document && (
+    <p className="text-gray-500 text-xs mt-1">
+       Previously uploaded: <strong>{editData.p45Document.split("/").pop()}</strong>
+    </p>
+  )}
+</div>
+
+<div className="w-50 text-sm">
+  <label className="text-gray-700 font-medium">Upload Starter Checklist</label>
+  <input
+    type="file"
+    disabled={isViewing}
+    onChange={(e) => setStarterChecklist(e.target.files[0])}
+  />
+  {editData.starterChecklistDocument && (
+    <p className="text-gray-500 text-xs mt-1">
+       Previously uploaded: <strong>{editData.starterChecklistDocument.split("/").pop()}</strong>
+    </p>
+  )}
+</div>
+
+      
 </div>
     </div>
   )

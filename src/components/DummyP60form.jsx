@@ -513,7 +513,7 @@ const DummyP60form = () => {
               type="text"
               value={employer.taxYear}
               onChange={(e) => handleInputChange("taxYear", e.target.value)}
-              style={{padding:"2px", maxWidth: "100px", marginLeft:"20px", backgroundColor: "white", color: "black",  borderRadius: "4px"}}
+              style={{padding:"2px", maxWidth: "100px", marginLeft:"20px",  backgroundColor: "white", color: "black",  borderRadius: "4px"}}
               // placeholder="e.g., 2025"
             />
             </label>
@@ -727,6 +727,7 @@ const DummyP60form = () => {
           padding: "5px",
           fontSize: "12px",
           textAlign:"center",
+          fontWeight: "bold"
         }}
       />
     </td>
@@ -737,7 +738,7 @@ const DummyP60form = () => {
         type="text"
         value={row.earningsLEL}
         onChange={(e) => handleNICChange(i, "earningsLEL", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "14px", fontWeight: "bold" }}
       />
     </td>
 
@@ -747,7 +748,7 @@ const DummyP60form = () => {
         type="text"
         value={row.earningsPT}
         onChange={(e) => handleNICChange(i, "earningsPT", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold" }}
       />
     </td>
 
@@ -757,7 +758,7 @@ const DummyP60form = () => {
         type="text"
         value={row.earningsUEL}
         onChange={(e) => handleNICChange(i, "earningsUEL", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold" }}
       />
     </td>
 
@@ -772,6 +773,7 @@ const DummyP60form = () => {
       padding: "5px",
       fontSize: "12px",
       textAlign:"center",
+      fontWeight: "bold"
     }}
   />
 </td>
