@@ -308,7 +308,7 @@ const EmployerDashboard = () => {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Employee NI</dt>
-                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900">{employer.totalEmployeeNI.toFixed(2)}</dd>)}
+                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900"> £ {employer.totalEmployeeNI.toFixed(2)}</dd>)}
                     </dl>
                   </div>
                 </div>
@@ -331,7 +331,7 @@ const EmployerDashboard = () => {
                   <div className="ml-5 w-0 flex-1">
                     <dl>
                       <dt className="text-sm font-medium text-gray-500 truncate">Total Employer NI</dt>
-                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900">{employer.totalEmployerNI.toFixed(2)}</dd>)}
+                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900"> £ {employer.totalEmployerNI.toFixed(2)}</dd>)}
                     </dl>
                   </div>
                 </div>

@@ -33,6 +33,12 @@ const EmployeeDetails = () => {
     hasP45DocumentSubmitted: false,
     starterChecklistDocument: "",
     hasStarterChecklistDocumentSubmitted: false,
+    taxCode: "1257L",
+    nationalInsuranceNumber: "",
+    niLetter: "",
+    region: "",
+    hasEmergencyCode: false,
+    hasPensionEligible: false,
 
 
     bankDetailsDTO: {
@@ -65,13 +71,6 @@ const EmployeeDetails = () => {
     totalDeductionAmountInPostgraduateLoan: "",
     postgraduateLoanPlanType: "NONE" 
   },
-
-    taxCode: "1257L",
-    nationalInsuranceNumber: "",
-    niLetter: "",
-    region: "",
-    isEmergencyCode: false,
-    hasPensionEligible: false,
     // isDirector: false,
     // pensionScheme: "WORKPLACE_PENSION",
     // employeeContribution: 5,
@@ -135,7 +134,7 @@ const EmployeeDetails = () => {
   const fetchEmployees = async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees")
-      console.log("Data fetched:", response.data)
+      console.log("all employees API fetched:", response.data)
       setEmployees(response.data)
     } catch (error) {
       console.error("Failed to fetch employees:", error)
@@ -240,23 +239,44 @@ const EmployeeDetails = () => {
     }
   }
 
-  const handleInputChange = (field, value) => {
-  const keys = field.split(".");
-  if (keys.length === 2) {
-    const [parentKey, childKey] = keys;
-    setEditData((prev) => ({
-      ...prev,
-      [parentKey]: {
-        ...prev[parentKey],
-        [childKey]: value,
-      },
-    }));
-  } else {
-    setEditData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  }
+//   const handleInputChange = (field, value) => {
+//   const keys = field.split(".");
+//   if (keys.length === 2) {
+//     const [parentKey, childKey] = keys;
+//     setEditData((prev) => ({
+//       ...prev,
+//       [parentKey]: {
+//         ...prev[parentKey],
+//         [childKey]: value,
+//       },
+//     }));
+//   } else {
+//     setEditData((prev) => ({
+//       ...prev,
+//       [field]: value,
+//     }));
+//   }
+// };
+
+const handleInputChange = (fieldPath, value) => {
+  setEditData((prev) => {
+    const keys = fieldPath.split(".");
+    if (keys.length === 1) {
+      return {
+        ...prev,
+        [fieldPath]: value,
+      };
+    } else {
+      const [firstKey, ...restKeys] = keys;
+      return {
+        ...prev,
+        [firstKey]: {
+          ...prev[firstKey],
+          [restKeys.join(".")]: value,
+        },
+      };
+    }
+  });
 };
 
 const handleUpdate = async (e) => {
@@ -294,6 +314,7 @@ const handleUpdate = async (e) => {
           ...updatedData,
           hasP45DocumentSubmitted: !!fileData.data["P45"],
           p45Document: fileData.data["P45"] || updatedData.p45Document,
+          hasStarterChecklistDocumentSubmitted: !!fileData.data["Checklist"],
           starterChecklistDocument: fileData.data["Checklist"] || updatedData.starterChecklistDocument,
         };
       } catch (uploadErr) {
@@ -367,8 +388,7 @@ const handleUpdate = async (e) => {
         niLetter: "",
         studentLoan: "NONE",
         region: "",
-        isEmergencyCode: false,
-        isPostgraduateLoan: false,
+        hasEmergencyCode: false,
         hasPensionEligible: false,
       });
 
@@ -425,7 +445,8 @@ const handleUpdate = async (e) => {
       nationalInsuranceNumber: "",
       niLetter: "",
       region: "",
-      isEmergencyCode: false,
+      hasEmergencyCode: false,
+      hasPensionEligible: false,
       studentLoanDto:{
   hasStudentLoan:false,
   studentLoanPlanType:"NONE",
@@ -434,7 +455,6 @@ const handleUpdate = async (e) => {
   hasPostgraduateLoan:false,
   postgraduateLoanPlanType:"NONE",
   },
-      hasPensionEligible: false,
       // isDirector: false,
       // pensionScheme: "WORKPLACE_PENSION",
       // employeeContribution: 5,
@@ -563,7 +583,7 @@ const handleUpdate = async (e) => {
   styles={{
     menuList: (base) => ({
       ...base,
-      maxHeight: '120px', // Show around 4 items, then scroll
+      maxHeight: '120px', 
     }),
   }}
   placeholder="Select department..."
@@ -899,7 +919,7 @@ const handleUpdate = async (e) => {
   styles={{
     menuList: (base) => ({
       ...base,
-      maxHeight: '120px', // Show around 4 items, then scroll
+      maxHeight: '120px', 
     }),
   }}
   placeholder="Select NI Category Letter..."
@@ -925,23 +945,22 @@ const handleUpdate = async (e) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-row gap-20">
- <label className="flex items-center mt-6">
+ <label className="flex items-center">
   <input
     type="checkbox"
-    checked={editData.isEmergencyCode}
-    onChange={(e) =>
-      setEditData(prev => ({
-        ...prev,
-        isEmergencyCode: e.target.checked,
-      }))
-    }
+    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+    checked={editData.hasEmergencyCode}
+    // onChange={(e) => handleInputChange("hasEmergencyCode", e.target.checked)}
+    onChange={(e) => {
+  console.log("hasEmergencyCode changed:", e.target.checked);
+  handleInputChange("hasEmergencyCode", e.target.checked);
+}}
+
     disabled={isViewing}
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
   />
-  <span className="ml-2 text-sm font-medium text-gray-700">
-    Emergency Tax Code
-  </span>
-</label>   
+  <span className="ml-2 text-sm text-gray-700 font-medium"> Emergency Tax Code</span>
+</label>
+
 
 <label className="flex items-center mt-6">
   <input
@@ -973,8 +992,9 @@ const handleUpdate = async (e) => {
             disabled={isViewing}
           >
             <option value="NONE">None</option>
-            <option value="PLAN_1">Plan 1</option>
-            <option value="PLAN_2">Plan 2</option>
+            <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
+            <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
+             <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
            </select>
         </div>
       </div>
@@ -1044,69 +1064,6 @@ const handleUpdate = async (e) => {
           Eligible for Auto Enrolment
         </span>
 </label>
-      {/* <div className="w-50 text-sm">
-      <label className=" text-gray-700 font-medium">Upload P45 Document </label>
-      <input type="file" 
-      disabled={isViewing}
-      onChange={(e) => setP45Form(e.target.files[0])} /> */}
-      {/* <input type="file" onClick={handleP45} className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
-      value={editData.p45Document}
-      disabled={isViewing}
-      onChange={(e)=>
-        handleInputChange("p45Document", e.target.value)
-      }
-      /> */}
-      {/* <input
-  type="file"
-  className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
-  name="p45Document"
-  accept=".pdf,.jpg,.jpeg,.png"
-  disabled={isViewing}
-  onClick={handleP45}
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setEditData((prev) => ({
-        ...prev,
-        p45Document: file,
-      }));
-    }
-  }}
-/> */}
-
-      {/* </div> */}
-      {/* <div className="w-50 text-sm">
-      <label className="text-gray-700 font-medium">Upload Starter Checklist</label> */}
-      {/* <input type="file" 
-      disabled={isViewing}
-      onChange={(e) => setStarterChecklist(e.target.files[0])} 
-      /> */}
-      {/* <input onClick={handleChecklist} type="file" className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
-      value={editData.starterChecklistDocument}
-      disabled={isViewing}
-      onChange={(e)=>
-        handleInputChange("starterChecklistDocument",e.target.value)
-      }
-      /> */}
-      {/* <input
-  type="file"
-  className="bg-blue-100 border-1 border-blue-300 rounded-lg p-1"
-  name="starterChecklistDocument"
-  accept=".pdf,.jpg,.jpeg,.png"
-  disabled={isViewing}
-  onClick={handleChecklist}
-  onChange={(e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setEditData((prev) => ({
-        ...prev,
-        starterChecklistDocument: file,
-      }));
-    }
-  }}
-/> */}
-
-      {/* </div> */}
 
       <div className="w-50 text-sm">
   <label className="text-gray-700 font-medium">Upload P45 Document</label>
@@ -1229,8 +1186,8 @@ const handleUpdate = async (e) => {
         return renderPay()
       case "taxNI":
         return renderTaxNI()
-      case "autoEnrolment":
-        return renderAutoEnrolment()
+      // case "autoEnrolment":
+      //   return renderAutoEnrolment()
       default:
         return renderPersonalDetails()
     }
@@ -1324,7 +1281,7 @@ const handleUpdate = async (e) => {
                         </button>
 
                         <div className="space-x-3">
-                          {activeTab !== "autoEnrolment" && (
+                          {activeTab !== "taxNI" && (
                             <button
                               type="button"
                               onClick={() => {

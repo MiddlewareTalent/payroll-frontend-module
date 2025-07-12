@@ -46,7 +46,7 @@ const AddEmployee = ({ onAddEmployee }) => {
     totalPersonalAllowance: 12570,
     previouslyUsedPersonalAllowance: 0,
     region: "",
-    isEmergencyCode: false,
+    hasEmergencyCode: false,
     postGraduateLoanDto: {
       hasPostgraduateLoan: false,
       postgraduateLoanPlanType: "NONE",
@@ -212,7 +212,7 @@ const AddEmployee = ({ onAddEmployee }) => {
     }
 
     //  Emergency tax code warning
-    if (emergencyTaxCodes.includes(formattedTaxCode) && !formData.isEmergencyCode) {
+    if (emergencyTaxCodes.includes(formattedTaxCode) && !formData.hasEmergencyCode) {
       newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
     }
 
@@ -309,6 +309,7 @@ const AddEmployee = ({ onAddEmployee }) => {
          updatedData = {
           ...updatedData,
           hasP45DocumentSubmitted: !!fileData.data["P45"],
+          hasStarterChecklistDocumentSubmitted: !!fileData.data["checklist"],
           p45Document: fileData.data["P45"] || updatedData.p45Document,
           starterChecklistDocument: fileData.data["Checklist"] || updatedData.starterChecklistDocument,
         };
@@ -875,11 +876,11 @@ const AddEmployee = ({ onAddEmployee }) => {
           <label className="flex items-center mt-6">
             <input
               type="checkbox"
-              checked={formData.isEmergencyCode}
+              checked={formData.hasEmergencyCode}
               onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
-                  isEmergencyCode: e.target.checked,
+                  hasEmergencyCode: e.target.checked,
                 }))
               }
               className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
@@ -920,7 +921,7 @@ const AddEmployee = ({ onAddEmployee }) => {
             <option value="NONE">None</option>
             <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
             <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
-            <option value="STUDENT_LOAN_PLAN_3">Plan 3</option>
+            <option value="STUDENT_LOAN_PLAN_3">Plan 4</option>
           </select>
         </div>
 
@@ -979,9 +980,9 @@ const AddEmployee = ({ onAddEmployee }) => {
           <input
             type="checkbox"
             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            checked={formData.autoEnrolmentEligible}
+            checked={formData.hasPensionEligible}
             onChange={(e) =>
-              handleInputChange("autoEnrolmentEligible", e.target.checked)
+              handleInputChange("hasPensionEligible", e.target.checked)
             }
           />
           <span className="ml-2 text-sm text-gray-700 font-medium">
@@ -1204,7 +1205,6 @@ const AddEmployee = ({ onAddEmployee }) => {
                           type="button"
                           onClick={() => {
                             const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
-                            // ✅ Validate current tab before allowing to proceed
                             const currentTabId = tabs[currentIndex].id;
 
                             const isValid =
@@ -1212,7 +1212,7 @@ const AddEmployee = ({ onAddEmployee }) => {
                                 ? validateTaxAndLoanDetails()
                                 : validateCurrentTab(currentTabId);
 
-                            if (!isValid) return; // ❌ If validation fails, don't proceed
+                            if (!isValid) return; 
 
 
                             console.log(activeTab)

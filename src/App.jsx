@@ -14,6 +14,8 @@ import Paye from "./components/Paye";
 import DummyP60form from './components/DummyP60form'
 import P60formBlue from "./components/P60formBlue";
 import AccessToken from "./components/AccessToken";
+import YearEndReport from "./components/YearEndReport";
+import HMRCIntegration from "./components/HMRCIntegration";
 
 
 function App() {
@@ -56,6 +58,8 @@ const handleLogin = (userData) => {
           <Route path="/paye" element={<Paye/>}/>
           <Route path='/P60Form/:employeeId' element={<DummyP60form/>}/>
           <Route path='/P60FormBlue' element={<P60formBlue/>}/>
+          <Route path="/year-end-report" element={<YearEndReport/>}/>
+          <Route path="/hmrc-integration" element={<HMRCIntegration/>} />
          </Routes>
       </div>
     </Router>

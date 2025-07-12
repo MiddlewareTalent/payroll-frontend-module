@@ -479,10 +479,10 @@ const DummyP60form = () => {
                 Download PDF
               </button>
               <button
-               onClick={() => navigate("/reports", { state: { from: "p60" } })}
+                onClick={() => navigate(-1)}
                 style={{ backgroundColor: '#4B5563', color: 'white', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontSize: '0.875rem', fontWeight: '500', border: 'none', cursor: 'pointer' }}
               >
-                Back to P60 Forms Tab
+                Back
               </button>
             </div>
           </div>
