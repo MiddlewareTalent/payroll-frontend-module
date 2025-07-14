@@ -261,7 +261,7 @@ const EmployerDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">This Month Gross Pay</dt>
+                      <dt className="text-sm font-medium text-gray-500 truncate">Gross Pay</dt>
                      {employer !== null && (<dd className="text-lg font-medium text-gray-900"> £ {employer.totalPaidGrossAmountYTD.toFixed(2)}</dd>)}
                     </dl>
                   </div>
