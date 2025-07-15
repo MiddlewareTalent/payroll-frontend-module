@@ -1081,7 +1081,7 @@ const handleUpdate = async (e) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-row gap-20">
- <label className="flex items-center">
+ <label className="flex items-center pt-5">
   <input
     type="checkbox"
     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"

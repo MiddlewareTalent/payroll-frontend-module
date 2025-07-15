@@ -913,9 +913,9 @@ const AddEmployee = ({ onAddEmployee }) => {
             </span>
           </label>
         </div>
-
+{formData.studentLoanDto.hasStudentLoan && (
         <div>
-          <label className="block text-sm font-medium text-gray-700">Student Loan</label>
+          <label className="block text-sm font-medium text-gray-700">Student Loan Type</label>
           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.studentLoanDto.studentLoanPlanType}
@@ -927,8 +927,7 @@ const AddEmployee = ({ onAddEmployee }) => {
             <option value="STUDENT_LOAN_PLAN_3">Plan 4</option>
           </select>
         </div>
-
-
+)}
 
 
         <div>
@@ -966,7 +965,7 @@ const AddEmployee = ({ onAddEmployee }) => {
           </span>
         </label>
 
-
+{formData.postGraduateLoanDto.hasPostgraduateLoan && (
         <div>
           <label className="block text-sm font-medium text-gray-700">Postgraduate Loan</label>
           <select
@@ -978,6 +977,7 @@ const AddEmployee = ({ onAddEmployee }) => {
             <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
           </select>
         </div>
+        )}
 
         <label className="flex items-center">
           <input
