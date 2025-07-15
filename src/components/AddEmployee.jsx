@@ -257,8 +257,6 @@ const AddEmployee = ({ onAddEmployee }) => {
 
     if (activeTab === "taxNI") {
       isValid = validateForm() && validateTaxAndLoanDetails();
-    } else if (activeTab === "autoEnrolment") {
-      isValid = validateForm();
     } else {
       isValid = true; 
     }
@@ -290,7 +288,12 @@ const AddEmployee = ({ onAddEmployee }) => {
 
     const isFormValid = validateForm();
     const isTaxValid = validateTaxAndLoanDetails();
-    if (!isFormValid || !isTaxValid) return;
+   // Prevent submission if there are warnings or errors
+  if (!isFormValid || !isTaxValid || warnings.length > 0 || Object.keys(errors).length > 0) {
+    console.warn("Form blocked due to errors or warnings.");
+    return;
+  }
+
 
 
     try {

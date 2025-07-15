@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
-import Select from "react-select/base"
+import Select from "react-select"
 
 const EmployeeDetails = () => {
   const navigate = useNavigate()
@@ -11,6 +11,8 @@ const EmployeeDetails = () => {
   const [isViewing, setIsViewing] = useState(false)
   const [employees, setEmployees] = useState([])
   const [activeTab, setActiveTab] = useState("personal")
+  const [warnings, setWarnings] = useState([]);
+  const [errors, setErrors] = useState({});
   const [p45Form, setP45Form]= useState(null);
   const [starterChecklist, setStarterChecklist]= useState(null);
   const [editData, setEditData] = useState({
@@ -127,6 +129,10 @@ const EmployeeDetails = () => {
     {value:'Z', label:'Z'}
   ]
 
+//   useEffect(() => {
+//   window.scrollTo({ top: 0, behavior: "smooth" });
+// }, [activeTab]);
+
   useEffect(() => {
     fetchEmployees()
   }, [])
@@ -239,24 +245,115 @@ const EmployeeDetails = () => {
     }
   }
 
-//   const handleInputChange = (field, value) => {
-//   const keys = field.split(".");
-//   if (keys.length === 2) {
-//     const [parentKey, childKey] = keys;
-//     setEditData((prev) => ({
-//       ...prev,
-//       [parentKey]: {
-//         ...prev[parentKey],
-//         [childKey]: value,
-//       },
-//     }));
-//   } else {
-//     setEditData((prev) => ({
-//       ...prev,
-//       [field]: value,
-//     }));
-//   }
-// };
+ const validateCurrentTab = (tabId) => {
+  const newErrors = {};
+  const newWarnings = [];
+
+  if (tabId === "pay") {
+    if (!editData.annualIncomeOfEmployee) {
+      newErrors.annualIncomeOfEmployee = "Annual income is required.";
+    }
+    if (!editData.payPeriod) {
+      newErrors.payPeriod = "Pay period is required.";
+    }
+
+    if (!editData.bankDetailsDTO?.accountName) {
+      newErrors.accountName = "Account name is required.";
+    }
+    if (!editData.bankDetailsDTO?.accountNumber) {
+      newErrors.accountNumber = "Account number is required.";
+    }
+    if (!editData.bankDetailsDTO?.sortCode || editData.bankDetailsDTO?.sortCode.length !== 6) {
+      newErrors.sortCode = "Sort code must be 6 digits.";
+    }
+    if (!editData.bankDetailsDTO?.bankName) {
+      newErrors.bankName = "Bank Name is required.";
+    }
+
+    // Example warning (optional)
+    if (editData.bankDetailsDTO?.paymentLeadDays > 10) {
+      newWarnings.push("Payment lead days seem unusually high. Please review.");
+    }
+  }
+
+  // Set state
+  setErrors(newErrors);
+  setWarnings(newWarnings);
+
+  // ✅ Return consistent structure
+  return {
+    isValid: Object.keys(newErrors).length === 0,
+    warnings: newWarnings,
+    errors: newErrors,
+  };
+};
+
+
+ const validateTaxAndLoanDetails = () => {
+  const newErrors = {};
+  const newWarnings = [];
+
+  // Formatting
+  const emergencyTaxCodes = ["1257L X", "1257L W1", "1257L M1"];
+  const rawTaxCode = editData.taxCode?.trim().toUpperCase() || "";
+  const formattedTaxCode = rawTaxCode.replace(/(1257L)([XMW1]+)/, "$1 $2");
+  const formattedNINumber = editData.nationalInsuranceNumber?.trim().toUpperCase() || "";
+
+  if (editData.taxCode !== formattedTaxCode) {
+    setFormData((prev) => ({ ...prev, taxCode: formattedTaxCode }));
+  }
+  if (editData.nationalInsuranceNumber !== formattedNINumber) {
+    setFormData((prev) => ({ ...prev, nationalInsuranceNumber: formattedNINumber }));
+  }
+
+  // Required fields
+  if (!formattedTaxCode) newErrors.taxCode = "Tax code is required.";
+  if (!formattedNINumber) newErrors.nationalInsuranceNumber = "National Insurance Number is required.";
+  if (!editData.niLetter) newErrors.niLetter = "NI Category Letter is required.";
+  if (!editData.region) newErrors.region = "Region is required.";
+  if (!editData.taxYear) newErrors.taxYear = "Tax Year is required.";
+
+  // Student Loan
+  const { hasStudentLoan, studentLoanPlanType } = editData.studentLoanDto;
+  if (hasStudentLoan && studentLoanPlanType === "NONE") {
+    newErrors.studentLoanPlanType = "Please select a student loan plan type.";
+  }
+  if (!hasStudentLoan && studentLoanPlanType !== "NONE") {
+    newErrors.studentLoanCheckbox = "Please check the student loan checkbox if a plan type is selected.";
+  }
+
+  // Postgraduate Loan
+  const { hasPostgraduateLoan, postgraduateLoanPlanType } = editData.postGraduateLoanDto;
+  if (hasPostgraduateLoan && postgraduateLoanPlanType === "NONE") {
+    newErrors.postgraduateLoanPlanType = "Please select a postgraduate loan plan type.";
+  }
+  if (!hasPostgraduateLoan && postgraduateLoanPlanType !== "NONE") {
+    newErrors.postgraduateLoanCheckbox = "Please check the postgraduate loan checkbox if a plan type is selected.";
+  }
+
+  // Warnings
+  if (emergencyTaxCodes.includes(formattedTaxCode) && !editData.hasEmergencyCode) {
+    newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
+  }
+
+  if (formattedTaxCode.startsWith("S") && editData.region !== "SCOTLAND") {
+    newWarnings.push("Tax code starts with 'S' - Please select region Scotland.");
+  }
+  if (formattedTaxCode.startsWith("C") && editData.region !== "WALES") {
+    newWarnings.push("Tax code starts with 'C' - Please select region Wales.");
+  }
+
+  setErrors(newErrors);
+  setWarnings(newWarnings);
+
+  // ✅ Return object with both validation status and warnings
+  return {
+    isValid: Object.keys(newErrors).length === 0,
+    warnings: newWarnings,
+    errors: newErrors,
+  };
+};
+
 
 const handleInputChange = (fieldPath, value) => {
   setEditData((prev) => {
@@ -279,8 +376,44 @@ const handleInputChange = (fieldPath, value) => {
   });
 };
 
+const handleNext = () => {
+    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+
+    let isFormValid = true;
+
+    if (activeTab === "taxNI") {
+      isValid = validateForm() && validateTaxAndLoanDetails();
+    } else {
+      isValid = true; 
+    }
+
+    if (!isValid) return; 
+
+    // Move to next tab
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1].id);
+    }
+  };
+
+ const validateForm = () => {
+    return validateCurrentTab("pay") && validateTaxAndLoanDetails();
+  };
+
 const handleUpdate = async (e) => {
   e.preventDefault();
+
+  
+  const { isValid: isTaxValid, warnings: taxWarnings,  errors: taxErrors} = validateTaxAndLoanDetails();
+const {isValid: isFormValid, warnings: payWarnings, errors: payErrors} = validateCurrentTab("pay");
+const allWarnings = [...payWarnings, ...taxWarnings];
+const allErrors = { ...payErrors, ...taxErrors };
+
+if (!isFormValid || !isTaxValid || allWarnings.length > 0) {
+  setWarnings(allWarnings);
+  setErrors(allErrors);
+  console.warn("Form blocked due to warnings or errors");
+  return;
+}
 
   if (!selectedEmployee || !selectedEmployee.id) {
     console.error("No employee selected for update");
@@ -890,7 +1023,7 @@ const handleUpdate = async (e) => {
             type="text"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.taxCode}
-            onChange={(e) => handleInputChange("taxCode", e.target.value)}
+            onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
             disabled={isViewing}
           />
         </div>
@@ -1092,90 +1225,9 @@ const handleUpdate = async (e) => {
     </p>
   )}
 </div>
-
-      
 </div>
     </div>
   )
-
-  // const renderAutoEnrolment = () => (
-  //   <div className="space-y-6">
-  //     <div>
-  //       <label className="flex items-center">
-  //         <input
-  //           type="checkbox"
-  //           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-  //           checked={editData.autoEnrolmentEligible}
-  //           onChange={(e) => handleInputChange("autoEnrolmentEligible", e.target.checked)}
-  //           disabled={false}
-  //         />
-  //         <span className="ml-2 text-sm text-gray-700">Eligible for Auto Enrolment</span>
-  //       </label>
-  //     </div>
-
-  //     {editData.autoEnrolmentEligible && (
-  //       <>
-  //         <div>
-  //           <label className="block text-sm font-medium text-gray-700">Pension Scheme</label>
-  //           <select
-  //             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //             value={editData.pensionScheme}
-  //             onChange={(e) => handleInputChange("pensionScheme", e.target.value)}
-  //             disabled={isViewing}
-  //           >
-  //             <option value="">-- Select --</option>
-  //             <option value="WORKPLACE_PENSION">Workplace Pension</option>
-  //             <option value="NEST">NEST</option>
-  //             <option value="STAKEHOLDER">Stakeholder Pension</option>
-  //           </select>
-
-  //           <div className="mt-4">
-  //             <label className="flex items-center">
-  //               <input
-  //                 type="checkbox"
-  //                 className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-  //                 checked={editData.isDirector}
-  //                 onChange={(e) => handleInputChange("isDirector", e.target.checked)}
-  //                 disabled={isViewing}
-  //               />
-  //               <span className="ml-2 text-sm text-gray-700">Is Director</span>
-  //             </label>
-  //           </div>
-  //         </div>
-
-  //         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  //           <div>
-  //             <label className="block text-sm font-medium text-gray-700">Employee Contribution (%)</label>
-  //             <input
-  //               type="number"
-  //               min="0"
-  //               max="100"
-  //               step="0.1"
-  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //               value={editData.employeeContribution}
-  //               onChange={(e) => handleInputChange("employeeContribution", Number.parseFloat(e.target.value) || 0)}
-  //               disabled={isViewing}
-  //             />
-  //           </div>
-  //           <div>
-  //             <label className="block text-sm font-medium text-gray-700">Employer Contribution (%)</label>
-  //             <input
-  //               type="number"
-  //               min="0"
-  //               max="100"
-  //               step="0.1"
-  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //               value={editData.employerContribution}
-  //               onChange={(e) => handleInputChange("employerContribution", Number.parseFloat(e.target.value) || 0)}
-  //               disabled={isViewing}
-  //             />
-  //           </div>
-  //         </div>
-  //       </>
-  //     )}
-  //   </div>
-  // )
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "personal":
@@ -1231,13 +1283,7 @@ const handleUpdate = async (e) => {
                         : "border-transparent text-gray-900 hover:bg-gray-50 hover:text-gray-900"
                     } group border-l-4 px-3 py-2 flex items-center text-sm font-medium w-full text-left`}
                   >
-                    {/* <span
-                      className={`${
-                        activeTab === tab.id ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
-                      } flex-shrink-0 -ml-1 mr-3`}
-                    >
-                      {getIcon(tab.icon)}
-                    </span> */}
+                   
                     <span className="truncate">{tab.name}</span>
                   </button>
                 ))}
@@ -1286,6 +1332,15 @@ const handleUpdate = async (e) => {
                               type="button"
                               onClick={() => {
                                 const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+                                const currentTabId = tabs[currentIndex].id;
+
+                                const isValid =
+                              currentTabId === "taxNI"
+                                ? validateTaxAndLoanDetails()
+                                : validateCurrentTab(currentTabId);
+
+                            if (!isValid) return; 
+
                                 console.log(activeTab)
                                 console.log(currentIndex)
                                 setActiveTab(tabs[currentIndex + 1].id)
@@ -1302,20 +1357,24 @@ const handleUpdate = async (e) => {
                               className="bg-green-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                             >
                               Update Employee
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </form>
-            </div>
+                            </button>                   )}             </div>       
+                                 </div>          </div>             )}              </div>             </form>           </div>         </div>    
+
+                                  {warnings.length > 0 && (
+          <div className="bg-yellow-100 text-yellow-800 p-2 rounded mb-4">
+            {warnings.map((msg, i) => (
+              <div key={i}>⚠️ {msg}</div>
+            ))}
           </div>
-        </div>
-      </div>
-    )
-  }
+        )}
+        {Object.values(errors).length > 0 && (
+          <div className="bg-red-100 text-red-800 p-2 rounded mb-4">
+            {Object.entries(errors).map(([key, msg], i) => (
+              <div key={i}>❌ {msg}</div>
+            ))}
+          </div>
+        )}
+                                    </div>     </div>   ) }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1340,14 +1399,6 @@ const handleUpdate = async (e) => {
         <div className="px-4 py-6 sm:px-0">
           {employees.length === 0 ? (
             <div className="text-center">
-              {/* <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg> */}
               <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
               <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p>
             </div>
@@ -1435,55 +1486,9 @@ const handleUpdate = async (e) => {
 
                       <div className="mt-2 sm:flex sm:justify-between">
                         <div className="sm:flex">
-                          {/* <p className="flex items-center text-sm text-gray-500">
-                            <svg
-                              className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                              />
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                              />
-                            </svg>
-                            {employee.address}, {employee.postCode}
-                          </p> */}
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                          {/* <svg
-                            className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
-                            />
-                          </svg> */}
-                          {/* <span>{employee.employeeDepartment || "No department"}</span> */}
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+                        </div>            </div>         </div>          </li>           ))}       </ul>      </div>   )}   </div> </div> </div>
   )
 }
 
