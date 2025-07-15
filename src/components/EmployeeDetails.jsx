@@ -245,7 +245,7 @@ const EmployeeDetails = () => {
     }
   }
 
- const validateCurrentTab = (tabId) => {
+const validateCurrentTab = (tabId) => {
   const newErrors = {};
   const newWarnings = [];
 
@@ -257,30 +257,29 @@ const EmployeeDetails = () => {
       newErrors.payPeriod = "Pay period is required.";
     }
 
-    if (!editData.bankDetailsDTO?.accountName) {
+    const bank = editData.bankDetailsDTO || {};
+
+    if (!bank.accountName) {
       newErrors.accountName = "Account name is required.";
     }
-    if (!editData.bankDetailsDTO?.accountNumber) {
+    if (!bank.accountNumber) {
       newErrors.accountNumber = "Account number is required.";
     }
-    if (!editData.bankDetailsDTO?.sortCode || editData.bankDetailsDTO?.sortCode.length !== 6) {
+    if (!bank.sortCode || bank.sortCode.length !== 6) {
       newErrors.sortCode = "Sort code must be 6 digits.";
     }
-    if (!editData.bankDetailsDTO?.bankName) {
+    if (!bank.bankName) {
       newErrors.bankName = "Bank Name is required.";
     }
 
-    // Example warning (optional)
-    if (editData.bankDetailsDTO?.paymentLeadDays > 10) {
+    if (bank.paymentLeadDays > 10) {
       newWarnings.push("Payment lead days seem unusually high. Please review.");
     }
   }
 
-  // Set state
   setErrors(newErrors);
   setWarnings(newWarnings);
 
-  // ✅ Return consistent structure
   return {
     isValid: Object.keys(newErrors).length === 0,
     warnings: newWarnings,
@@ -288,22 +287,21 @@ const EmployeeDetails = () => {
   };
 };
 
-
- const validateTaxAndLoanDetails = () => {
+const validateTaxAndLoanDetails = () => {
   const newErrors = {};
   const newWarnings = [];
 
-  // Formatting
   const emergencyTaxCodes = ["1257L X", "1257L W1", "1257L M1"];
   const rawTaxCode = editData.taxCode?.trim().toUpperCase() || "";
   const formattedTaxCode = rawTaxCode.replace(/(1257L)([XMW1]+)/, "$1 $2");
   const formattedNINumber = editData.nationalInsuranceNumber?.trim().toUpperCase() || "";
 
+  // Update formatted values
   if (editData.taxCode !== formattedTaxCode) {
-    setFormData((prev) => ({ ...prev, taxCode: formattedTaxCode }));
+    setEditData((prev) => ({ ...prev, taxCode: formattedTaxCode }));
   }
   if (editData.nationalInsuranceNumber !== formattedNINumber) {
-    setFormData((prev) => ({ ...prev, nationalInsuranceNumber: formattedNINumber }));
+    setEditData((prev) => ({ ...prev, nationalInsuranceNumber: formattedNINumber }));
   }
 
   // Required fields
@@ -319,7 +317,7 @@ const EmployeeDetails = () => {
     newErrors.studentLoanPlanType = "Please select a student loan plan type.";
   }
   if (!hasStudentLoan && studentLoanPlanType !== "NONE") {
-    newErrors.studentLoanCheckbox = "Please check the student loan checkbox if a plan type is selected.";
+    newErrors.studentLoanCheckbox = "Tick the checkbox for Student Loan if a plan type is selected.";
   }
 
   // Postgraduate Loan
@@ -328,7 +326,7 @@ const EmployeeDetails = () => {
     newErrors.postgraduateLoanPlanType = "Please select a postgraduate loan plan type.";
   }
   if (!hasPostgraduateLoan && postgraduateLoanPlanType !== "NONE") {
-    newErrors.postgraduateLoanCheckbox = "Please check the postgraduate loan checkbox if a plan type is selected.";
+    newErrors.postgraduateLoanCheckbox = "Tick the checkbox for Postgraduate Loan if a plan type is selected.";
   }
 
   // Warnings
@@ -337,22 +335,23 @@ const EmployeeDetails = () => {
   }
 
   if (formattedTaxCode.startsWith("S") && editData.region !== "SCOTLAND") {
-    newWarnings.push("Tax code starts with 'S' - Please select region Scotland.");
+    newWarnings.push("Tax code starts with 'S' - Region should be Scotland.");
   }
   if (formattedTaxCode.startsWith("C") && editData.region !== "WALES") {
-    newWarnings.push("Tax code starts with 'C' - Please select region Wales.");
+    newWarnings.push("Tax code starts with 'C' - Region should be Wales.");
   }
 
   setErrors(newErrors);
   setWarnings(newWarnings);
 
-  // ✅ Return object with both validation status and warnings
   return {
     isValid: Object.keys(newErrors).length === 0,
     warnings: newWarnings,
     errors: newErrors,
   };
 };
+
+
 
 
 const handleInputChange = (fieldPath, value) => {
@@ -377,23 +376,28 @@ const handleInputChange = (fieldPath, value) => {
 };
 
 const handleNext = () => {
-    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  let validation = { isValid: true, warnings: [], errors: {} };
 
-    let isFormValid = true;
+  if (activeTab === "taxNI") {
+    validation = validateTaxAndLoanDetails();
+  } else {
+    validation = validateCurrentTab(activeTab);
+  }
 
-    if (activeTab === "taxNI") {
-      isValid = validateForm() && validateTaxAndLoanDetails();
-    } else {
-      isValid = true; 
-    }
+  if (!validation.isValid || validation.warnings.length > 0) {
+    setErrors(validation.errors);
+    setWarnings(validation.warnings);
+    console.warn("Form blocked due to errors or warnings");
+    return;
+  }
 
-    if (!isValid) return; 
+  setErrors({});
+  setWarnings({});
+  setActiveTab(tabs[currentIndex + 1]?.id || activeTab);
+};
 
-    // Move to next tab
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1].id);
-    }
-  };
+
 
  const validateForm = () => {
     return validateCurrentTab("pay") && validateTaxAndLoanDetails();
@@ -402,18 +406,19 @@ const handleNext = () => {
 const handleUpdate = async (e) => {
   e.preventDefault();
 
-  
-  const { isValid: isTaxValid, warnings: taxWarnings,  errors: taxErrors} = validateTaxAndLoanDetails();
-const {isValid: isFormValid, warnings: payWarnings, errors: payErrors} = validateCurrentTab("pay");
-const allWarnings = [...payWarnings, ...taxWarnings];
-const allErrors = { ...payErrors, ...taxErrors };
+  const payValidation = validateCurrentTab("pay");
+  const taxValidation = validateTaxAndLoanDetails();
 
-if (!isFormValid || !isTaxValid || allWarnings.length > 0) {
-  setWarnings(allWarnings);
-  setErrors(allErrors);
-  console.warn("Form blocked due to warnings or errors");
-  return;
-}
+  const isValid = payValidation.isValid && taxValidation.isValid;
+  const allWarnings = [...payValidation.warnings, ...taxValidation.warnings];
+  const allErrors = { ...payValidation.errors, ...taxValidation.errors };
+
+  if (!isValid || allWarnings.length > 0) {
+    setWarnings(allWarnings);
+    setErrors(allErrors);
+    console.warn("Form blocked due to validation issues");
+    return;
+  }
 
   if (!selectedEmployee || !selectedEmployee.id) {
     console.error("No employee selected for update");
@@ -794,8 +799,6 @@ if (!isFormValid || !isTaxValid || allWarnings.length > 0) {
         <div>
           <label className="block text-sm font-medium text-gray-700">Annual Income (£)</label>
           <input
-            type="number"
-            step="0.01"
             required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.annualIncomeOfEmployee}
