@@ -292,9 +292,13 @@ const navItems = [
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Employment Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-500">Job Title</label>
                       <p className="mt-1 text-sm text-gray-900">{employee.employment?.jobTitle || "Software Engineer"}</p>
+                    </div> */}
+                     <div>
+                      <label className="block text-sm font-medium text-gray-500">Annual Salary</label>
+                      <p className="mt-1 text-sm text-gray-900">£{employee.annualIncomeOfEmployee || 0}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-500">Department</label>
@@ -316,10 +320,10 @@ const navItems = [
                       <label className="block text-sm font-medium text-gray-500">Working Hours</label>
                       <p className="mt-1 text-sm text-gray-900">{employee.workingHours || 0} hours/week</p>
                     </div> */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-500">Annual Salary</label>
                       <p className="mt-1 text-sm text-gray-900">£{employee.annualIncomeOfEmployee || 0}</p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>

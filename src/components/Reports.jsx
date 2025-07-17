@@ -335,7 +335,7 @@ useEffect(() => {
         P60 forms show the total pay and tax deducted for each employee for the tax year.
       </p>
 
-      {allEmployees.length === 0 ? (
+      {/* {allEmployees.length === 0 ? (
         <p className="text-sm text-gray-500">No employees to generate P60 forms for.</p>
       ) : (
         <div className="space-y-4">
@@ -373,7 +373,7 @@ useEffect(() => {
             </div>
           ))}
         </div>
-      )}
+      )} */}
     </div>
   </div>
 )
@@ -388,7 +388,7 @@ useEffect(() => {
           Summaries (EPS).
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="border border-gray-200 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 mb-2">Full Payment Submission (FPS)</h4>
             <p className="text-sm text-gray-600 mb-4">Submit payroll information to HMRC on or before each pay day.</p>
@@ -420,7 +420,7 @@ useEffect(() => {
               </button>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -42,7 +42,10 @@ const PayrollRun = ({ onGeneratePayslip }) => {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
+            <div>
             <h1 className="text-2xl font-bold text-gray-900">Payroll Run</h1>
+            <p className="text-sm text-gray-600">Select an employee and generate their payslip for the current payroll period</p>
+            </div>
             <button
               onClick={() => navigate("/employer-dashboard")}
               className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -87,8 +90,9 @@ const PayrollRun = ({ onGeneratePayslip }) => {
                               {employee.firstName} {employee.lastName}
                             </p>
                             <p className="text-sm text-gray-500">
-                              ID: {employee.employeeId} | Salary: £{employee.annualIncomeOfEmployee}
+                              Employee ID: {employee.employeeId} | Salary: £{employee.annualIncomeOfEmployee} | Taxcode: {employee.taxCode} | Region: {employee.region}
                             </p>
+                            
                           </div>
                         </div>
                       );

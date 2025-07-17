@@ -155,7 +155,7 @@ const PayslipView = () => {
         </div>
 
         {/* Pay Breakdown */}
-        <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '2rem' }}>
+        <div style={{ borderTop: '1px solid #E5E7EB'}}>
           <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#111827', marginBottom: '1.5rem' }}>Total Pay Details</h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

@@ -676,8 +676,7 @@ const handleUpdate = async (e) => {
           />
         </div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">Address</label>
           <input
@@ -691,7 +690,7 @@ const handleUpdate = async (e) => {
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Gender</label>
-          <select
+           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.gender}
             onChange={(e) => handleInputChange("gender", e.target.value)}
@@ -704,6 +703,7 @@ const handleUpdate = async (e) => {
             </select>
         </div>
       </div>
+      <div></div>
     </div>
   )
 
@@ -1017,7 +1017,227 @@ const handleUpdate = async (e) => {
     </div>
   )
 
-  const renderTaxNI = () => (
+//   const renderTaxNI = () => (
+//     <div className="space-y-6">
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700">Tax Code</label>
+//           <input
+//             type="text"
+//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//             value={editData.taxCode}
+//             onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
+//             disabled={isViewing}
+//           />
+//         </div>
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700">National Insurance Number</label>
+//           <input
+//             type="text"
+//             placeholder="AB123456C"
+//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//             value={editData.nationalInsuranceNumber}
+//             onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value)}
+//             disabled={isViewing}
+//           />
+//         </div>
+//       </div>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
+//           <Select
+//   options={NICategoryLetters}
+//   value={NICategoryLetters.find((option) => option.value === editData.niLetter)}
+//   onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
+//   disabled={isViewing}
+//   className="mt-1 text-sm"
+//   styles={{
+//     menuList: (base) => ({
+//       ...base,
+//       maxHeight: '120px', 
+//     }),
+//   }}
+//   placeholder="Select NI Category Letter..."
+//   isSearchable
+// />
+//         </div>
+//         <div>
+//           <label className="block text-sm font-medium text-gray-700">Region</label>
+//           <select
+//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//             value={editData.region}
+//             onChange={(e) => handleInputChange("region", e.target.value)}
+//             disabled={isViewing}
+//           >
+//             <option value="">Select</option>
+//             <option value="SCOTLAND">Scotland</option>
+//             <option value="ENGLAND">England</option>
+//             <option value="NORTHERN_IRELAND">Northern Ireland</option>
+//             <option value="WALES">Wales</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//         <div className="flex flex-row gap-20">
+//  <label className="flex items-center pt-5">
+//   <input
+//     type="checkbox"
+//     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+//     checked={editData.hasEmergencyCode}
+//     // onChange={(e) => handleInputChange("hasEmergencyCode", e.target.checked)}
+//     onChange={(e) => {
+//   console.log("hasEmergencyCode changed:", e.target.checked);
+//   handleInputChange("hasEmergencyCode", e.target.checked);
+// }}
+
+//     disabled={isViewing}
+//   />
+//   <span className="ml-2 text-sm text-gray-700 font-medium"> Emergency Tax Code</span>
+// </label>
+
+
+// <label className="flex items-center mt-6">
+//   <input
+//     type="checkbox"
+//     checked={editData.studentLoanDto.hasStudentLoan}
+//        onChange={(e) =>
+//         setEditData(prev => ({
+//           ...prev,
+//           studentLoanDto: {
+//             ...prev.studentLoanDto,
+//             hasStudentLoan: e.target.checked,
+//           },
+//         }))
+//     }
+//     disabled={isViewing}
+//     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+//   />
+//   <span className="ml-2 text-sm font-medium text-gray-700">
+//     Student Loan
+//   </span>
+// </label>
+// </div>
+// {editData.studentLoanDto.hasStudentLoan && (
+//          <div>
+//           <label className="block text-sm font-medium text-gray-700">Student Loan Plan</label>
+//           <select
+//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//             value={editData.studentLoanDto.studentLoanPlanType}
+//             onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
+//             disabled={isViewing}
+//           >
+//             <option value="NONE">None</option>
+//             <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
+//             <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
+//              <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
+//            </select>
+//         </div>
+//         )}
+//       </div>
+//  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//      <div>
+//   <label className="block text-sm font-medium text-gray-700">Tax Year</label>
+//   <select
+//     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//     value={editData.taxYear}
+//     onChange={(e) => handleInputChange("taxYear", e.target.value)}
+//     disabled={isViewing}
+//   >
+//     <option value="">Select</option>
+//     <option value="2025-2026">2025-2026</option>
+//     <option value="2024-2025">2024-2025</option>
+//     <option value="2023-2024">2023-2024</option>
+//   </select>
+//   </div>
+
+//   <label className="flex items-center mt-6">
+//   <input
+//     type="checkbox"
+//     className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+//     checked={editData.postGraduateLoanDto.hasPostgraduateLoan}
+//     onChange={(e) =>
+//       setEditData(prev => ({
+//           ...prev,
+//           postGraduateLoanDto: {
+//             ...prev.postGraduateLoanDto,
+//             hasPostgraduateLoan: e.target.checked,
+//           },
+//         }))
+//     }
+//     disabled={isViewing}
+//   />
+  
+//   <span className="ml-2 text-sm font-medium text-gray-700">
+//     Postgraduate Loan
+//   </span>  
+//   </label>
+// </div>
+//  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//   {editData.postGraduateLoanDto.hasPostgraduateLoan && (
+//  <div>
+//         <label className="block text-sm font-medium text-gray-700">Postgraduate Loan Plan</label>
+//         <select
+//           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+//           value={editData.postGraduateLoanDto.postgraduateLoanPlanType}
+//           onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
+//           disabled={isViewing}
+//         >
+//           <option value="">Select</option>
+//           <option value="NONE">None</option>
+//           <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan plan 3</option>
+//         </select>  
+//       </div>
+//       )}
+//        <label className="flex items-center">
+//         <input
+//           type="checkbox"
+//           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+//           checked={editData.hasPensionEligible}
+//           onChange={(e) =>
+//             handleInputChange("hasPensionEligible", e.target.checked)
+//           }
+//           disabled={isViewing}
+//         />
+//         <span className="ml-2 text-sm text-gray-700 font-medium">
+//           Eligible for Auto Enrolment
+//         </span>
+// </label>
+
+//       <div className="w-50 text-sm">
+//   <label className="text-gray-700 font-medium">Upload P45 Document</label>
+//   <input
+//     type="file"
+//     disabled={isViewing}
+//     onChange={(e) => setP45Form(e.target.files[0])}
+//     className="mt-1 block w-50 bg-blue-100 text-sm border-1 border-blue-500 rounded-lg p-1"
+//   />
+//   {editData.p45Document && (
+//     <p className="text-gray-500 text-xs mt-1">
+//        Previously uploaded: <strong>{editData.p45Document.split("/").pop()}</strong>
+//     </p>
+//   )}
+// </div>
+
+// <div className="w-50 text-sm">
+//   <label className="text-gray-700 font-medium">Upload Starter Checklist</label>
+//   <input
+//     type="file"
+//     disabled={isViewing}
+//     onChange={(e) => setStarterChecklist(e.target.files[0])}
+//     className="mt-1 block w-50 bg-blue-100 text-sm border-1 border-blue-500 rounded-lg p-1"
+//   />
+//   {editData.starterChecklistDocument && (
+//     <p className="text-gray-500 text-xs mt-1">
+//        Previously uploaded: <strong>{editData.starterChecklistDocument.split("/").pop()}</strong>
+//     </p>
+//   )}
+// </div>
+// </div>
+//     </div>
+//   )
+const renderTaxNI = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -1026,7 +1246,7 @@ const handleUpdate = async (e) => {
             type="text"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.taxCode}
-            onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
+            onChange={(e) => handleInputChange("taxCode", e.target.value)}
             disabled={isViewing}
           />
         </div>
@@ -1042,25 +1262,25 @@ const handleUpdate = async (e) => {
           />
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
           <Select
-  options={NICategoryLetters}
-  value={NICategoryLetters.find((option) => option.value === editData.niLetter)}
-  onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
-  disabled={isViewing}
-  className="mt-1 text-sm"
-  styles={{
-    menuList: (base) => ({
-      ...base,
-      maxHeight: '120px', 
-    }),
-  }}
-  placeholder="Select NI Category Letter..."
-  isSearchable
-/>
+            options={NICategoryLetters}
+            value={NICategoryLetters.find((option) => option.value === editData.niLetter)}
+            onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
+            disabled={isViewing}
+            className="mt-1 text-sm"
+            styles={{
+              menuList: (base) => ({
+                ...base,
+                maxHeight: '120px',
+              }),
+            }}
+            placeholder="Select NI Category Letter..."
+            isSearchable
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Region</label>
@@ -1078,158 +1298,177 @@ const handleUpdate = async (e) => {
           </select>
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="flex flex-row gap-20">
- <label className="flex items-center pt-5">
-  <input
-    type="checkbox"
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-    checked={editData.hasEmergencyCode}
-    // onChange={(e) => handleInputChange("hasEmergencyCode", e.target.checked)}
-    onChange={(e) => {
-  console.log("hasEmergencyCode changed:", e.target.checked);
-  handleInputChange("hasEmergencyCode", e.target.checked);
-}}
-
-    disabled={isViewing}
-  />
-  <span className="ml-2 text-sm text-gray-700 font-medium"> Emergency Tax Code</span>
-</label>
-
-
-<label className="flex items-center mt-6">
-  <input
-    type="checkbox"
-    checked={editData.studentLoanDto.hasStudentLoan}
-       onChange={(e) =>
-        setEditData(prev => ({
-          ...prev,
-          studentLoanDto: {
-            ...prev.studentLoanDto,
-            hasStudentLoan: e.target.checked,
-          },
-        }))
-    }
-    disabled={isViewing}
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-  />
-  <span className="ml-2 text-sm font-medium text-gray-700">
-    Student Loan
-  </span>
-</label>
-</div>
-         <div>
-          <label className="block text-sm font-medium text-gray-700">Student Loan Plan</label>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Tax Year</label>
           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.studentLoanDto.studentLoanPlanType}
-            onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
+            value={editData.taxYear}
+            onChange={(e) => handleInputChange("taxYear", e.target.value)}
             disabled={isViewing}
           >
-            <option value="NONE">None</option>
-            <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
-            <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
-             <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
-           </select>
+            <option value="">Select</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+          </select>
+        </div>
+ 
+        <div className="flex flex-row flex-nowrap">
+          <label className="flex items-center mt-6 w-full">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              checked={editData.hasEmergencyCode}
+              disabled={isViewing}
+              onChange={(e) => {
+                setEditData(prev => ({
+                  ...prev,
+                  hasEmergencyCode: e.target.checked,
+                }));
+              }}
+            />
+            <span className="ml-2 text-sm text-gray-700 font-medium">
+              Emergency Tax Code
+            </span>
+          </label>
+          
+           <label className="flex items-center mt-6 w-full">
+          <input
+            type="checkbox"
+            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            checked={editData.hasPensionEligible}
+            disabled={isViewing}
+            onChange={(e) =>
+              handleInputChange("hasPensionEligible", e.target.checked)
+            }
+          />
+          <span className="ml-2 text-sm text-gray-700 font-medium">
+            Eligible for Auto Enrolment
+          </span>
+        </label>
         </div>
       </div>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-     <div>
-  <label className="block text-sm font-medium text-gray-700">Tax Year</label>
-  <select
-    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-    value={editData.taxYear}
-    onChange={(e) => handleInputChange("taxYear", e.target.value)}
-    disabled={isViewing}
-  >
-    <option value="">Select</option>
-    <option value="2025-2026">2025-2026</option>
-    <option value="2024-2025">2024-2025</option>
-    <option value="2023-2024">2023-2024</option>
-  </select>
-  </div>
-
-  <label className="flex items-center mt-6">
-  <input
-    type="checkbox"
-    className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-    checked={editData.postGraduateLoanDto.hasPostgraduateLoan}
-    onChange={(e) =>
-      setEditData(prev => ({
-          ...prev,
-          postGraduateLoanDto: {
-            ...prev.postGraduateLoanDto,
-            hasPostgraduateLoan: e.target.checked,
-          },
-        }))
-    }
-    disabled={isViewing}
-  />
-  
-  <span className="ml-2 text-sm font-medium text-gray-700">
-    Postgraduate Loan
-  </span>  
-  </label>
-</div>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <div>
-        <label className="block text-sm font-medium text-gray-700">Postgraduate Loan Plan</label>
-        <select
-          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-          value={editData.postGraduateLoanDto.postgraduateLoanPlanType}
-          onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
-          disabled={isViewing}
-        >
-          <option value="">Select</option>
-          <option value="NONE">None</option>
-          <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan plan 3</option>
-        </select>  
+ 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+        <div>
+          <label className="flex items-center mt-6">
+            <input
+              type="checkbox"
+              checked={editData.studentLoanDto.hasStudentLoan}
+              disabled={isViewing}
+              onChange={(e) =>
+                setEditData(prev => ({
+                  ...prev,
+                  studentLoanDto: {
+                    ...prev.studentLoanDto,
+                    hasStudentLoan: e.target.checked,
+                  },
+                }))
+              }
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700 w-full">
+              Student Loan
+            </span>
+          </label>
+          <div>
+            {editData.studentLoanDto.hasStudentLoan && (
+              <>
+ 
+                <select
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                  value={editData.studentLoanDto.studentLoanPlanType}
+                  disabled={isViewing}
+                  onChange={(e) =>
+                    handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)
+                  }
+                >
+                  <option value="NONE">None</option>
+                  <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
+                  <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
+                  <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
+                </select>
+              </>
+            )}
+          </div>
+        </div>
+ 
+        <div>
+          <label className="flex items-center mt-6">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+              checked={editData.postGraduateLoanDto.hasPostgraduateLoan}
+              disabled={isViewing}
+              onChange={(e) =>
+                setEditData(prev => ({
+                  ...prev,
+                  postGraduateLoanDto: {
+                    ...prev.postGraduateLoanDto,
+                    hasPostgraduateLoan: e.target.checked,
+                  },
+                }))
+              }
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700">
+              Postgraduate Loan
+            </span>
+          </label>
+          {editData.postGraduateLoanDto.hasPostgraduateLoan && (
+            <div >
+              <select
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                value={editData.postGraduateLoanDto.postgraduateLoanPlanType}
+                disabled={isViewing}
+                onChange={(e) =>
+                  handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)
+                }
+              >
+                <option value="NONE">None</option>
+                <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
+              </select>
+            </div>
+          )}
+        </div>
+ 
       </div>
-       <label className="flex items-center">
-        <input
-          type="checkbox"
-          className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          checked={editData.hasPensionEligible}
-          onChange={(e) =>
-            handleInputChange("hasPensionEligible", e.target.checked)
-          }
-          disabled={isViewing}
-        />
-        <span className="ml-2 text-sm text-gray-700 font-medium">
-          Eligible for Auto Enrolment
-        </span>
-</label>
-
-      <div className="w-50 text-sm">
-  <label className="text-gray-700 font-medium">Upload P45 Document</label>
-  <input
-    type="file"
-    disabled={isViewing}
-    onChange={(e) => setP45Form(e.target.files[0])}
-  />
-  {editData.p45Document && (
-    <p className="text-gray-500 text-xs mt-1">
-       Previously uploaded: <strong>{editData.p45Document.split("/").pop()}</strong>
-    </p>
-  )}
-</div>
-
-<div className="w-50 text-sm">
-  <label className="text-gray-700 font-medium">Upload Starter Checklist</label>
-  <input
-    type="file"
-    disabled={isViewing}
-    onChange={(e) => setStarterChecklist(e.target.files[0])}
-  />
-  {editData.starterChecklistDocument && (
-    <p className="text-gray-500 text-xs mt-1">
-       Previously uploaded: <strong>{editData.starterChecklistDocument.split("/").pop()}</strong>
-    </p>
-  )}
-</div>
-</div>
+ 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+ 
+        <div className="w-full text-sm">
+          <label className="text-gray-700 font-medium">Upload P45 Document</label>
+          <input
+            type="file"
+            className="mt-1 block w-full bg-blue-100 sm:text-sm border text-gray-700 border-blue-500 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+            disabled={isViewing}
+            onChange={(e) => setP45Form(e.target.files[0])}
+          />
+          {editData.p45Document && (
+            <p className="text-gray-500 text-xs mt-3">
+              Previously uploaded: <strong>{editData.p45Document.split("/").pop()}</strong>
+            </p>
+          )}
+        </div>
+ 
+        <div className="w-full text-sm">
+          <label className="text-gray-700 font-medium">Upload Starter Checklist</label>
+          <input
+            type="file"
+            className="mt-1 block w-full bg-blue-100 text-sm  text-gray-700 border-1 border-blue-500 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+            disabled={isViewing}
+            onChange={(e) => setStarterChecklist(e.target.files[0])}
+          />
+          {editData.starterChecklistDocument && (
+            <p className="text-gray-500 text-xs mt-3">
+              Previously uploaded: <strong>{editData.starterChecklistDocument.split("/").pop()}</strong>
+            </p>
+          )}
+        </div>
+      </div>
     </div>
+ 
   )
   const renderTabContent = () => {
     switch (activeTab) {
