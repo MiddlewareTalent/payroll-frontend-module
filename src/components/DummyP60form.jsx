@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import Reports from "./Reports"
 import axios from "axios"
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { saveAs } from 'file-saver'
 
 const DummyP60form = () => {
   const navigate=useNavigate();
@@ -131,6 +133,8 @@ const DummyP60form = () => {
       setIsGeneratingPDF(false)
     }
   }
+
+  
 
   const createPDFContent = () => {
     const container = document.createElement("div")

@@ -1,73 +1,46 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
- 
- 
+import { useNavigate } from "react-router-dom";
+
 const CompanyDetails = () => {
-  const [isIntialUpdate, setIsIntialUpdate]=useState(false);
- 
+  const [isIntialUpdate, setIsIntialUpdate] = useState(false);
+
   const initialFormData = {
-    id:"",
-    employerName: "",
-    employerId: "",
-    employerAddress: "",
-    employerPostCode: "",
-    employerTelephone: "",
-    employerEmail: "",
-    employerGender:"",
-    contactForename: "",
-    contactSurname: "",
-    pdfPassword: "",
-    userReference: "",
-    datePAYESchemeStarted: "",
-    datePAYESchemeCeased: "",
-    rtiBatchProcessing: false,
-    previousWorksNumberUnknown: false,
-    ensureUniqueWorksNumber: false,
-    warnBelowNationalMinimumWage: false,
-    showAgeOnHourlyTab: false,
-    companyLogo: "",
-    companyName: "",
-    taxYear: "",
-    payPeriod: "MONTHLY",
-    region: "ENGLAND",
-    payDate: "",
- 
-    taxOfficeDto: {
+    companyDetailsDTO: {
+      companyName: "",
+      companyAddress: "",
+      companyPostCode: "",
+      companyLogo: "",
+      currentTaxYear: "",
+      currentPayPeriod: "MONTHLY",
+      region: "ENGLAND",
+      payDate: "",
+    },
+    taxOfficeDTO: {
       payeReference: "",
       accountsOfficeReference: "",
       paymentMethod: "ONLINE",
       uniqueTaxRef: "",
       corporationTaxRef: "",
       payrollGivingRef: "",
-      serQualifiedThisYear: false,
-      serQualifiedLastYear: false,
-      noRtiDueWarnings: false,
-      claimNICAllowance: false,
+      datePAYESchemeStarted: "",
+      datePAYESchemeCeased: "",
       claimEmploymentAllowance: false,
-      childSupportRef: "",
     },
     bankDetailsDTO: {
       accountName: "",
       accountNumber: "",
       sortCode: "",
       bankName: "",
-      paymentReference: "",
       bankAddress: "",
       bankPostCode: "",
-      telephone: "",
-      paymentLeadDays: "",
-      isRTIReturnsIncluded: false,
     },
- 
-    termsDto: {
+    termsDTO: {
       hoursWorkedPerWeek: "",
-      isPaidOvertime: false,
       weeksNoticeRequired: "",
       daysSicknessOnFullPay: "",
       maleRetirementAge: "",
       femaleRetirementAge: "",
-      mayJoinPensionScheme: "",
       daysHolidayPerYear: "",
       maxDaysToCarryOver: "",
     },
@@ -78,60 +51,66 @@ const CompanyDetails = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("basic");
- 
+
   const tabs = [
-    { id: "basic", name: "Basic Information" },
-    { id: "contact", name: "Contact Details" },
-    { id: "company", name: "Company Details" },
-    { id: "system", name: "System Settings" },
-    { id: "financial", name: "Financial Details" },
+    { id: "basic", name: "Company Details" },
+    { id: "company", name: "Tax Office Details" },
+    { id: "financial", name: "Bank Details" },
     { id: "terms", name: "Terms & Conditions" },
   ];
- 
-  // Load employer data on mount
+
+  useEffect(() => {
+    console.log("companyDetailsDTO updated:", formData.companyDetailsDTO);
+  }, [formData.companyDetailsDTO]);
+
+
   useEffect(() => {
     const fetchEmployerData = async () => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
- 
-    try {
-      const response = await axios.get(
-        `http://localhost:8080/api/v1/employer/allEmployers`
-      );
- 
-      if (response.status === 200 && response.data) {
-        if(response.data.length>0){
-           setFormData(response.data[0]);
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/employer/allEmployers`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+
+            },
+          }
+        );
+        console.log(response.data);
+
+        if (response.status === 200 && response.data) {
+          if (response.data.length > 0) {
+            setFormData(response.data[0]);
             setSuccess("Employer data loaded from backend.");
+          } else {
+            setIsIntialUpdate(true);
+          }
+        } else {
+          setFormData(initialFormData);
+          setError("No data found, showing default empty form.");
         }
-        else{
-          setIsIntialUpdate(true);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          setFormData(initialFormData);
+          setError("");
+        } else {
+          setError("Error fetching employer data.");
+          console.error(err);
         }
-       
-      } else {
-        setFormData(initialFormData);
-        setError("No data found, showing default empty form.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      if (err.response?.status === 404) {
-        setFormData(initialFormData);
-        setError("");
-      } else {
-        setError("Error fetching employer data.");
-        console.error(err);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
- 
-  fetchEmployerData();
+    };
+
+    fetchEmployerData();
   }, []);
- 
+
   // Fetch employer data from backend
- 
- 
+
   const handleInputChange = (field, value) => {
     if (field.startsWith("bankDetailsDTO.")) {
       const bankField = field.split(".")[1];
@@ -139,366 +118,190 @@ const CompanyDetails = () => {
         ...prev,
         bankDetailsDTO: { ...prev.bankDetailsDTO, [bankField]: value },
       }));
-    } else if (field.startsWith("taxOfficeDto.")) {
+    } else if (field.startsWith("taxOfficeDTO.")) {
       const taxField = field.split(".")[1];
       setFormData((prev) => ({
         ...prev,
-        taxOfficeDto: { ...prev.taxOfficeDto, [taxField]: value },
+        taxOfficeDTO: { ...prev.taxOfficeDTO, [taxField]: value },
       }));
-    } else if (field.startsWith("termsDto.")) {
+    } else if (field.startsWith("termsDTO.")) {
       const termsField = field.split(".")[1];
       setFormData((prev) => ({
         ...prev,
-        termsDto: { ...prev.termsDto, [termsField]: value },
+        termsDTO: { ...prev.termsDTO, [termsField]: value },
+      }));
+    } else if (field.startsWith("companyDetailsDTO.")) {
+      const companyField = field.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        companyDetailsDTO: {
+          ...prev.companyDetailsDTO,
+          [companyField]: value,
+        },
       }));
     } else {
       setFormData((prev) => ({ ...prev, [field]: value }));
     }
   };
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
- 
-   
- 
+
     setLoading(true);
     setError("");
     setSuccess("");
- 
-    if(isIntialUpdate){
+
+    if (isIntialUpdate) {
       try {
-      const response = await axios.post(
-        `http://localhost:8080/api/v1/employer/register/employers`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+        const response = await axios.post(
+          `http://localhost:8080/api/v1/employer/register/employers`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setSuccess("Employer details updated successfully!");
+          alert("Employer details updated successfully!");
+          localStorage.setItem("companyDetailsDTO.companyName", formData.companyDetailsDTO.companyName);
+        } else {
+          setError("Failed to update employer details.");
+          alert("Failed to update employer details.");
         }
-      );
- 
-      if (response.status === 200) {
-        setSuccess("Employer details updated successfully!");
-        alert("Employer details updated successfully!");
-      } else {
-        setError("Failed to update employer details.");
-        alert("Failed to update employer details.");
+        navigate("/employer-dashboard");
+      } catch (err) {
+        console.error("Error updating employer details", err);
+        setError("Error updating employer details.");
+        alert("Error updating employer details.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error updating employer details", err);
-      setError("Error updating employer details.");
-      alert("Error updating employer details.");
-    } finally {
-      setLoading(false);
-    }
-    }
-    else{
+    } else {
       try {
-      const response = await axios.put(
-        `http://localhost:8080/api/v1/employer/update/employers/${formData.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+        const response = await axios.put(
+          `http://localhost:8080/api/v1/employer/update/employers/${formData.id}`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "application/json",
+
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          setSuccess("Employer details updated successfully!");
+          alert("Employer details updated successfully!");
+          localStorage.setItem("companyName", formData.companyDetailsDTO.companyName);
+          localStorage.setItem("currentTaxYear", formData.companyDetailsDTO.currentTaxYear);
+          localStorage.setItem("region", formData.companyDetailsDTO.region);
+          localStorage.setItem("currentPayPeriod", formData.companyDetailsDTO.currentPayPeriod);
+        } else {
+          setError("Failed to update employer details.");
+          alert("Failed to update employer details.");
         }
-      );
- 
-      if (response.status === 200) {
-        setSuccess("Employer details updated successfully!");
-        alert("Employer details updated successfully!");
-      } else {
-        setError("Failed to update employer details.");
-        alert("Failed to update employer details.");
+        navigate("/employer-dashboard");
+      } catch (err) {
+        console.error("Error updating employer details", err);
+        setError("Error updating employer details.");
+        alert("Error updating employer details.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error("Error updating employer details", err);
-      setError("Error updating employer details.");
-      alert("Error updating employer details.");
-    } finally {
-      setLoading(false);
-    }
     }
   };
- 
-  // const getIcon = (iconName) => {
-  //   const icons = {
-  //     user: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-  //         />
-  //       </svg>
-  //     ),
-  //     briefcase: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0H8m8 0v2a2 2 0 01-2 2H10a2 2 0 01-2-2V6m8 0H8"
-  //         />
-  //       </svg>
-  //     ),
-  //     currency: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
-  //         />
-  //       </svg>
-  //     ),
-  //     document: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-  //         />
-  //       </svg>
-  //     ),
-  //     shield: (
-  //       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-  //         <path
-  //           strokeLinecap="round"
-  //           strokeLinejoin="round"
-  //           strokeWidth={2}
-  //           d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-  //         />
-  //       </svg>
-  //     ),
-  //   }
-  //   return icons[iconName] || icons.user
-  // }
- 
-  const renderBasicInformation = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Employer Name </label>
-          <input
-            type="text"
-            required
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerName}
-            onChange={(e) => handleInputChange("employerName", e.target.value)}
-            placeholder="Enter employer name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Employer ID </label>
-          <input
-            type="text"
-            required
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerId}
-            onChange={(e) => handleInputChange("employerId", e.target.value)}
-            placeholder="Enter employer ID"
-          />
-        </div>
-      </div>
- 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Address</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerAddress}
-            onChange={(e) => handleInputChange("employerAddress", e.target.value)}
-            placeholder="Enter address"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Post Code</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerPostCode}
-            onChange={(e) => handleInputChange("employerPostCode", e.target.value)}
-            placeholder="Enter post code"
-          />
-        </div>
-      </div>
- 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Telephone </label>
-          <input
-            type="tel"
-            required
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerTelephone}
-            onChange={(e) => handleInputChange("employerTelephone", e.target.value)}
-            placeholder="Enter telephone number"
-          />
-        </div>
- 
-        <div>
-  <label className="block text-sm font-medium text-gray-700">Pay Date</label>
-  <input
-    type="date"
-    required
-    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-    value={formData.payDate}
-    onChange={(e) => handleInputChange("payDate", e.target.value)}
-    placeholder="Select pay date"
-  />
-</div>
- 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email </label>
-          <input
-            type="email"
-            required
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerEmail}
-            onChange={(e) => handleInputChange("employerEmail", e.target.value)}
-            placeholder="Enter email address"
-          />
-        </div>
-        
-        <div>
-  <label className="block text-sm font-medium text-gray-700">Gender</label>
-  <select
-    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-    value={formData.gender}
-    onChange={(e) => handleInputChange("gender", e.target.value)}
-  >
-    <option value="">Select</option>
-    <option value="MALE">Male</option>
-    <option value="FEMALE">Female</option>
-   <option value="OTHER">Other</option>
-  </select>
-</div>
 
-      </div>
-    </div>
-  )
- 
-  const renderContactDetails = () => (
+  const renderCompanyDetail = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Contact Forename</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Company Name <span className="text-red-600">*</span>
+          </label>
           <input
             type="text"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.contactForename}
-            onChange={(e) => handleInputChange("contactForename", e.target.value)}
-            placeholder="Enter first name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Contact Surname</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.contactSurname}
-            onChange={(e) => handleInputChange("contactSurname", e.target.value)}
-            placeholder="Enter last name"
-          />
-        </div>
-      </div>
- 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">PDF Password</label>
-          <input
-            type="password"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.pdfPassword}
-            onChange={(e) => handleInputChange("pdfPassword", e.target.value)}
-            placeholder="Enter PDF password"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">User Reference</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.userReference}
-            onChange={(e) => handleInputChange("userReference", e.target.value)}
-            placeholder="Enter user reference"
-          />
-        </div>
-      </div>
- 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date PAYE Scheme Started</label>
-          <input
-            type="date"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.datePAYESchemeStarted}
-            onChange={(e) => handleInputChange("datePAYESchemeStarted", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Date PAYE Scheme Ceased</label>
-          <input
-            type="date"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.datePAYESchemeCeased}
-            onChange={(e) => handleInputChange("datePAYESchemeCeased", e.target.value)}
-          />
-        </div>
-      </div>
-    </div>
-  )
- 
-  const renderCompanyDetails = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Company Name</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.companyName}
-            onChange={(e) => handleInputChange("companyName", e.target.value)}
+            value={formData.companyDetailsDTO.companyName}
+            onChange={(e) => handleInputChange("companyDetailsDTO.companyName", e.target.value)}
             placeholder="Enter company name"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tax Year</label>
+          <label className="block text-sm font-medium text-gray-700">Tax Year <span className="text-red-600">*</span></label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.companyDetailsDTO.currentTaxYear}
+            onChange={(e) => handleInputChange("companyDetailsDTO.currentTaxYear", e.target.value)}
+          >
+            <option value="">Select</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Address <span className="text-red-600">*</span>
+          </label>
           <input
             type="text"
-            pattern="^\d{4}-\d{4}$"
-            placeholder="2025-2026"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.taxYear}
-            onChange={(e) => handleInputChange("taxYear", e.target.value)}
+            value={formData.companyDetailsDTO.companyAddress}
+            onChange={(e) =>
+              handleInputChange("companyDetailsDTO.companyAddress", e.target.value)
+            }
+            placeholder="Enter address"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Post Code <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.companyDetailsDTO.companyPostCode}
+            onChange={(e) =>
+              handleInputChange("companyDetailsDTO.companyPostCode", e.target.value)
+            }
+            placeholder="Enter post code"
           />
         </div>
       </div>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Pay Period</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Pay Period <span className="text-red-600">*</span>
+          </label>
           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.payPeriod}
-            onChange={(e) => handleInputChange("payPeriod", e.target.value)}
+            value={formData.companyDetailsDTO.currentPayPeriod}
+            onChange={(e) => handleInputChange("companyDetailsDTO.currentPayPeriod", e.target.value)}
           >
-            <option value="MONTHLY">Monthly</option>
+            <option value="" >Select</option>
             <option value="WEEKLY">Weekly</option>
-            <option value="FORTNIGHTLY">Fortnightly</option>
+            <option value="MONTHLY">Monthly</option>
+            <option value="YEARLY">Yearly</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Region</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Region <span className="text-red-600">*</span>
+          </label>
           <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.region}
-            onChange={(e) => handleInputChange("region", e.target.value)}
+            value={formData.companyDetailsDTO.region}
+            onChange={(e) => handleInputChange("companyDetailsDTO.region", e.target.value)}
           >
+            <option value="">Select</option>
             <option value="ENGLAND">England</option>
             <option value="NORTHERN_IRELAND">Northern Ireland</option>
             <option value="SCOTLAND">Scotland</option>
@@ -506,437 +309,469 @@ const CompanyDetails = () => {
           </select>
         </div>
       </div>
- 
-      <div className="space-y-4">
-        <h4 className="text-md font-medium text-gray-900">Tax Office Details</h4>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">PAYE Reference</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.payeReference}
-              onChange={(e) => handleInputChange("taxOfficeDto.payeReference", e.target.value)}
-              placeholder="Enter PAYE Reference"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Accounts Office Reference</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.accountsOfficeReference}
-              onChange={(e) => handleInputChange("taxOfficeDto.accountsOfficeReference", e.target.value)}
-              placeholder="Enter Accounts Office Reference"
-            />
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Unique Tax Ref</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.uniqueTaxRef}
-              onChange={(e) => handleInputChange("taxOfficeDto.uniqueTaxRef", e.target.value)}
-              placeholder="Enter Unique Tax Ref"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Corporation Tax Ref</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.corporationTaxRef}
-              onChange={(e) => handleInputChange("taxOfficeDto.corporationTaxRef", e.target.value)}
-              placeholder="Enter Corporation Tax Ref"
-            />
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Payroll Giving Ref</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.payrollGivingRef}
-              onChange={(e) => handleInputChange("taxOfficeDto.payrollGivingRef", e.target.value)}
-              placeholder="Enter Payroll Giving Ref"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-            <select
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.paymentMethod}
-              onChange={(e) => handleInputChange("taxOfficeDto.paymentMethod", e.target.value)}
-            >
-              <option value="ONLINE">Online</option>
-              <option value="DIRECT_DEBIT">Direct Debit</option>
-              <option value="CHEQUE">Cheque</option>
-              <option value="BANK_TRANSFER">Bank Transfer</option>
-            </select>
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Child Support Reference</label>
-            <input
-              type="text"
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-              value={formData.taxOfficeDto.childSupportRef}
-              onChange={(e) => handleInputChange("taxOfficeDto.childSupportRef", e.target.value)}
-              placeholder="Enter Child Support Reference"
-            />
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.taxOfficeDto.serQualifiedThisYear}
-              onChange={(e) => handleInputChange("taxOfficeDto.serQualifiedThisYear", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">Ser Qualified This Year</label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.taxOfficeDto.serQualifiedLastYear}
-              onChange={(e) => handleInputChange("taxOfficeDto.serQualifiedLastYear", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">Ser Qualified Last Year</label>
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.taxOfficeDto.noRtiDueWarnings}
-              onChange={(e) => handleInputChange("taxOfficeDto.noRtiDueWarnings", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">No RTI Due Warnings</label>
-          </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.taxOfficeDto.claimNICAllowance}
-              onChange={(e) => handleInputChange("taxOfficeDto.claimNICAllowance", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">Claim NIC Allowance</label>
-          </div>
-        </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData.taxOfficeDto.claimEmploymentAllowance}
-              onChange={(e) => handleInputChange("taxOfficeDto.claimEmploymentAllowance", e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">Claim Employment Allowance</label>
-          </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Pay Date <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="date"
+            required
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.companyDetailsDTO.payDate}
+            onChange={(e) => {
+              handleInputChange("companyDetailsDTO.payDate", e.target.value);
+            }}
+            placeholder="Select pay date"
+          />
+
         </div>
       </div>
     </div>
-  )
-const renderSystemSettings = () => (
-    <div className="space-y-6">
-      {/* <h4 className="text-md font-medium text-gray-900">System Preferences</h4> */}
-      <div className="space-y-4">
-        {[
-          { name: "rtiBatchProcessing", label: "RTI Batch Processing" },
-          { name: "previousWorksNumberUnknown", label: "Previous Works Number Unknown" },
-          { name: "ensureUniqueWorksNumber", label: "Ensure Unique Works Number" },
-          { name: "warnBelowNationalMinimumWage", label: "Warn Below National Minimum Wage" },
-          { name: "showAgeOnHourlyTab", label: "Show Age On Hourly Tab" },
-        ].map((preference) => (
-          <div key={preference.name} className="flex items-center">
-            <input
-              type="checkbox"
-              checked={formData[preference.name]}
-              onChange={(e) => handleInputChange(preference.name, e.target.checked)}
-              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <label className="ml-2 text-sm font-medium text-gray-700">{preference.label}</label>
-          </div>
-        ))}
+  );
+  const renderCompanyDetails = () => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Date PAYE Scheme Started
+          </label>
+          <input
+            type="date"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.datePAYESchemeStarted}
+            onChange={(e) =>
+              handleInputChange("taxOfficeDTO.datePAYESchemeStarted", e.target.value)
+            }
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Date PAYE Scheme Ceased
+          </label>
+          <input
+            type="date"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.datePAYESchemeCeased}
+            onChange={(e) =>
+              handleInputChange("taxOfficeDTO.datePAYESchemeCeased", e.target.value)
+            }
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            PAYE Reference
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.payeReference}
+            onChange={(e) =>
+              handleInputChange("taxOfficeDTO.payeReference", e.target.value)
+            }
+            placeholder="Enter PAYE Reference"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Accounts Office Reference
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.accountsOfficeReference}
+            onChange={(e) =>
+              handleInputChange(
+                "taxOfficeDTO.accountsOfficeReference",
+                e.target.value
+              )
+            }
+            placeholder="Enter Accounts Office Reference"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Unique Tax Ref
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.uniqueTaxRef}
+            onChange={(e) =>
+              handleInputChange("taxOfficeDTO.uniqueTaxRef", e.target.value)
+            }
+            placeholder="Enter Unique Tax Ref"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Corporation Tax Ref
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.corporationTaxRef}
+            onChange={(e) =>
+              handleInputChange(
+                "taxOfficeDTO.corporationTaxRef",
+                e.target.value
+              )
+            }
+            placeholder="Enter Corporation Tax Ref"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Payroll Giving Reference Id <span className="text-red-600">*</span>
+          </label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.payrollGivingRef}
+            onChange={(e) =>
+              handleInputChange(
+                "taxOfficeDTO.payrollGivingRef",
+                e.target.value
+              )
+            }
+            placeholder="Enter Payroll Giving Ref"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Payment Method
+          </label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.taxOfficeDTO.paymentMethod}
+            onChange={(e) =>
+              handleInputChange("taxOfficeDTO.paymentMethod", e.target.value)
+            }
+          >
+            <option value="ONLINE">Online</option>
+            <option value="DIRECT_DEBIT">Direct Debit</option>
+            <option value="CHEQUE">Cheque</option>
+            <option value="BANK_TRANSFER">Bank Transfer</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            checked={formData.taxOfficeDTO.claimEmploymentAllowance}
+            onChange={(e) =>
+              handleInputChange(
+                "taxOfficeDTO.claimEmploymentAllowance",
+                e.target.checked
+              )
+            }
+            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+          />
+          <span className="ml-2 text-sm font-medium text-gray-700">
+            Claim Employment Allowance
+          </span>
+        </label>
       </div>
     </div>
-  )
-const renderFinancialDetails = () => (
+  );
+  const renderFinancialDetails = () => (
     <div className="space-y-8">
-      <div>
-        <h4 className="text-md font-medium text-gray-900 mb-4">Bank Details</h4>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Account Name</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.accountName}
-                onChange={(e) => handleInputChange("bankDetailsDTO.accountName", e.target.value)}
-                placeholder="Enter account name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Account Number</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.accountNumber}
-                onChange={(e) => handleInputChange("bankDetailsDTO.accountNumber", e.target.value)}
-                placeholder="Enter account number"
-              />
-            </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Account Name <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.accountName}
+              onChange={(e) =>
+                handleInputChange(
+                  "bankDetailsDTO.accountName",
+                  e.target.value
+                )
+              }
+              placeholder="Enter account name"
+            />
           </div>
- 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Sort Code</label>
-              <input
-                type="text"
-                maxLength={6}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.sortCode}
-                onChange={(e) => handleInputChange("bankDetailsDTO.sortCode", e.target.value)}
-                placeholder="Enter sort code"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Bank Name</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.bankName}
-                onChange={(e) => handleInputChange("bankDetailsDTO.bankName", e.target.value)}
-                placeholder="Enter bank name"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Account Number <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.accountNumber}
+              onChange={(e) =>
+                handleInputChange(
+                  "bankDetailsDTO.accountNumber",
+                  e.target.value
+                )
+              }
+              placeholder="Enter account number"
+            />
           </div>
- 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Bank Address</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.bankAddress}
-                onChange={(e) => handleInputChange("bankDetailsDTO.bankAddress", e.target.value)}
-                placeholder="Enter bank address"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Bank Post Code</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.bankPostCode}
-                onChange={(e) => handleInputChange("bankDetailsDTO.bankPostCode", e.target.value)}
-                placeholder="Enter bank post code"
-              />
-            </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Sort Code <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              placeholder="00-00-00"
+              maxLength={8} // 6 digits + 2 hyphens
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.sortCode}
+              onChange={(e) => {
+                let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                if (value.length > 6) value = value.slice(0, 6);
+
+                // Add hyphens after every 2 digits
+                const formatted =
+                  value.slice(0, 2) +
+                  (value.length > 2 ? "-" + value.slice(2, 4) : "") +
+                  (value.length > 4 ? "-" + value.slice(4, 6) : "");
+
+                setFormData((prev) => ({
+                  ...prev,
+                  bankDetailsDTO: {
+                    ...prev.bankDetailsDTO,
+                    sortCode: formatted,
+                  },
+                }));
+              }}
+            />
           </div>
- 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Telephone</label>
-              <input
-                type="tel"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.telephone}
-                onChange={(e) => handleInputChange("bankDetailsDTO.telephone", e.target.value)}
-                placeholder="Enter telephone number"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Payment Reference</label>
-              <input
-                type="text"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.paymentReference}
-                onChange={(e) => handleInputChange("bankDetailsDTO.paymentReference", e.target.value)}
-                placeholder="Enter payment reference"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Bank Name <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.bankName}
+              onChange={(e) =>
+                handleInputChange("bankDetailsDTO.bankName", e.target.value)
+              }
+              placeholder="Enter bank name"
+            />
           </div>
- 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Payment Lead Days</label>
-              <input
-                type="number"
-                min="0"
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                value={formData.bankDetailsDTO.paymentLeadDays}
-                onChange={(e) => handleInputChange("bankDetailsDTO.paymentLeadDays", e.target.value)}
-                placeholder="Enter payment lead days"
-              />
-            </div>
-            <div className="flex items-center mt-6">
-              <input
-                type="checkbox"
-                checked={formData.bankDetailsDTO.isRTIReturnsIncluded}
-                onChange={(e) => handleInputChange("bankDetailsDTO.isRTIReturnsIncluded", e.target.checked)}
-                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-              />
-              <label className="ml-2 text-sm font-medium text-gray-700">Include in RTI Returns</label>
-            </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Bank Address
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.bankAddress}
+              onChange={(e) =>
+                handleInputChange(
+                  "bankDetailsDTO.bankAddress",
+                  e.target.value
+                )
+              }
+              placeholder="Enter bank address"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Bank Post Code
+            </label>
+            <input
+              type="text"
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              value={formData.bankDetailsDTO.bankPostCode}
+              onChange={(e) =>
+                handleInputChange(
+                  "bankDetailsDTO.bankPostCode",
+                  e.target.value
+                )
+              }
+              placeholder="Enter bank post code"
+            />
           </div>
         </div>
       </div>
     </div>
-  )
- 
+
+  );
+
   const renderTermsConditions = () => (
     <div className="space-y-6">
-      <h4 className="text-md font-medium text-gray-900">Employment Terms</h4>
- 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Hours Worked Per Week</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Hours Worked Per Week
+          </label>
           <input
             type="number"
             min="0"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.hoursWorkedPerWeek}
-            onChange={(e) => handleInputChange("termsDto.hoursWorkedPerWeek", Number.parseInt(e.target.value) || 0)}
-            // placeholder="40"
+            value={formData.termsDTO.hoursWorkedPerWeek}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.hoursWorkedPerWeek",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="40"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Weeks Notice Required</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Weeks Notice Required
+          </label>
           <input
             type="number"
             min="0"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.weeksNoticeRequired}
-            onChange={(e) => handleInputChange("termsDto.weeksNoticeRequired", Number.parseInt(e.target.value) || 0)}
-            // placeholder="4"
+            value={formData.termsDTO.weeksNoticeRequired}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.weeksNoticeRequired",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="4"
           />
         </div>
       </div>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Days Sickness on Full Pay</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Days Sickness on Full Pay
+          </label>
           <input
             type="number"
             min="0"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.daysSicknessOnFullPay}
-            onChange={(e) => handleInputChange("termsDto.daysSicknessOnFullPay", Number.parseInt(e.target.value) || 0)}
-            // placeholder="30"
+            value={formData.termsDTO.daysSicknessOnFullPay}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.daysSicknessOnFullPay",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="30"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Days Holiday Per Year</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Days Holiday Per Year
+          </label>
           <input
             type="number"
             min="0"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.daysHolidayPerYear}
-            onChange={(e) => handleInputChange("termsDto.daysHolidayPerYear", Number.parseInt(e.target.value) || 0)}
-            // placeholder="28"
+            value={formData.termsDTO.daysHolidayPerYear}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.daysHolidayPerYear",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="28"
           />
         </div>
       </div>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Male Retirement Age</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Male Retirement Age
+          </label>
           <input
             type="number"
             min="0"
             max="100"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.maleRetirementAge}
-            onChange={(e) => handleInputChange("termsDto.maleRetirementAge", Number.parseInt(e.target.value) || 0)}
-            // placeholder="65"
+            value={formData.termsDTO.maleRetirementAge}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.maleRetirementAge",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="65"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Female Retirement Age</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Female Retirement Age
+          </label>
           <input
             type="number"
             min="0"
             max="100"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.femaleRetirementAge}
-            onChange={(e) => handleInputChange("termsDto.femaleRetirementAge", Number.parseInt(e.target.value) || 0)}
-            // placeholder="65"
+            value={formData.termsDTO.femaleRetirementAge}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.femaleRetirementAge",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="65"
           />
         </div>
       </div>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Max Days to Carry Over</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Max Days to Carry Over
+          </label>
           <input
             type="number"
             min="0"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.termsDto.maxDaysToCarryOver}
-            onChange={(e) => handleInputChange("termsDto.maxDaysToCarryOver", Number.parseInt(e.target.value) || 0)}
-            // placeholder="28"
+            value={formData.termsDTO.maxDaysToCarryOver}
+            onChange={(e) =>
+              handleInputChange(
+                "termsDTO.maxDaysToCarryOver",
+                Number.parseInt(e.target.value) || 0
+              )
+            }
+          // placeholder="28"
           />
-        </div>
-      </div>
- 
-      <div className="space-y-4">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.termsDto.isPaidOvertime}
-            onChange={(e) => handleInputChange("termsDto.isPaidOvertime", e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-          />
-          <label className="ml-2 text-sm font-medium text-gray-700">Is Paid Overtime</label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={formData.termsDto.mayJoinPensionScheme}
-            onChange={(e) => handleInputChange("termsDto.mayJoinPensionScheme", e.target.checked)}
-            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-          />
-          <label className="ml-2 text-sm font-medium text-gray-700">May Join Pension Scheme</label>
         </div>
       </div>
     </div>
-  )
- 
+  );
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "basic":
-        return renderBasicInformation()
-      case "contact":
-        return renderContactDetails()
+        return renderCompanyDetail();
       case "company":
-        return renderCompanyDetails()
-      case "system":
-        return renderSystemSettings()
+        return renderCompanyDetails();
       case "financial":
-        return renderFinancialDetails()
+        return renderFinancialDetails();
       case "terms":
-        return renderTermsConditions()
+        return renderTermsConditions();
       default:
-        return renderBasicInformation()
+        return renderCompanyDetail();
     }
-  }
- 
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -944,8 +779,12 @@ const renderFinancialDetails = () => (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Employer Details</h1>
-              <p className="text-sm text-gray-600">Manage your company information and settings</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Company Details
+              </h1>
+              <p className="text-sm text-gray-600">
+                Manage your company information
+              </p>
             </div>
             <button
               onClick={() => navigate("/employer-dashboard")}
@@ -956,7 +795,7 @@ const renderFinancialDetails = () => (
           </div>
         </div>
       </div>
- 
+
       {/* Alerts */}
       {error && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
@@ -965,7 +804,7 @@ const renderFinancialDetails = () => (
           </div>
         </div>
       )}
- 
+
       {/* {success && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
           <div className="bg-green-50 border border-green-200 rounded-md p-4">
@@ -973,7 +812,7 @@ const renderFinancialDetails = () => (
           </div>
         </div>
       )} */}
- 
+
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
           {/* Sidebar */}
@@ -983,16 +822,16 @@ const renderFinancialDetails = () => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`${
-                    activeTab === tab.id
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                      : "border-transparent text-gray-900 hover:bg-gray-50 hover:text-gray-900"
-                  } group border-l-4 px-3 py-2 flex items-center text-sm font-medium w-full text-left`}
+                  className={`${activeTab === tab.id
+                    ? "bg-indigo-50 border-indigo-500 text-indigo-700"
+                    : "border-transparent text-gray-900 hover:bg-gray-50 hover:text-gray-900"
+                    } group border-l-4 px-3 py-2 flex items-center text-sm font-medium w-full text-left`}
                 >
                   <span
-                    className={`${
-                      activeTab === tab.id ? "text-indigo-500" : "text-gray-400 group-hover:text-gray-500"
-                    } flex-shrink-0 -ml-1 mr-3`}
+                    className={`${activeTab === tab.id
+                      ? "text-indigo-500"
+                      : "text-gray-400 group-hover:text-gray-500"
+                      } flex-shrink-0 -ml-1 mr-3`}
                   >
                     {/* {getIcon(tab.icon)} */}
                   </span>
@@ -1001,7 +840,7 @@ const renderFinancialDetails = () => (
               ))}
             </nav>
           </aside>
- 
+
           {/* Main content */}
           <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
             <form onSubmit={handleSubmit}>
@@ -1015,18 +854,20 @@ const renderFinancialDetails = () => (
                       Please fill in all required information for this section.
                     </p>
                   </div>
- 
+
                   {renderTabContent()}
                 </div>
- 
+
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                   <div className="flex justify-between">
                     <button
                       type="button"
                       onClick={() => {
-                        const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
+                        const currentIndex = tabs.findIndex(
+                          (tab) => tab.id === activeTab
+                        );
                         if (currentIndex > 0) {
-                          setActiveTab(tabs[currentIndex - 1].id)
+                          setActiveTab(tabs[currentIndex - 1].id);
                         }
                       }}
                       disabled={activeTab === "basic"}
@@ -1034,21 +875,23 @@ const renderFinancialDetails = () => (
                     >
                       Previous
                     </button>
- 
+
                     <div className="space-x-3">
                       {activeTab !== "terms" && (
                         <button
                           type="button"
                           onClick={() => {
-                            const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
-                            setActiveTab(tabs[currentIndex + 1].id)
+                            const currentIndex = tabs.findIndex(
+                              (tab) => tab.id === activeTab
+                            );
+                            setActiveTab(tabs[currentIndex + 1].id);
                           }}
                           className="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                         >
                           Next
                         </button>
                       )}
- 
+
                       {activeTab === "terms" && (
                         <button
                           type="submit"
@@ -1067,8 +910,7 @@ const renderFinancialDetails = () => (
         </div>
       </div>
     </div>
-  )
-}
-export default CompanyDetails
- 
- 
+  );
+};
+export default CompanyDetails;
+
