@@ -1,0 +1,362 @@
+.p45-container {
+  width: 794px;           
+  min-Height: 1123px;
+  box-sizing: border-box; 
+  background-color: #fff;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  margin: 0 auto;
+  overflow: visible;     
+  position: relative;     
+}
+
+.input {
+  border: 1px solid black;
+  box-sizing: border-box;
+  background-color: #fff;
+}
+
+.black-line {
+  width: 695.5px;
+  height: 13.3px; 
+  background-color: black;
+  position: absolute;
+}
+
+.gov-logo {
+  position: absolute;
+  font-weight: bold;
+  font-size: 18.7px; 
+}
+
+.form-label {
+  position: absolute;
+  font-size: 18.7px; 
+  font-weight: bold;  
+  font-family: Arial, sans-serif;
+}
+
+.details-heading {
+  position: absolute;
+  font-size: 18.7px; 
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+}
+
+.copy-label {
+  position: absolute;
+  font-size: 16px; 
+  font-family: Arial, sans-serif;
+}
+.pdf-export p,
+.pdf-export img,
+.pdf-export h1,
+.pdf-export h2,
+.pdf-export h3,
+.pdf-export h4,
+.pdf-export h5,
+.pdf-export h6,
+.pdf-export li,
+.pdf-export span,
+.pdf-export a,
+.pdf-export label,
+.pdf-export input,
+.pdf-export div {
+  margin-top: -5px !important; /* move only text elements up */
+  margin-bottom: 10px !important;
+}
+.pdf-changes div {
+  line-height: 0.4 !important;
+}
+
+.pdf-p1{
+  margin-top: 10px !important;
+}
+.number-box {
+  width: 26.5px;
+  height: 16px;
+  border: 1px solid black;
+  font-weight: bold;
+  font-size: 9.3px; 
+  user-select: none;
+  background-color: #fff;
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; 
+  align-items: center;
+  }
+
+.p45-container h2 {
+  font-family: Arial, sans-serif;
+  font-size: 14px; 
+  font-weight: bold;
+}
+
+.p45-container p {
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  line-height: 1.2;
+  margin: 0;
+}
+
+.p45-contaniner Link {
+  font-weight: bold;
+  font-size: 11.3px; 
+  font-family: Arial, sans-serif;
+}
+
+.p45-container p1 {
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  line-height: 1.2;
+  margin: 0;
+}
+
+.input-box {
+  width: 60.5px;
+  height: 22.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.slash {
+  font-family: Arial, sans-serif;
+  font-size: 24px; 
+  font-weight: normal;
+  position: absolute;
+  user-select: none;
+  margin-top: -5px;
+  /* line-height: 1; */
+  /* top: 50%;
+  transform: translateY(-50%); */
+}
+
+.large-input-box {
+  width: 204.1px;
+  height: 22.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.input-box2 {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  position: absolute;
+  width: 289.2px;
+  height: 22.7px;
+}
+
+.date {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  width: 37.8px;
+  height: 22.7px;
+}
+
+.year {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  width: 75.6px;
+  height: 22.7px;
+}
+
+.studentloanbox {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  width: 18.9px;
+  height: 22.7px;
+}
+
+.taxcode {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  padding: 2px 4px;
+  width: 162.5px;
+  height: 22.7px;
+}
+
+.week1 {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11.3px;
+  width: 18.9px;
+  height: 22.7px;
+}
+
+.weeknumber {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  width: 37.8px;
+  height: 22.7px;
+}
+
+.monthnumber {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 16px; 
+  width: 37.8px;
+  height: 22.7px;
+}
+
+.paytodatebox {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  width: 18.9px;
+  height: 22.7px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-right: 2px;
+  padding-top: 0px;
+}
+
+.totalpaytodatebox {
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  position: absolute;
+  width: 236.5px;
+  height: 22.7px;
+  text-align: end;
+  
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  font-weight: normal;
+  color: black;
+  pointer-events: none;
+  user-select: none;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.paytodate-wrapper {
+  position: relative;
+  width: 18.9px;
+  height: 22.7px;
+}
+
+.p-symbol {
+  position: absolute;
+  left: 15.1px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  color: black;
+  pointer-events: none;
+  user-select: none;
+}
+
+.horizontal-line {
+  position: absolute;
+  width: 794px;
+  height: 1.33px;
+  background-color: black;
+}
+
+.worknumber {
+  width: 289.2px;
+  height: 45.4px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.male {
+  width: 18.9px;
+  height: 22.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  text-align:center;
+}
+
+.female {
+  width: 18.9px;
+  height: 22.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  text-align:center;
+}
+
+.employee-private-address {
+  width: 289.2px;
+  height: 68px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  padding-left: 7.6px;
+  line-height: 1.2;
+  text-align:start;
+  
+}
+
+.postcode {
+  width: 173.9px;
+  height: 22.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+}
+
+.employer-address-box {
+  width: 289.2px;
+  height: 90.7px;
+  border: 1px solid black;
+  background-color: #fff;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  font-size: 11.3px; 
+  line-height: 3;
+  padding-left: 7px;
+}
+
+.capital-letters {
+  font-family: Arial;
+  font-size: 12px; 
+  font-weight: normal;
+  position: absolute;
+}
+
+
+

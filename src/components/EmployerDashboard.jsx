@@ -5,7 +5,7 @@ import axios from "axios"
 const EmployerDashboard = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const employerId = "MTL1";
+  // const employerId = "MTL1025";
   const [employer, setEmployer] = useState(null);
   
 
@@ -17,11 +17,15 @@ const EmployerDashboard = () => {
   const navItems = [
     //{name:"Add Company Details",path:"/add-company"},
     {name:"Company Details",path:"/company-details"},
+    {name:"Employer details",path:"/employer-details"},
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
-    { name: "Payslips", path: "/payroll-run", icon: "calculator" },
+    { name: "PayrollRun", path: "/payroll-run", icon: "calculator" },
     // { name: "PAYE", path: "/paye", icon: "chart" },
     { name: "Reports", path: "/reports", icon: "chart" },
+    {name:"All payslips", path:"/all-payslips"},
+    
+    
   ]
 
   const getIcon = (iconName) => {
@@ -82,14 +86,15 @@ const EmployerDashboard = () => {
         </svg>
       ),
     }
-    return icons[iconName] || icons.home
+    // return icons[iconName] || icons.home
+    //  return icons[iconName] 
   }
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        console.log("employerData",employerId);
-        const response = await axios.get(`http://localhost:8080/api/custom-dto/employer-dashboard-details/${employerId}`);
+        console.log("employerData",);
+        const response = await axios.get(`http://localhost:8080/api/custom-dto/employer-dashboard-details`);
         console.log("Dashboard Data fetched:", response.data);
         setEmployer(response.data);
       } catch (error) {
@@ -97,7 +102,7 @@ const EmployerDashboard = () => {
       }
     };
     fetchEmployees();
-  }, [employerId]);
+  }, []);
 
 //   if (employers.length === 0 || allEmployees.length === 0 || allPayslips.length === 0) {
 //   return <div className="text-center mt-10 text-gray-500">Loading dashboard data...</div>;
