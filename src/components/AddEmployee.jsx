@@ -1,11 +1,17 @@
-//AddEmployee.jsx
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios";
 import Select from 'react-select';
 
 const AddEmployee = ({ onAddEmployee }) => {
   const [formData, setFormData] = useState({
+
+    previousEmploymentDataDTO: {
+      previousTaxCode: "",
+      previousTotalPayToDate: "",
+      previousTotalTaxToDate: "",
+      previousEmploymentEndDate: ""
+    },
     firstName: "",
     lastName: "",
     email: "",
@@ -16,9 +22,9 @@ const AddEmployee = ({ onAddEmployee }) => {
     postCode: "",
     employeeDepartment: "",
     employmentStartedDate: "",
-    employmentEndDate: null,
+    employmentEndDate: "",
     employmentType: "FULL_TIME",
-    employerId: "",
+    workingCompanyName: "",
     payPeriod: "",
     annualIncomeOfEmployee: "",
     p45Document: "",
@@ -29,14 +35,10 @@ const AddEmployee = ({ onAddEmployee }) => {
     bankDetailsDTO: {
       accountName: "",
       accountNumber: "",
-      paymentReference: "",
       bankName: "",
       sortCode: "",
       bankAddress: "",
       bankPostCode: "",
-      telephone: "",
-      paymentLeadDays: 0,
-      isRTIReturnsIncluded: false,
     },
 
     taxCode: "",
@@ -51,26 +53,29 @@ const AddEmployee = ({ onAddEmployee }) => {
       hasPostgraduateLoan: false,
       postgraduateLoanPlanType: "NONE",
     },
+    
     hasPensionEligible: false,
-    // isDirector:false,
-    // pensionScheme: "WORKPLACE_PENSION",
-    // employeeContribution: 5,
-    // employerContribution: 3,
     studentLoanDto: {
       hasStudentLoan: false,
       studentLoanPlanType: "NONE",
     },
     otherEmployeeDetails: null,
+    
   });
 
 
   const [activeTab, setActiveTab] = useState("personal")
+  const [employers, setEmployers]=useState([]);
   const navigate = useNavigate()
   const [warnings, setWarnings] = useState([]);
   const [errors, setErrors] = useState({});
   const [p45File, setP45File] = useState(null);
   const [starterChecklistFile, setStarterChecklistFile] = useState(null);
-
+  const [selectedDocument, setSelectedDocument] = useState("")
+  const [dob, setDob] = useState('');
+  const [suggestedCategory, setSuggestedCategory] = useState('');
+  const [isAutoEnrolled, setIsAutoEnrolled] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
 
   const tabs = [
@@ -78,7 +83,6 @@ const AddEmployee = ({ onAddEmployee }) => {
     { id: "employment", name: "Employment", icon: "briefcase" },
     { id: "pay", name: "Pay", icon: "currency" },
     { id: "taxNI", name: "Tax & NI", icon: "document" },
-    // { id: "autoEnrolment", name: "Auto Enrolment", icon: "shield" },
   ]
 
   const NICategoryLetters = [
@@ -123,6 +127,105 @@ const AddEmployee = ({ onAddEmployee }) => {
     { value: 'DEVELOPMENT', label: 'DEVELOPMENT' },
   ];
 
+const formatSortCode = (input) => {
+  let value = input.replace(/\D/g, ""); // Remove non-digits
+  if (value.length > 6) value = value.slice(0, 6);
+
+  return (
+    value.slice(0, 2) +
+    (value.length > 2 ? "-" + value.slice(2, 4) : "") +
+    (value.length > 4 ? "-" + value.slice(4, 6) : "")
+  );
+};
+
+  useEffect(()=>{
+    if(formData.annualIncomeOfEmployee  && formData.dateOfBirth && formData.taxYear && formData.gender){
+      axios.get(`http://localhost:8081/api/employee-details/auto-enrollment/status/${formData.annualIncomeOfEmployee}/${formData.dateOfBirth}/${formData.taxYear}/${formData.gender}`)
+      .then(res=>{
+        setSubmitError("")
+        setIsAutoEnrolled(res.data === true);
+        setFormData((prev)=>({
+          ...prev,
+          hasPensionEligible: res.data === true,
+        }))
+      })
+      .catch(error=>{
+        console.error("Auto-enrollment check failed: ", error);
+         if (error.response?.status === 409) {
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 400){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?. status === 404){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 422){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 500){
+            setSubmitError(error.response.data.message);
+          }
+           else {
+            setSubmitError("Something went wrong while adding new Employee.");
+          }
+      })
+    }
+  },[formData.annualIncomeOfEmployee, formData.dateOfBirth, formData.taxYear, formData.gender]);
+
+  const validatePersonalDetailsTab = () =>{
+    const newErrors = {};
+    const newWarnings = [];
+ 
+      if(!formData.firstName){
+        newErrors.firstName = "First name is required.";
+      }
+
+      if(!formData.lastName){
+        newErrors.lastName = "Last name is required. ";
+      }
+
+      if(!formData.email){
+        newErrors.email = "Email is required. ";
+      } 
+      // else if(!formData.email.endsWith("@gmail.com")){
+      //   newErrors.email = "Only Gmail addresses (@gmail.com) are allowed."
+      // }
+
+      if(!formData.dateOfBirth){
+        newErrors.dateOfBirth = "Date of Birth is required.";
+      } else{
+        const dobDate = new Date(formData.dateOfBirth);
+const today = new Date();
+
+// Set time of both to 00:00:00 to only compare date portion
+dobDate.setHours(0, 0, 0, 0);
+today.setHours(0, 0, 0, 0);
+
+if (dobDate >= today) {
+  newErrors.dateOfBirth = "Date of birth must be in the past.";
+}
+
+      }
+
+      if(!formData.employeeId){
+        newErrors.employeeId = "EmployeeId is required";
+      }
+
+      if(!formData.postCode){
+        newErrors.postCode = "PostCode is required";
+      }
+
+      if(!formData.address){
+        newErrors.address = "Address is required.";
+      }
+
+      if(!formData.gender){
+        newErrors.gender = "Gender is required.";
+      }
+    
+ setErrors(newErrors);
+    setWarnings(newWarnings);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
   const validateCurrentTab = (tabId) => {
     const newErrors = {};
     const newWarnings = [];
@@ -131,18 +234,19 @@ const AddEmployee = ({ onAddEmployee }) => {
       if (!formData.annualIncomeOfEmployee) {
         newErrors.annualIncomeOfEmployee = "Annual income is required.";
       }
-      if (!formData.payPeriod) {
-        newErrors.payPeriod = "Pay period is required.";
-      }
 
-      if (!formData.bankDetailsDTO?.accountName) {
-        newErrors.accountName = "Account name is required.";
-      }
+     if (!formData.bankDetailsDTO?.accountName) {
+  newErrors.accountName = "Account name is required.";
+}
       if (!formData.bankDetailsDTO?.accountNumber) {
         newErrors.accountNumber = "Account number is required.";
+      } else if(formData.bankDetailsDTO?.accountNumber.length !== 8){
+        newErrors.accountNumber="accountNumber must be 8 digits";
       }
-      if (!formData.bankDetailsDTO?.sortCode || formData.bankDetailsDTO?.sortCode.length !== 6) {
-        newErrors.sortCode = "Sort code must be 6 digits.";
+      if (!formData.bankDetailsDTO?.sortCode) {
+        newErrors.sortCode = "Sort code is required.";
+      } else if(formData.bankDetailsDTO?.sortCode.length !== 8){
+         newErrors.sortCode = "Sort code must be in the format 00-00-00";
       }
       if (!formData.bankDetailsDTO?.bankName) {
         newErrors.bankName = "Bank Name is required.";
@@ -159,7 +263,7 @@ const AddEmployee = ({ onAddEmployee }) => {
     const newWarnings = [];
 
     //  Format taxCode and NI Number
-    const emergencyTaxCodes = ["1257L X", "1257L W1", "1257L M1"];
+    // const emergencyTaxCodes = ["1257L X", "1257L W1", "1257L M1"];
     const rawTaxCode = formData.taxCode?.trim().toUpperCase() || "";
     const formattedTaxCode = rawTaxCode.replace(/(1257L)([XMW1]+)/, "$1 $2");
     const formattedNINumber = formData.nationalInsuranceNumber?.trim().toUpperCase() || "";
@@ -181,12 +285,6 @@ const AddEmployee = ({ onAddEmployee }) => {
     }
     if (!formData.niLetter) {
       newErrors.niLetter = "NI Category Letter is required.";
-    }
-    if (!formData.region) {
-      newErrors.region = "Region is required.";
-    }
-    if (!formData.taxYear) {
-      newErrors.taxYear = "Tax Year is required.";
     }
 
     // Student Loan
@@ -212,9 +310,15 @@ const AddEmployee = ({ onAddEmployee }) => {
     }
 
     //  Emergency tax code warning
-    if (emergencyTaxCodes.includes(formattedTaxCode) && !formData.hasEmergencyCode) {
-      newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
-    }
+    // if (emergencyTaxCodes.includes(formattedTaxCode) && !formData.hasEmergencyCode) {
+    //   newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
+    // }
+
+    // if (formData.hasEmergencyCode && !emergencyTaxCodes.includes(formattedTaxCode)) {
+    //   newWarnings.push(
+    //     "You checked the Emergency Tax code check box but entered a tax code that is not an Emergency Tax code."
+    //   )
+    // }
 
     //  Region mismatches
     if (formattedTaxCode.startsWith("S") && formData.region !== "SCOTLAND") {
@@ -231,68 +335,288 @@ const AddEmployee = ({ onAddEmployee }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+
+  useEffect(()=>{
+    const storedWorkingComapny=localStorage.getItem("companyName");
+    const storedPayPeriod=localStorage.getItem("currentPayPeriod");
+    const storedRegion=localStorage.getItem("region");
+    const storedTaxYear=localStorage.getItem("currentTaxYear");
+
+    setFormData((prev)=>({
+      ...prev,
+      workingCompanyName:storedWorkingComapny,
+      payPeriod:storedPayPeriod,
+      region:storedRegion,
+      taxYear:storedTaxYear,
+    }))
+  },[]);
+
+
   const handleInputChange = (field, value) => {
-    const keys = field.split(".");
-    if (keys.length === 2) {
-      const [parentKey, childKey] = keys;
-      setFormData((prev) => ({
-        ...prev,
-        [parentKey]: {
-          ...prev[parentKey],
-          [childKey]: value,
-        },
-      }));
+  const keys = field.split(".");
+  const upperValue = value.toUpperCase();
+  const isEmergency = field === "taxCode" && /\b(W1|M1|X)\b$/.test(upperValue.trim());
+
+  setFormData((prev) => ({
+    ...prev,
+    [field]: upperValue,
+    ...(field === "taxCode" && { hasEmergencyCode: isEmergency })
+  }));
+
+  // Update formData
+  if (keys.length === 2) {
+    const [parentKey, childKey] = keys;
+    setFormData((prev) => ({
+      ...prev,
+      [parentKey]: {
+        ...prev[parentKey],
+        [childKey]: value,
+      },
+    }));
+  } else {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }
+
+  // Clear errors dynamically when field is corrected
+  setErrors((prevErrors) => {
+    const newErrors = { ...prevErrors };
+
+    switch (field) {
+      //tax and NI fields
+      case "taxCode":
+        if (value.trim() !== "") delete newErrors.taxCode;
+        break;
+      case "nationalInsuranceNumber":
+        if (value.trim() !== "") delete newErrors.nationalInsuranceNumber;
+        break;
+      case "niLetter":
+        if (value) delete newErrors.niLetter;
+        break;
+      case "annualIncomeOfEmployee":
+        if (value.trim() !== "") delete newErrors.annualIncomeOfEmployee;
+        break;
+      //Personal Details fields 
+      case "firstName":
+        if (value.trim() !== "") delete newErrors.firstName;
+        break; 
+      case "lastName":
+        if (value.trim() !== "") delete newErrors.lastName;
+        break;
+      case "email":
+        if(value.trim()!=="") delete newErrors.email;
+        break;
+      case "dateOfBirth":
+        if(value.trim()!=="") delete newErrors.dateOfBirth;
+        break;
+      case "employeeId":
+        if(value.trim()!=="") delete newErrors.employeeId;
+        break;
+      case "postCode":
+        if(value.trim()!=="") delete newErrors.postCode;
+        break;
+      case "address":
+        if(value.trim()!=="") delete newErrors.address;
+        break;
+      case "gender":
+        if(value.trim()!=="") delete newErrors.gender;
+        break;           
+
+      //  Bank Details Fields
+      case "bankDetailsDTO.accountName":
+        if (value.trim() !== "") delete newErrors.accountName;
+        break;
+      case "bankDetailsDTO.accountNumber":
+        if (value.trim() !== "") delete newErrors.accountNumber;
+        break;
+      case "bankDetailsDTO.sortCode":
+        if (value.trim().length === 8) delete newErrors.sortCode;
+        break;
+      case "bankDetailsDTO.bankName":
+        if (value.trim() !== "") delete newErrors.bankName;
+        break;
+
+      //  Student Loan & Postgraduate Loan
+      case "studentLoanDto.hasStudentLoan":
+      case "studentLoanDto.studentLoanPlanType":
+        delete newErrors.studentLoanCheckbox;
+        delete newErrors.studentLoanPlanType;
+        break;
+      case "postGraduateLoanDto.hasPostgraduateLoan":
+      case "postGraduateLoanDto.postgraduateLoanPlanType":
+        delete newErrors.postgraduateLoanCheckbox;
+        delete newErrors.postgraduateLoanPlanType;
+        break;
+
+      default:
+        break;
+    }
+
+    return newErrors;
+  });
+
+   //  Dynamic warning check based on latest values
+  setWarnings(() => {
+    const updatedFormData = { ...formData };
+
+    if (field.includes(".")) {
+      const [parentKey, childKey] = field.split(".");
+      updatedFormData[parentKey] = {
+        ...updatedFormData[parentKey],
+        [childKey]: value,
+      };
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
-  };
-
-  const handleNext = () => {
-    const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
-
-    let isFormValid = true;
-
-    if (activeTab === "taxNI") {
-      isValid = validateForm() && validateTaxAndLoanDetails();
-    } else {
-      isValid = true; 
+      updatedFormData[field] = value;
     }
 
-    if (!isValid) return; 
+    const formattedTaxCode = updatedFormData.taxCode?.toUpperCase().trim() || "";
+    const region = updatedFormData.region;
+    const hasEmergencyCode = updatedFormData.hasEmergencyCode;
 
-    // Move to next tab
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1].id);
+    const newWarnings = [];
+
+    // if (
+    //   formattedTaxCode &&
+    //   emergencyTaxCodes.includes(formattedTaxCode) &&
+    //   !hasEmergencyCode
+    // ) {
+    //   newWarnings.push("You selected an emergency tax code. Please click the Emergency Tax Code box.");
+    // }
+
+    // if (
+    //   hasEmergencyCode &&
+    //   formattedTaxCode &&
+    //   !emergencyTaxCodes.includes(formattedTaxCode)
+    // ) {
+    //   newWarnings.push(
+    //     "You checked the Emergency Tax code check box but entered a tax code that is not an Emergency Tax code."
+    //   );
+    // }
+
+    if (formattedTaxCode.startsWith("S") && region !== "SCOTLAND") {
+      newWarnings.push("Tax code starts with 'S'. Please select region Scotland.");
     }
+
+    if (formattedTaxCode.startsWith("C") && region !== "WALES") {
+      newWarnings.push("Tax code starts with 'C'. Please select region Wales.");
+    }
+
+    return newWarnings;
+  });
+};
+
+
+   const handleDobChange = (e) => {
+    const selectedDate = e.target.value;
+    setDob(selectedDate);
+
+    const birthDate = new Date(selectedDate);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+     // Determine NI category suggestion
+    let suggestion = '';
+    if (age <= 16) {
+      suggestion = 'Suggested NI Category: X (Under 16)';
+    } else if (age > 16 && age < 21) {
+      suggestion = 'Suggested NI Category: M (Under 21)';
+    } else if (age >= 21 && age < 66) {
+      suggestion = 'Suggested NI Category: A (Standard)';
+    } else if(age >= 66){
+      suggestion = 'Suggested NI Category: C (Over State Pension Age)';
+    }else{
+      suggestion = 'Choose any NI Category';
+    }
+
+    setSuggestedCategory(suggestion);
   };
 
   const validateForm = () => {
-    return validateCurrentTab("pay") && validateTaxAndLoanDetails();
+    return validateCurrentTab("pay") && validateTaxAndLoanDetails() && validatePersonalDetailsTab();
   };
 
-  const handleP45Change = (e) => {
-    setP45File(e.target.files[0]);
+  const handleDocumentsChange = (e) => {
+    if(e.target.value===""){
+        setFormData((prev) => ({
+        ...prev,
+        hasP45DocumentSubmitted: false,
+        hasStarterChecklistDocumentSubmitted: false,
+        starterChecklistDocument:"",
+        p45Document:"",
+        previousEmploymentDataDTO:{
+          ...prev.previousEmploymentDataDTO,
+        previousTaxCode:"",
+        previousTotalTaxToDate:"",
+        previousTotalPayToDate:"",
+        previousEmploymentEndDate:""
+        }
+      }));
+      setStarterChecklistFile("");
+      setP45File("");
+    }
+    else if (e.target.value === "p45") {
+      console.log(1)
+      setFormData((prev) => ({
+        ...prev,
+        starterChecklistDocument:"",
+        hasP45DocumentSubmitted: true,
+        hasStarterChecklistDocumentSubmitted: false,
+      }));
+ 
+      setStarterChecklistFile("");
+    }
+    else if (e.target.value === "starterChecklist") {
+      console.log(2)
+      setFormData((prev) => ({
+        ...prev,
+        hasP45DocumentSubmitted: false,
+        hasStarterChecklistDocumentSubmitted: true,
+        p45Document:"",
+        previousEmploymentDataDTO:{
+          ...prev.previousEmploymentDataDTO,
+        previousTaxCode:"",
+        previousTotalTaxToDate:"",
+        previousTotalPayToDate:"",
+        previousEmploymentEndDate:""
+        }
+       
+      }));
+ 
+      setP45File("");
+    }
+    console.log(formData);
+    setSelectedDocument(e.target.value);
   };
-
+ 
   const handleStarterChecklistChange = (e) => {
     setStarterChecklistFile(e.target.files[0]);
   };
+ 
+   const handleP45Change = (e) => {
+    setP45File(e.target.files[0]);
+  };
+ 
 
   const handleSubmit = async (e) => {
     console.log(formData);
     e.preventDefault();
-    let updatedData = { ...formData};
+    let updatedData = { ...formData };
 
     const isFormValid = validateForm();
     const isTaxValid = validateTaxAndLoanDetails();
-   // Prevent submission if there are warnings or errors
-  if (!isFormValid || !isTaxValid || warnings.length > 0 || Object.keys(errors).length > 0) {
-    console.warn("Form blocked due to errors or warnings.");
-    return;
-  }
+    const isPersonalDetailsValid = validatePersonalDetailsTab();
+    // Prevent submission if there are warnings or errors
+    if (!isFormValid || !isTaxValid || !isPersonalDetailsValid || warnings.length > 0 || Object.keys(errors).length > 0) {
+      console.warn("Form blocked due to errors or warnings.");
+      return;
+    }
 
 
 
@@ -303,13 +627,13 @@ const AddEmployee = ({ onAddEmployee }) => {
         if (p45File) formDataUpload.append("p45Document", p45File);
         if (starterChecklistFile) formDataUpload.append("starterChecklist", starterChecklistFile);
 
-        const fileData = await axios.post(`http://localhost:8080/api/employee-details/upload-documents`, formDataUpload, {
+        const fileData = await axios.post(`http://localhost:8081/api/employee-details/upload-documents`, formDataUpload, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
 
         console.log(fileData.data);
-         updatedData = {
+        updatedData = {
           ...updatedData,
           hasP45DocumentSubmitted: !!fileData.data["P45"],
           hasStarterChecklistDocumentSubmitted: !!fileData.data["checklist"],
@@ -318,11 +642,11 @@ const AddEmployee = ({ onAddEmployee }) => {
         };
       }
 
-         
+
       console.log("form data", formData);
 
       const response = await axios.post(
-        "http://localhost:8080/api/employee-details/create",
+        "http://localhost:8081/api/employee-details/create",
         updatedData,
         {
           headers: {
@@ -331,7 +655,7 @@ const AddEmployee = ({ onAddEmployee }) => {
         }
       );
 
-
+       setSubmitError("");
       if (response.status === 201) {
         alert("Employee added successfully");
 
@@ -341,20 +665,28 @@ const AddEmployee = ({ onAddEmployee }) => {
           onAddEmployee(formData);
         }
 
-        navigate("/employer-dashboard"); 
+        navigate("/employer-dashboard");
       } else {
 
         alert("Failed to add employee. Please try again.");
       }
     } catch (error) {
-      if (error.status === 500) {
-        alert(error.response.data);
-      }
-      else {
-        alert("There was an error adding the employee.");
-      }
       console.error("Error adding employee:", error);
 
+            if (error.response?.status === 409) {
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 400){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?. status === 404){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 422){
+            setSubmitError(error.response.data.message);
+          } else if (error.response?.status === 500){
+            setSubmitError(error.response.data.message);
+          }
+           else {
+            setSubmitError("Something went wrong while adding new Employee.");
+          }
     }
   };
 
@@ -400,16 +732,6 @@ const AddEmployee = ({ onAddEmployee }) => {
           />
         </svg>
       ),
-      shield: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-          />
-        </svg>
-      ),
     }
     return icons[iconName] || icons.user
   }
@@ -426,6 +748,9 @@ const AddEmployee = ({ onAddEmployee }) => {
             value={formData.firstName}
             onChange={(e) => handleInputChange("firstName", e.target.value)}
           />
+          {/* {errors.firstName && (
+  <p className="text-red-600 text-sm mt-1">{errors.firstName}</p>
+)} */}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Last Name <span className="text-red-600">*</span></label>
@@ -457,7 +782,11 @@ const AddEmployee = ({ onAddEmployee }) => {
             required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.dateOfBirth}
-            onChange={(e) => handleInputChange("dateOfBirth", e.target.value)}
+           onChange={(e) => {
+  handleInputChange("dateOfBirth", e.target.value);
+  handleDobChange(e);
+}}
+
           />
         </div>
       </div>
@@ -540,13 +869,16 @@ const AddEmployee = ({ onAddEmployee }) => {
 
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Employer ID <span className="text-red-600">*</span></label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium text-gray-700">Employment Type</label>
+          <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employerId}
-            onChange={(e) => handleInputChange("employerId", e.target.value)}
-          />
+            value={formData.employmentType}
+            onChange={(e) => handleInputChange("employmentType", e.target.value)}
+          >
+            <option value="FULL_TIME">Full Time</option>
+            <option value="PART_TIME">Part Time</option>
+            <option value="CONTRACT">Contract</option>
+          </select>
         </div>
       </div>
 
@@ -564,24 +896,12 @@ const AddEmployee = ({ onAddEmployee }) => {
             onChange={(e) => handleInputChange("employmentStartedDate", e.target.value)}
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Employment Type</label>
-          <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.employmentType}
-            onChange={(e) => handleInputChange("employmentType", e.target.value)}
-          >
-            <option value="FULL_TIME">Full Time</option>
-            <option value="PART_TIME">Part Time</option>
-            <option value="CONTRACT">Contract</option>
-            <option value="TEMPORARY">Temporary</option>
-          </select>
-        </div>
+
+
         <div>
           <label className="block text-sm font-medium text-gray-700"> Employment End Date</label>
           <input
             type="date"
-            required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.employmentEndDate}
             onChange={(e) => handleInputChange("employmentEndDate", e.target.value)}
@@ -591,9 +911,12 @@ const AddEmployee = ({ onAddEmployee }) => {
           <label className="block text-sm font-medium text-gray-700">Working Company Name <span className="text-red-600">*</span></label>
           <input
             type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
+            // value={employers[0]?.companyDetailsDTO?.companyName}
             value={formData.workingCompanyName}
             onChange={(e) => handleInputChange("workingCompanyName", e.target.value)}
+            title="Working company name is set to the current company"
+            readOnly
           />
         </div>
       </div>
@@ -617,9 +940,12 @@ const AddEmployee = ({ onAddEmployee }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Pay Period <span className="text-red-600">*</span></label>
           <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
+            // value={employers[0]?.companyDetailsDTO?.currentPayPeriod}
             value={formData.payPeriod}
             onChange={(e) => handleInputChange("payPeriod", e.target.value)}
+            title="Pay period is set to the current pay period of the company"
+            disabled
           >
             <option value="">Select</option>
             <option value="WEEKLY">Weekly</option>
@@ -638,14 +964,8 @@ const AddEmployee = ({ onAddEmployee }) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.bankDetailsDTO.accountName}
             onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  accountName: e.target.value,
-                },
-              }))
-            }
+    handleInputChange("bankDetailsDTO.accountName", e.target.value)
+  }
           />
         </div>
 
@@ -656,36 +976,29 @@ const AddEmployee = ({ onAddEmployee }) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.bankDetailsDTO.accountNumber}
             onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  accountNumber: e.target.value,
-                },
-              }))
-            }
+    handleInputChange("bankDetailsDTO.accountNumber", e.target.value)
+  }
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Sort Code <span className="text-red-600">*</span></label>
+           <label className="block text-sm font-medium text-gray-700">
+            Sort Code <span className="text-red-600">*</span>
+          </label>
           <input
-            type="text"
-            maxLength={6}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.bankDetailsDTO.sortCode}
-            onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  sortCode: e.target.value,
-                },
-              }))
-            }
-          />
-        </div>
+  type="text"
+  placeholder="00-00-00"
+  maxLength={8}
+  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+  value={formData.bankDetailsDTO?.sortCode || ""}
+  onChange={(e) => {
+    const formatted = formatSortCode(e.target.value);
+    handleInputChange("bankDetailsDTO.sortCode", formatted);
+  }}
+/>
 
+        </div>
+      
         <div>
           <label className="block text-sm font-medium text-gray-700">Bank Name <span className="text-red-600">*</span></label>
           <input
@@ -693,14 +1006,8 @@ const AddEmployee = ({ onAddEmployee }) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.bankDetailsDTO.bankName}
             onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  bankName: e.target.value,
-                },
-              }))
-            }
+    handleInputChange("bankDetailsDTO.bankName", e.target.value)
+  }
           />
         </div>
 
@@ -711,14 +1018,8 @@ const AddEmployee = ({ onAddEmployee }) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.bankDetailsDTO.bankAddress}
             onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  bankAddress: e.target.value,
-                },
-              }))
-            }
+    handleInputChange("bankDetailsDTO.bankAddress", e.target.value)
+  }
           />
         </div>
 
@@ -729,394 +1030,32 @@ const AddEmployee = ({ onAddEmployee }) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.bankDetailsDTO.bankPostCode}
             onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  bankPostCode: e.target.value,
-                },
-              }))
-            }
+    handleInputChange("bankDetailsDTO.bankPostCode", e.target.value)
+  }
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Telephone</label>
-          <input
-            type="tel"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.bankDetailsDTO.telephone}
-            onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  telephone: e.target.value,
-                },
-              }))
-            }
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Payment Reference</label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.bankDetailsDTO.paymentReference}
-            onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  paymentReference: e.target.value,
-                },
-              }))
-            }
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Payment Lead Days</label>
-          <input
-            type="number"
-            min="0"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.bankDetailsDTO.paymentLeadDays}
-            onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  paymentLeadDays: e.target.value,
-                },
-              }))
-            }
-          />
-        </div>
-
-        <div className="flex items-center mt-6">
-          <input
-            type="checkbox"
-            checked={formData.bankDetailsDTO.isRTIReturnsIncluded}
-            onChange={(e) =>
-              setFormData(prev => ({
-                ...prev,
-                bankDetailsDTO: {
-                  ...prev.bankDetailsDTO,
-                  isRTIReturnsIncluded: e.target.checked,
-                },
-              }))
-            }
-            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-          />
-          <label className="ml-2 text-sm font-medium text-gray-700">
-            Include in RTI Returns
-          </label>
         </div>
       </div>
     </div>
   )
 
-//   const renderTaxNI = () => (
-//     <div className="space-y-6">
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Tax Code <span className="text-red-600">*</span></label>
-//           <input
-//             type="text"
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.taxCode}
-//             onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
-//           />
-//         </div>
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">National Insurance Number <span className="text-red-600">*</span></label>
-//           <input
-//             type="text"
-//             placeholder="AB123456C"
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.nationalInsuranceNumber}
-//             onChange={(e) => handleInputChange("nationalInsuranceNumber", e.target.value.toUpperCase())}
-//           />
-//         </div>
-//       </div>
-
-//       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">NI Category Letter <span className="text-red-600">*</span></label>
-//           <Select
-//             options={NICategoryLetters}
-//             value={NICategoryLetters.find((option) => option.value === formData.niLetter)}
-//             onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
-//             className="mt-1 text-sm"
-//             styles={{
-//               menuList: (base) => ({
-//                 ...base,
-//                 maxHeight: '120px', // Show around 4 items, then scroll
-//               }),
-//             }}
-//             placeholder="Select NI Category Letter..."
-//             isSearchable
-//           />
-//         </div>
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Region <span className="text-red-600">*</span></label>
-//           <select
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.region}
-//             onChange={(e) => handleInputChange("region", e.target.value)}
-//           >
-//             <option value="">Select</option>
-//             <option value="SCOTLAND">Scotland</option>
-//             <option value="ENGLAND">England</option>
-//             <option value="NORTHERN_IRELAND">Northern Ireland</option>
-//             <option value="WALES">Wales</option>
-//           </select>
-//         </div>
-
-//         <div className="flex flex-row gap-20">
-//           <label className="flex items-center mt-6">
-//             <input
-//               type="checkbox"
-//               checked={formData.hasEmergencyCode}
-//               onChange={(e) =>
-//                 setFormData(prev => ({
-//                   ...prev,
-//                   hasEmergencyCode: e.target.checked,
-//                 }))
-//               }
-//               className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-//             />
-//             <span className="ml-2 text-sm font-medium text-gray-700">
-//               Emergency Tax Code
-//             </span>
-//           </label>
-
-//           <label className="flex items-center mt-6">
-//             <input
-//               type="checkbox"
-//               checked={formData.studentLoanDto.hasStudentLoan}
-//               onChange={(e) =>
-//                 setFormData(prev => ({
-//                   ...prev,
-//                   studentLoanDto: {
-//                     ...prev.studentLoanDto,
-//                     hasStudentLoan: e.target.checked,
-//                   },
-//                 }))
-//               }
-//               className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-//             />
-//             <span className="ml-2 text-sm font-medium text-gray-700">
-//               Student Loan
-//             </span>
-//           </label>
-//         </div>
-// {formData.studentLoanDto.hasStudentLoan && (
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Student Loan Type</label>
-//           <select
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.studentLoanDto.studentLoanPlanType}
-//             onChange={(e) => handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)}
-//           >
-//             <option value="NONE">None</option>
-//             <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
-//             <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
-//             <option value="STUDENT_LOAN_PLAN_3">Plan 4</option>
-//           </select>
-//         </div>
-// )}
-
-
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Tax Year <span className="text-red-600">*</span></label>
-//           <select
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.taxYear}
-//             onChange={(e) => handleInputChange("taxYear", e.target.value)}
-//           >
-//             <option value="">Select</option>
-//             <option value="2025-2026">2025-2026</option>
-//             <option value="2024-2025">2024-2025</option>
-//             <option value="2023-2024">2023-2024</option>
-//           </select>
-//         </div>
-
-//         <label className="flex items-center mt-6">
-//           <input
-//             type="checkbox"
-//             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-//             checked={formData.postGraduateLoanDto.hasPostgraduateLoan}
-//             onChange={(e) =>
-//               setFormData(prev => ({
-//                 ...prev,
-//                 postGraduateLoanDto: {
-//                   ...prev.postGraduateLoanDto,
-//                   hasPostgraduateLoan: e.target.checked,
-//                 },
-//               }))
-//             }
-//           />
-
-//           <span className="ml-2 text-sm font-medium text-gray-700">
-//             Postgraduate Loan
-//           </span>
-//         </label>
-
-// {formData.postGraduateLoanDto.hasPostgraduateLoan && (
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Postgraduate Loan</label>
-//           <select
-//             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-//             value={formData.postGraduateLoanDto.postgraduateLoanPlanType}
-//             onChange={(e) => handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)}
-//           >
-//             <option value="NONE">None</option>
-//             <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
-//           </select>
-//         </div>
-//         )}
-
-//         <label className="flex items-center">
-//           <input
-//             type="checkbox"
-//             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-//             checked={formData.hasPensionEligible}
-//             onChange={(e) =>
-//               handleInputChange("hasPensionEligible", e.target.checked)
-//             }
-//           />
-//           <span className="ml-2 text-sm text-gray-700 font-medium">
-//             Eligible for Auto Enrolment
-//           </span>
-//         </label>
-
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Upload P45 Document</label>
-//           <input type="file" onChange={handleP45Change} className="mt-1 block w-50 bg-blue-100 text-sm border-1 border-blue-500 rounded-lg p-1" />
-//         </div>
-
-//         <div>
-//           <label className="block text-sm font-medium text-gray-700">Upload Starter Checklist</label>
-//           <input type="file" onChange={handleStarterChecklistChange} className="mt-1 block w-50 bg-blue-100 text-sm border-1 border-blue-500 rounded-lg p-1" />
-//         </div>
-
-//       </div>
-//     </div>
-//   )
-
-
-  //   const renderAutoEnrolment = () => (
-  //   <div className="space-y-6">
-  //     <div>
-  //       <label className="flex items-center">
-  //         <input
-  //           type="checkbox"
-  //           className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-  //           checked={formData.autoEnrolmentEligible}
-  //           onChange={(e) =>
-  //             handleInputChange("autoEnrolmentEligible", e.target.checked)
-  //           }
-  //         />
-  //         <span className="ml-2 text-sm text-gray-700">
-  //           Eligible for Auto Enrolment
-  //         </span>
-  //       </label>
-  //     </div>
-
-  //     {formData.autoEnrolmentEligible && (
-  //       <>
-  //         <div>
-  //           <label className="block text-sm font-medium text-gray-700">
-  //             Pension Scheme
-  //           </label>
-  //           <select
-  //             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //             value={formData.pensionScheme}
-  //             onChange={(e) =>
-  //               handleInputChange("pensionScheme", e.target.value)
-  //             }
-  //           >
-  //             <option value="">-- Select --</option>
-  //             <option value="WORKPLACE_PENSION">Workplace Pension</option>
-  //             <option value="NEST">NEST</option>
-  //             <option value="STAKEHOLDER">Stakeholder Pension</option>
-  //           </select>
-
-  //           <div className="mt-4">
-  //   <label className="flex items-center">
-  //     <input
-  //       type="checkbox"
-  //       className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-  //       checked={formData.isDirector}
-  //       onChange={(e) =>
-  //         handleInputChange("isDirector", e.target.checked)
-  //       }
-  //     />
-  //     <span className="ml-2 text-sm text-gray-700">Is Director</span>
-  //   </label>
-  // </div>
-
-  //         </div>
-
-  //         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-  //           <div>
-  //             <label className="block text-sm font-medium text-gray-700">
-  //               Employee Contribution (%)
-  //             </label>
-  //             <input
-  //               type="number"
-  //               min="0"
-  //               max="100"
-  //               step="0.1"
-  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //               value={formData.employeeContribution}
-  //               onChange={(e) =>
-  //                 handleInputChange(
-  //                   "employeeContribution",
-  //                   parseFloat(e.target.value) || 0
-  //                 )
-  //               }
-  //             />
-  //           </div>
-  //           <div>
-  //             <label className="block text-sm font-medium text-gray-700">
-  //               Employer Contribution (%)
-  //             </label>
-  //             <input
-  //               type="number"
-  //               min="0"
-  //               max="100"
-  //               step="0.1"
-  //               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-  //               value={formData.employerContribution}
-  //               onChange={(e) =>
-  //                 handleInputChange(
-  //                   "employerContribution",
-  //                   parseFloat(e.target.value) || 0
-  //                 )
-  //               }
-  //             />
-  //           </div>
-  //         </div>
-  //       </>
-  //     )}
-  //   </div>
-  // );
-  
   const renderTaxNI = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tax Code <span className="text-red-600">*</span></label>
-          <input
-            type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.taxCode}
-            onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
-          />
+          <label className="block text-sm font-medium text-gray-700">Tax Year <span className="text-red-600">*</span></label>
+          <select
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
+            // value={employers[0]?.companyDetailsDTO.currentTaxYear}
+            value={formData.taxYear}
+            title="Tax year is auto-selected by company"
+            onChange={(e) => handleInputChange("taxYear", e.target.value)}
+            disabled
+          >
+            <option value="">Select</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="2023-2024">2023-2024</option>
+          </select>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">National Insurance Number <span className="text-red-600">*</span></label>
@@ -1129,31 +1068,40 @@ const AddEmployee = ({ onAddEmployee }) => {
           />
         </div>
       </div>
- 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">NI Category Letter <span className="text-red-600">*</span></label>
-          <Select
-            options={NICategoryLetters}
-            value={NICategoryLetters.find((option) => option.value === formData.niLetter)}
-            onChange={(selectedOption) => handleInputChange('niLetter', selectedOption?.value || '')}
-            className="mt-1 text-sm"
-            styles={{
-              menuList: (base) => ({
-                ...base,
-                maxHeight: '120px',
-              }),
-            }}
-            placeholder="Select NI Category Letter..."
-            isSearchable
-          />
-        </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">NI Category Letter <span className="text-red-600">*</span></label>
+            <Select
+              options={NICategoryLetters}
+              value={NICategoryLetters.find((option) => option.value === formData.niLetter)}
+              onChange={(selectedOption) => {
+    handleInputChange('niLetter', selectedOption?.value || '');
+    setSuggestedCategory(""); // 🔁 clear suggestion on selection
+  }}
+              className="mt-1 text-sm"
+              styles={{
+                menuList: (base) => ({
+                  ...base,
+                  maxHeight: '120px',
+                }),
+              }}
+              placeholder="Select NI Category Letter..."
+              isSearchable
+            />
+                      {suggestedCategory && (
+          <p className="mt-2 text-blue-600 text-sm font-medium">{suggestedCategory}</p>
+        )}
+          </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Region <span className="text-red-600">*</span></label>
           <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
+            // value={employers[0]?.companyDetailsDTO.region}
             value={formData.region}
+            title="Region is auto-selected by company"
             onChange={(e) => handleInputChange("region", e.target.value)}
+            disabled
           >
             <option value="">Select</option>
             <option value="SCOTLAND">Scotland</option>
@@ -1162,26 +1110,26 @@ const AddEmployee = ({ onAddEmployee }) => {
             <option value="WALES">Wales</option>
           </select>
         </div>
- 
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Tax Year <span className="text-red-600">*</span></label>
-          <select
+
+
+<div>
+          <label className="block text-sm font-medium text-gray-700">Tax Code <span className="text-red-600">*</span></label>
+          <input
+            type="text"
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.taxYear}
-            onChange={(e) => handleInputChange("taxYear", e.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="2025-2026">2025-2026</option>
-            <option value="2024-2025">2024-2025</option>
-            <option value="2023-2024">2023-2024</option>
-          </select>
+            value={formData.taxCode}
+            onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
+          />
         </div>
- 
+
+
         <div className="flex flex-row flex-nowrap">
+          {formData.hasEmergencyCode && 
           <label className="flex items-center mt-6 w-full">
             <input
               type="checkbox"
-              checked={formData.hasEmergencyCode}
+               checked={formData.hasEmergencyCode}
+               readOnly
               onChange={(e) =>
                 setFormData(prev => ({
                   ...prev,
@@ -1194,116 +1142,177 @@ const AddEmployee = ({ onAddEmployee }) => {
               Emergency Tax Code
             </span>
           </label>
-           
-            <label className="flex items-center mt-6 w-full">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                checked={formData.hasPensionEligible}
-                onChange={(e) =>
-                  handleInputChange("hasPensionEligible", e.target.checked)
-                }
-              />
-              <span className="ml-2 block text-sm text-gray-700 font-medium">
-                Eligible for Auto Enrolment
-              </span>
-            </label>
-           
+}
+
+          <label className="flex items-center mt-6 w-full">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              checked={isAutoEnrolled}
+              readOnly
+            />
+            <span className="ml-2 block text-sm text-gray-700 font-medium">
+              Eligible for Auto Enrolment
+            </span>
+          </label>
+
         </div>
       </div>
- 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <div>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.studentLoanDto.hasStudentLoan}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    studentLoanDto: {
-                      ...prev.studentLoanDto,
-                      hasStudentLoan: e.target.checked,
-                    },
-                  }))
-                }
-                className="rounded block border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 "
-              />
-              <span className="ml-2 text-sm font-medium text-gray-700 w-full">
-                Student Loan
-              </span>
-            </label>
- 
-            {formData.studentLoanDto.hasStudentLoan && (
-              <div>
-               
-                <select
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                  value={formData.studentLoanDto.studentLoanPlanType}
-                  onChange={(e) =>
-                    handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)
-                  }
-                >
-                  <option value="NONE">None</option>
-                  <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
-                  <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
-                  <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
-                </select>
-              </div>
-            )}
-          </div>
- 
-          <div className="w-full">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                checked={formData.postGraduateLoanDto.hasPostgraduateLoan}
-                onChange={(e) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    postGraduateLoanDto: {
-                      ...prev.postGraduateLoanDto,
-                      hasPostgraduateLoan: e.target.checked,
-                    },
-                  }))
-                }
-              />
-              <span className="ml-2 block text-sm font-medium text-gray-700">
-                Postgraduate Loan
-              </span>
-            </label>
- 
-            {formData.postGraduateLoanDto.hasPostgraduateLoan && (
-              <div>
-               
-                <select
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-                  value={formData.postGraduateLoanDto.postgraduateLoanPlanType}
-                  onChange={(e) =>
-                    handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)
-                  }
-                >
-                  <option value="NONE">None</option>
-                  <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
-                </select>
-              </div>
-            )}
- 
-          </div>
-        </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          <div>
-          <label className="block text-sm font-medium text-gray-700">Upload P45 Document</label>
-          <input type="file" onChange={handleP45Change} className="mt-1 block w-full bg-blue-100 text-sm border-1 border-blue-500 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" />
-        </div>
- 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Upload Starter Checklist</label>
-          <input type="file" onChange={handleStarterChecklistChange} className="mt-1 block w-full bg-blue-100 text-sm border-1 border-blue-500 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" />
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.studentLoanDto.hasStudentLoan}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  studentLoanDto: {
+                    ...prev.studentLoanDto,
+                    hasStudentLoan: e.target.checked,
+                  },
+                }))
+              }
+              className="rounded block border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 "
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700 w-full">
+              Student Loan
+            </span>
+          </label>
+
+          {formData.studentLoanDto.hasStudentLoan && (
+            <div>
+
+              <select
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                value={formData.studentLoanDto.studentLoanPlanType}
+                onChange={(e) =>
+                  handleInputChange("studentLoanDto.studentLoanPlanType", e.target.value)
+                }
+              >
+                <option value="NONE">None</option>
+                <option value="STUDENT_LOAN_PLAN_1">Plan 1</option>
+                <option value="STUDENT_LOAN_PLAN_2">Plan 2</option>
+                <option value="STUDENT_LOAN_PLAN_4">Plan 4</option>
+              </select>
+            </div>
+          )}
         </div>
+
+        <div className="w-full">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+              checked={formData.postGraduateLoanDto.hasPostgraduateLoan}
+              onChange={(e) =>
+                setFormData(prev => ({
+                  ...prev,
+                  postGraduateLoanDto: {
+                    ...prev.postGraduateLoanDto,
+                    hasPostgraduateLoan: e.target.checked,
+                  },
+                }))
+              }
+            />
+            <span className="ml-2 block text-sm font-medium text-gray-700">
+              Postgraduate Loan
+            </span>
+          </label>
+
+          {formData.postGraduateLoanDto.hasPostgraduateLoan && (
+            <div>
+
+              <select
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+                value={formData.postGraduateLoanDto.postgraduateLoanPlanType}
+                onChange={(e) =>
+                  handleInputChange("postGraduateLoanDto.postgraduateLoanPlanType", e.target.value)
+                }
+              >
+                <option value="NONE">None</option>
+                <option value="POSTGRADUATE_LOAN_PLAN_3">Postgraduate Loan Plan 3</option>
+              </select>
+            </div>
+          )}
+
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+
+        <div >
+          <select value={selectedDocument} onChange={(e) => handleDocumentsChange(e)}>
+            <option value="">Upload Document</option>
+            <option value="p45">P45</option>
+            <option value="starterChecklist">Starter Checklist</option>
+          </select>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          {formData.hasP45DocumentSubmitted && <div>
+            <label className="block text-sm font-medium  text-gray-700">Upload P45 Document</label>
+            <input type="file" onChange={handleP45Change} className="mt-1 block  bg-blue-100 text-sm border-1 border-blue-500 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>}
+
+          {formData.hasStarterChecklistDocumentSubmitted && <div>
+            <label className="block text-sm font-medium text-gray-700">Upload Starter Checklist</label>
+            <input type="file" onChange={handleStarterChecklistChange} className="mt-1 block  bg-blue-100 text-sm border-1 border-blue-500 rounded-md shadow-sm px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>}
+        </div>
+      </div>
+
+      {formData.hasP45DocumentSubmitted && <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Previous Tax Code <span className="text-red-600"></span></label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.previousEmploymentDataDTO.previousTaxCode}
+
+            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousTaxCode", e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Previous Total Pay To Date <span className="text-red-600"></span></label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.previousEmploymentDataDTO.previousTotalPayToDate}
+
+
+            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousTotalPayToDate", e.target.value)}
+          />
+        </div>
+
+
+      </div>}
+      {formData.hasP45DocumentSubmitted && <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Previous Total Tax To Date <span className="text-red-600"></span></label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.previousEmploymentDataDTO.previousTotalTaxToDate}
+            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousTotalTaxToDate", e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Previous Employment EndDate <span className="text-red-600">*</span></label>
+          <input
+            type="date"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={formData.previousEmploymentDataDTO.previousEmploymentEndDate}
+
+
+            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousEmploymentEndDate", e.target.value)}
+          />
+        </div>
+      </div>}
     </div>
   )
 
@@ -1317,8 +1326,6 @@ const AddEmployee = ({ onAddEmployee }) => {
         return renderPay();
       case "taxNI":
         return renderTaxNI();
-      case "autoEnrolment":
-        return renderAutoEnrolment();
       default:
         return renderPersonalDetails();
     }
@@ -1381,13 +1388,34 @@ const AddEmployee = ({ onAddEmployee }) => {
                       {tabs.find((tab) => tab.id === activeTab)?.name}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                     Fields marked with (*) are mandatory. Please fill them out.
+                      Fields marked with (*) are mandatory. Please fill them out.
                     </p>
                   </div>
 
                   {renderTabContent()}
                 </div>
 
+                {warnings.length > 0 && (
+                  <div className="bg-yellow-100 text-yellow-800 p-2 rounded mb-4">
+                    {warnings.map((msg, i) => (
+                      <div key={i}>⚠️ {msg}</div>
+                    ))}
+                  </div>
+                )}
+                {Object.values(errors).length > 0 && (
+                  <div className="bg-red-100 text-red-800 p-2 rounded mb-4">
+                    {Object.entries(errors).map(([key, msg], i) => (
+                      <div key={i}>❌ {msg}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              {submitError && (
+  <div className="bg-red-100 border text-red-700 px-4 py-2 rounded relative mt-4">
+    ❌ {submitError} 
+  </div>
+)}
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
                   <div className="flex justify-between">
                     <button
@@ -1411,18 +1439,16 @@ const AddEmployee = ({ onAddEmployee }) => {
                           onClick={() => {
                             const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
                             const currentTabId = tabs[currentIndex].id;
+                            let isValid = true;
 
-                            const isValid =
-                              currentTabId === "taxNI"
-                                ? validateTaxAndLoanDetails()
-                                : validateCurrentTab(currentTabId);
-
-                            if (!isValid) return; 
-
-
-                            console.log(activeTab)
-                            console.log(currentIndex)
-
+                             if (currentTabId === "personal") {
+    isValid = validatePersonalDetailsTab();
+  } else if (currentTabId === "taxNI") {
+    isValid = validateTaxAndLoanDetails();
+  } else {
+    isValid = validateCurrentTab(currentTabId);
+  }
+                            if (!isValid) return;
                             setActiveTab(tabs[currentIndex + 1].id)
 
                           }}
@@ -1445,21 +1471,6 @@ const AddEmployee = ({ onAddEmployee }) => {
             </form>
           </div>
         </div>
-        {warnings.length > 0 && (
-          <div className="bg-yellow-100 text-yellow-800 p-2 rounded mb-4">
-            {warnings.map((msg, i) => (
-              <div key={i}>⚠️ {msg}</div>
-            ))}
-          </div>
-        )}
-        {Object.values(errors).length > 0 && (
-          <div className="bg-red-100 text-red-800 p-2 rounded mb-4">
-            {Object.entries(errors).map(([key, msg], i) => (
-              <div key={i}>❌ {msg}</div>
-            ))}
-          </div>
-        )}
-
       </div>
     </div>
   )

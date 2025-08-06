@@ -4,33 +4,25 @@ import axios from 'axios';
 
 export default function Paye() {
   const navigate = useNavigate();
-  const [payeData, setPayeData] = useState(null);
+  const [allEmployers, setAllEmployers] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/v1/employer/allEmployers')
-      .then(response => {
-        if (response.data && response.data.length > 0) {
-          const otherDetails = response.data[0].otherEmployerDetailsDto;
-          setPayeData({
-            totalPAYEYTD: otherDetails.totalPAYEYTD,
-            totalEmployeesNIYTD: otherDetails.totalEmployeesNIYTD,
-            totalEmployersNIYTD: otherDetails.totalEmployersNIYTD
-          });
-        }
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching PAYE data:', error);
-        setLoading(false);
-      });
+    const fetchEmployers = async () => {
+      try {
+        const response = await axios.get("http://localhost:8081/api/v1/employer/allEmployers");
+        console.log("employers Data fetched:", response.data); 
+        setAllEmployers(response.data);
+      } catch (error) {
+        console.error("Failed to fetch employees:", error);
+      }
+    };
+    fetchEmployers();
   }, []);
 
-  if (loading) {
-    return <div className="text-center mt-10 text-lg font-semibold">Loading PAYE data...</div>;
-  }
 
-  if (!payeData) {
+ 
+  if (!allEmployers) {
     return <div className="text-center mt-10 text-red-500 font-semibold">No PAYE data available.</div>;
   }
 
@@ -41,7 +33,9 @@ export default function Paye() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">PAYE Summary</h1>
-
+                <p className="mt-1 text-sm text-gray-600">
+     Summary of payroll deductions: Tax, Employee NI, and Employer NI
+  </p>
             </div>
             <button
               onClick={() => navigate("/employer-dashboard")}
@@ -52,20 +46,20 @@ export default function Paye() {
           </div>
         </div>
       </div>
-      <div className= "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-      <table className="w-full table-auto border-collapse text-center">
-        <thead>
-          <tr className="bg-gray-100 text-gray-700">
-            <th className="py-3 px-4 border">Total INCOME TAX YTD</th>
-            <th className="py-3 px-4 border">Total Employees NI YTD</th>
-            <th className="py-3 px-4 border">Total Employers NI YTD</th>
+      <div className= "max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total INCOME TAX YTD</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Employees NI YTD</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Employers NI YTD</th>
           </tr>
         </thead>
-        <tbody className='bg-white'>
+        <tbody className="bg-white divide-y divide-gray-200">
           <tr>
-            <td className="py-3 px-4 border">£{payeData.totalPAYEYTD.toFixed(2)}</td>
-            <td className="py-3 px-4 border">£{payeData.totalEmployeesNIYTD.toFixed(2)}</td>
-            <td className="py-3 px-4 border">£{payeData.totalEmployersNIYTD.toFixed(2)}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">£ {allEmployers[0]?.otherEmployerDetailsDTO?.totalPaidGrossAmountYTD.toFixed(2)}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">£ {allEmployers[0]?.otherEmployerDetailsDTO?.totalEmployeesNIYTD}</td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">£ {allEmployers[0]?.otherEmployerDetailsDTO?.totalEmployersNIYTD.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>

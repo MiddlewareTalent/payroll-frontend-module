@@ -5,7 +5,6 @@ import axios from "axios"
 const EmployerDashboard = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const employerId = "MTL1";
   const [employer, setEmployer] = useState(null);
   
 
@@ -15,12 +14,12 @@ const EmployerDashboard = () => {
 };
 
   const navItems = [
-    //{name:"Add Company Details",path:"/add-company"},
     {name:"Company Details",path:"/company-details"},
+    {name:"Employer Details",path:"/employer-details"},
     { name: "Add Employee", path: "/add-employee", icon: "plus" },
     { name: "Employee Details", path: "/employee-details", icon: "users" },
     { name: "Payslips", path: "/payroll-run", icon: "calculator" },
-    // { name: "PAYE", path: "/paye", icon: "chart" },
+    { name: "PAYE", path: "/paye", icon: "chart" },
     { name: "Reports", path: "/reports", icon: "chart" },
   ]
 
@@ -61,16 +60,6 @@ const EmployerDashboard = () => {
           />
         </svg>
       ),
-      document: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      ),
       chart: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -88,8 +77,7 @@ const EmployerDashboard = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        console.log("employerData",employerId);
-        const response = await axios.get(`http://localhost:8080/api/custom-dto/employer-dashboard-details/${employerId}`);
+        const response = await axios.get(`http://localhost:8081/api/custom-dto/employer-dashboard-details`);
         console.log("Dashboard Data fetched:", response.data);
         setEmployer(response.data);
       } catch (error) {
@@ -97,12 +85,7 @@ const EmployerDashboard = () => {
       }
     };
     fetchEmployees();
-  }, [employerId]);
-
-//   if (employers.length === 0 || allEmployees.length === 0 || allPayslips.length === 0) {
-//   return <div className="text-center mt-10 text-gray-500">Loading dashboard data...</div>;
-// }
-
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -112,7 +95,6 @@ const EmployerDashboard = () => {
           <div className="flex justify-between items-center py-6">
   <div>
     <h1 className="text-2xl font-bold text-gray-900">Employer Dashboard</h1>
-    {/* <p className="text-sm text-gray-600">{company?.companyName}</p> */}
   </div>
 
   <button
@@ -168,8 +150,8 @@ const EmployerDashboard = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-sm font-medium text-gray-500 truncate">Current Pay Month</dt>
-                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900">{employer.currentPayMonth || "Not Available"}</dd>)}
+                      <dt className="text-sm font-medium text-gray-500 truncate">Current PayPeriod Number</dt>
+                      {employer !== null && ( <dd className="text-lg font-medium text-gray-900">{employer.currentPayPeriodNumber || "0"}</dd>)}
                     </dl>
                   </div>
                 </div>

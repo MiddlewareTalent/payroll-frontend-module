@@ -15,8 +15,8 @@ const YearEndReport = () => {
     const fetchData = async () => {
       try {
         const [employersResponse, employeesResponse] = await Promise.all([
-          axios.get("http://localhost:8080/api/v1/employer/allEmployers"),
-          axios.get("http://localhost:8080/payslip/all/employee-data"),
+          axios.get("http://localhost:8081/api/v1/employer/allEmployers"),
+          axios.get("http://localhost:8081/api/custom-dto/all/employees-summary"),
         ])
 
         setEmployers(employersResponse.data)

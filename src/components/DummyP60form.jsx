@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import Reports from "./Reports"
 import axios from "axios"
+import jsPDF from "jspdf"
+import { Scale } from "lucide-react"
 
 const DummyP60form = () => {
   const navigate=useNavigate();
@@ -57,7 +59,7 @@ const DummyP60form = () => {
   if(employeeId!==null){
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/employee-details/employee/${employeeId}`);
+        const response = await axios.get(`http://localhost:8081/api/employee-details/employee/${employeeId}`);
         console.log("Employee Data fetched:", response.data);
         setEmployee(response.data);
       } catch (error) {
@@ -71,7 +73,7 @@ const DummyP60form = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers");
+        const response = await axios.get("http://localhost:8081/api/v1/employer/allEmployers");
         console.log("employers Data fetched:", response.data[0]); 
         setEmployer(response.data[0]);
       } catch (error) {
@@ -102,21 +104,23 @@ const DummyP60form = () => {
       const html2pdf = (await import("html2pdf.js")).default
 
       const options = {
-        margin: [0, 0, 0, 0],
+        margin: [0, 0, 0, 0], 
         filename: "P60_2025_2026_MTL.pdf",
-        image: { type: "jpeg", quality: 0.98 },
+        // image: { type: "jpeg", quality: 0.98 },
         html2canvas: {
-          scale: 2,
+          // scale: 2,
+          scale:1.5,
           useCORS: true,
           letterRendering: true,
-          allowTaint: false,
+          // allowTaint: false,
           backgroundColor: "#ffffff",
         },
         jsPDF: {
           unit: "in",
           format: "a4",
           orientation: "portrait",
-          compress: true,
+          // compress: true,
+          compress: false,
         },
       }
 
@@ -193,7 +197,7 @@ const DummyP60form = () => {
         
         <div style="display: flex; align-items: center; background: #f97316; color: white; margin: 0 0 15px 0;  padding: 2px; margin-bottom: 10px; margin-right:10px;">
           <span style="margin-right:20px; margin-bottom:10px; padding:10px;">Tax year to 5 April</span>
-          <span style="background: white; color: black; padding-bottom:10px; padding-left:10px; padding-right:10px; margin:5px 0; border: 1px solid #ccc;">${employer.taxYear || ""}</span>
+          <span style="background: white; color: black; padding-bottom:10px; padding-left:10px; padding-right:10px; margin:5px 0; border: 1px solid #ccc;">${employee.taxYear || ""}</span>
         </div>
         
         <p style="color: #1e3a8a; font-weight: bold; margin: 10px 0;">This is a printed copy of an eP60</p>
@@ -415,7 +419,7 @@ const DummyP60form = () => {
             </td>
           </tr>
         </table>
-      </div>
+      </div> 
 
       <!-- Employer Details -->
       <div style="border: 1px solid #ccc; padding: 15px; background: #fff7ed; margin-bottom: 15px; page-break-inside: avoid;  break-inside: avoid;">
@@ -426,7 +430,7 @@ const DummyP60form = () => {
         
         <div style="margin-bottom: 15px;">
           <div style="font-weight: bold; margin-bottom: 10px;">Employer PAYE reference</div>
-          <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;">${employer.taxOfficeDto.payeReference || ""}</div>
+          <div style="border: 1px solid #ccc; padding-left: 5px; padding-bottom:10px; background: white; min-height: 18px;"> ${employer.taxOfficeDTO?.payeReference || ""}</div>
         </div>
 
         <h4 style="color: #1e3a8a; font-weight: bold; margin: 15px 0 10px 0; font-size: 14px;">Certificate by Employer/Paying Office</h4>
@@ -511,7 +515,7 @@ const DummyP60form = () => {
             Tax year to 5 April
             <input
               type="text"
-              value={employer.taxYear}
+              value={employee.taxYear}
               onChange={(e) => handleInputChange("taxYear", e.target.value)}
               style={{padding:"2px", maxWidth: "100px", marginLeft:"20px",  backgroundColor: "white", color: "black",  borderRadius: "4px"}}
               // placeholder="e.g., 2025"
@@ -633,7 +637,7 @@ const DummyP60form = () => {
               Tax deducted
               <input
                 type="text"
-                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany}
+                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInThisEmployment}
                 onChange={(e) => handleInputChange("currentTax", e.target.value)}
                 style={inputStyle}
               />
@@ -651,7 +655,7 @@ const DummyP60form = () => {
               Tax deducted
               <input
                 type="text"
-                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInCompany}
+                value={employee.otherEmployeeDetailsDTO.totalIncomeTaxPaidInThisEmployment}
                 onChange={(e) => handleInputChange("totalTax", e.target.value)}
                 style={inputStyle}
               />
@@ -915,7 +919,7 @@ const DummyP60form = () => {
             Employer PAYE reference
             <input
               type="text"
-              value={employer.taxOfficeDto.payeReference}
+              value={employer.taxOfficeDTO?.payeReference || ""}
               onChange={(e) => handleInputChange("employerPAYE", e.target.value)}
               style={inputStyle}
             />

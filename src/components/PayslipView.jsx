@@ -15,7 +15,7 @@ const PayslipView = () => {
   useEffect(() => {
     const fetchPayslip = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/payslip/reference/number/${paySlipRefs.paySlipRef}`);
+        const response = await axios.get(`http://localhost:8081/payslip/reference/number/${paySlipRefs.paySlipRef}`);
         setPayslip(response.data);
         console.log(response.data);
       } catch (error) {

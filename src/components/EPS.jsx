@@ -12,34 +12,29 @@ const EPS = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7))
   const [hmrcStatus, setHmrcStatus] = useState("disconnected")
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers")
-        if (response.data && response.data.length > 0) {
-          const otherDetails = response.data[0].otherEmployerDetailsDto
-          setPayeData({
-            PayPeriodPAYE: otherDetails.currentPayPeriodPAYE,
-            EmployeesNIPP: otherDetails.currentPayPeriodEmployeesNI,
-            EmployersNIPP: otherDetails.currentPayPeriodEmployersNI,
-            GrossPay: otherDetails.currentPayPeriodPaidGrossPay,
-          })
-          setEmployers(response.data)
-        }
-        setLoading(false)
-      } catch (error) {
+
+  useEffect(()=>{
+    setLoading(true);
+    const fetchEmployers = async () =>{
+      try{
+        const response = await axios.get("http://localhost:8081/api/v1/employer/allEmployers")
+        setEmployers(response.data);
+        console.log("Employer API: ", response.data);
+      }catch (error) {
         console.error("Error fetching data:", error)
         setLoading(false)
-      }
+      }finally {
+     setLoading(false)
     }
-
-    fetchData()
+    }
+    fetchEmployers()
     checkHmrcConnection()
-  }, [])
+  },[])
+
 
   const checkHmrcConnection = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/hmrc/status")
+      const response = await axios.get("http://localhost:8081/hmrc/status")
       setHmrcStatus(response.data.status)
     } catch (error) {
       console.error("Error checking HMRC status:", error)
@@ -51,14 +46,15 @@ const EPS = () => {
     if (!payeData || employers.length === 0) return null
 
     const employer = employers[0]
-    const totalLiability = payeData.PayPeriodPAYE + payeData.EmployeesNIPP + payeData.EmployersNIPP
+    const totalLiability = employer.otherEmployerDetailsDTO?.totalPaidGrossAmountYTD + employer.otherEmployerDetailsDTO?.totalEmployeesNIYTD + employer.otherEmployerDetailsDTO?.totalEmployersNIYTD
 
     return {
-      employerReference: employer.payeReference || "Not Available",
+      employerReference: employer.taxOfficeDTO?.payeReference || "Not Available",
       month: selectedMonth,
-      totalPAYE: payeData.PayPeriodPAYE,
-      totalEmployeeNI: payeData.EmployeesNIPP,
-      totalEmployerNI: payeData.EmployersNIPP,
+      totalGrossPay,
+      totalTax,
+      totalEmployeeNI,
+      totalEmployerNI,
       totalLiability,
       grossPay: payeData.GrossPay,
       noPaymentReason: null,
@@ -76,7 +72,7 @@ const EPS = () => {
     const epsData = generateEPSData()
 
     try {
-      const response = await axios.post("http://localhost:8080/hmrc/submit-eps", epsData)
+      const response = await axios.post("http://localhost:8081/hmrc/submit-eps", epsData)
       setSubmissionData({
         ...epsData,
         submissionId: response.data.submissionId || `EPS-${Date.now()}`,
@@ -117,14 +113,14 @@ const EPS = () => {
             </div>
             <div className="flex items-center space-x-4">
               {/* HMRC Status Indicator */}
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <div
                   className={`w-3 h-3 rounded-full mr-2 ${hmrcStatus === "connected" ? "bg-green-500" : "bg-red-500"}`}
                 ></div>
                 <span className="text-sm text-gray-600">
                   HMRC: {hmrcStatus === "connected" ? "Connected" : "Disconnected"}
                 </span>
-              </div>
+              </div> */}
               <button
                 onClick={() => navigate("/reports")}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -180,20 +176,20 @@ const EPS = () => {
             </div>
 
             {/* HMRC Response Details */}
-            {submissionData.hmrcResponse && (
+            {/* {submissionData.hmrcResponse && (
               <div className="mt-6 bg-blue-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-blue-900 mb-2">HMRC Response</h4>
                 <pre className="text-xs text-blue-800 whitespace-pre-wrap">
                   {JSON.stringify(submissionData.hmrcResponse, null, 2)}
                 </pre>
               </div>
-            )}
+            )} */}
           </div>
         ) : (
           // EPS Form
           <div className="space-y-6">
             {/* HMRC Connection Warning */}
-            {hmrcStatus !== "connected" && (
+            {/* {hmrcStatus !== "connected" && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -214,7 +210,7 @@ const EPS = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Month Selection */}
             <div className="bg-white shadow rounded-lg p-6">

@@ -12,7 +12,6 @@ const EmployeeDashboard = ({ payslips }) => {
   const [payslip, setPayslip] = useState([]);
   const [employees, setEmployees] = useState([]);
   const paySlipRefs=useParams("paySlipRef");
-  // console.log(paySlipRefs.paySlipRef)
 
 useEffect(() => {
   if (location.pathname === "/employee-dashboard/payslips") {
@@ -33,7 +32,6 @@ useEffect(() => {
 const navItems = [
     {name:"Payslips", path:"/employee-dashboard/payslips", icon:"document"},
     { name: "P60 Form", path: "/employee-dashboard/p60", icon: "document" },
-    // { name: "Employee Details", path: "/employee-details", icon: "users" },
   ]
 
   const getIcon = (iconName) => {
@@ -48,31 +46,6 @@ const navItems = [
           />
         </svg>
       ),
-      plus: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-        </svg>
-      ),
-      users: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-          />
-        </svg>
-      ),
-      calculator: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-          />
-        </svg>
-      ),
       document: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
@@ -80,16 +53,6 @@ const navItems = [
             strokeLinejoin="round"
             strokeWidth={2}
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      ),
-      chart: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
           />
         </svg>
       ),
@@ -110,7 +73,7 @@ const navItems = [
           return;
         }
 
-        const response = await axios.get(`http://localhost:8080/api/employee-details/employee/email/${email}`);
+        const response = await axios.get(`http://localhost:8081/api/employee-details/employee/email/${email}`);
         setEmployee(response.data);
       } catch (error) {
         console.error("Failed to fetch employee:", error);
@@ -126,10 +89,9 @@ const navItems = [
     if(employee!==null){
       const fetchPayslip = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/payslip/all/payslips/${employee.employeeId}`);
+        const response = await axios.get(`http://localhost:8081/payslip/all/payslips/${employee.employeeId}`);
         setPayslip(()=>response.data);
         setLatestPaySlip(()=>response.data[response.data.length-1])
-        // console.log("latest",latestPaySlip);
         console.log("letest payslip data", response.data);
       } catch (error) {
         console.error("Error fetching payslip:", error);
@@ -145,7 +107,7 @@ const navItems = [
   if(employee!==null){
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/employee-details/employee/${employee.employeeId}`);
+        const response = await axios.get(`http://localhost:8081/api/employee-details/employee/${employee.employeeId}`);
         console.log("Data fetched:", response.data);
         setEmployees(response.data);
       } catch (error) {
@@ -155,11 +117,6 @@ const navItems = [
     fetchEmployees();
   }
   }, [employee]);
-
-  // // // Filter payslips for this employee once employee is loaded
-  // const employeePayslips = employee
-  //   ? payslips.filter((slip) => slip.employeeId === employee.employeeId)
-  //   : [];
 
 
   if (!employee) {
@@ -292,10 +249,6 @@ const navItems = [
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Employment Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-500">Job Title</label>
-                      <p className="mt-1 text-sm text-gray-900">{employee.employment?.jobTitle || "Software Engineer"}</p>
-                    </div> */}
                      <div>
                       <label className="block text-sm font-medium text-gray-500">Annual Salary</label>
                       <p className="mt-1 text-sm text-gray-900">£{employee.annualIncomeOfEmployee || 0}</p>
@@ -316,14 +269,6 @@ const navItems = [
                       <label className="block text-sm font-medium text-gray-500">Employment Type</label>
                       <p className="mt-1 text-sm text-gray-900">{employee.employmentType || "Not specified"}</p>
                     </div>
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-500">Working Hours</label>
-                      <p className="mt-1 text-sm text-gray-900">{employee.workingHours || 0} hours/week</p>
-                    </div> */}
-                    {/* <div>
-                      <label className="block text-sm font-medium text-gray-500">Annual Salary</label>
-                      <p className="mt-1 text-sm text-gray-900">£{employee.annualIncomeOfEmployee || 0}</p>
-                    </div> */}
                   </div>
                 </div>
               </div>
@@ -337,7 +282,6 @@ const navItems = [
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-500">Total Payslips</span>
-                      {/* <span className="text-sm font-medium text-gray-900">{payslip.length}</span> */}
                       <span className="text-sm font-medium text-gray-900">{Array.isArray(payslip) ? payslip.length : 0}</span>
 
                     </div>

@@ -15,12 +15,12 @@ const FPS = () => {
     const fetchData = async () => {
       try {
         const [employersResponse, employeesResponse] = await Promise.all([
-          axios.get("http://localhost:8080/api/v1/employer/allEmployers"),
-          axios.get("http://localhost:8080/payslip/all/employee-data"),
+          axios.get("http://localhost:8081/api/v1/employer/allEmployers"),
+          axios.get("http://localhost:8081/api/custom-dto/all/employees-summary"),
         ])
-
         setEmployers(employersResponse.data)
         setAllEmployees(employeesResponse.data)
+        console.log("Employer API: ", employersResponse.data);
         setLoading(false)
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -34,7 +34,7 @@ const FPS = () => {
 
   const checkHmrcConnection = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/hmrc/status")
+      const response = await axios.get("http://localhost:8081/hmrc/status")
       setHmrcStatus(response.data.status)
     } catch (error) {
       console.error("Error checking HMRC status:", error)
@@ -73,7 +73,7 @@ const FPS = () => {
     const fpsData = generateFPSData()
 
     try {
-      const response = await axios.post("http://localhost:8080/hmrc/submit-fps", fpsData)
+      const response = await axios.post("http://localhost:8081/hmrc/submit-fps", fpsData)
       setSubmissionData({
         ...fpsData,
         submissionId: response.data.submissionId || `FPS-${Date.now()}`,
@@ -114,14 +114,14 @@ const FPS = () => {
             </div>
             <div className="flex items-center space-x-4">
               {/* HMRC Status Indicator */}
-              <div className="flex items-center">
+              {/* <div className="flex items-center">
                 <div
                   className={`w-3 h-3 rounded-full mr-2 ${hmrcStatus === "connected" ? "bg-green-500" : "bg-red-500"}`}
                 ></div>
                 <span className="text-sm text-gray-600">
                   HMRC: {hmrcStatus === "connected" ? "Connected" : "Disconnected"}
                 </span>
-              </div>
+              </div> */}
               <button
                 onClick={() => navigate("/reports")}
                 className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
@@ -175,20 +175,20 @@ const FPS = () => {
             </div>
 
             {/* HMRC Response Details */}
-            {submissionData.hmrcResponse && (
+            {/* {submissionData.hmrcResponse && (
               <div className="mt-6 bg-blue-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-blue-900 mb-2">HMRC Response</h4>
                 <pre className="text-xs text-blue-800 whitespace-pre-wrap">
                   {JSON.stringify(submissionData.hmrcResponse, null, 2)}
                 </pre>
               </div>
-            )}
+            )} */}
           </div>
         ) : (
           // FPS Form
           <div className="space-y-6">
             {/* HMRC Connection Warning */}
-            {hmrcStatus !== "connected" && (
+            {/* {hmrcStatus !== "connected" && (
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -209,7 +209,7 @@ const FPS = () => {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Summary Card */}
             <div className="bg-white shadow rounded-lg p-6">
@@ -218,7 +218,7 @@ const FPS = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
                     <dt className="text-sm font-medium text-blue-600">Employer Reference</dt>
-                    <dd className="text-lg font-semibold text-blue-900">{fpsData.employerReference}</dd>
+                    <dd className="text-lg font-semibold text-blue-900">{employers[0].taxOfficeDTO?.payeReference}</dd>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
                     <dt className="text-sm font-medium text-green-600">Total Employees</dt>

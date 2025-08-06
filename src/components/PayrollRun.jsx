@@ -7,13 +7,14 @@ const PayrollRun = ({ onGeneratePayslip }) => {
   const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees");
+        const response = await axios.get("http://localhost:8081/api/employee-details/fetch/active-employees");
         console.log("allEmployees Data fetched:", response.data);
-        setEmployees(response.data);
+        setEmployees(response.data.reverse());
       } catch (error) {
         console.error("Failed to fetch employees:", error);
       }
@@ -29,11 +30,28 @@ const PayrollRun = ({ onGeneratePayslip }) => {
     if (!selectedEmployeeId) return;
 
     try {
-      const response = await axios.post(`http://localhost:8080/payslip/auto/${selectedEmployeeId}`);
+      const response = await axios.post(`http://localhost:8081/payslip/auto/${selectedEmployeeId}`);
+       setErrorMessage("");
       console.log("Payslip created:", response.data);
       navigate(`/payslip/${response.data.paySlipReference}`);
     } catch (error) {
       console.error("Error generating payslip:", selectedEmployeeId, error);
+       if (error.response?.status === 409) {
+      // Specific handling for payslip conflict
+      setErrorMessage(error.response.data.message);
+    } else if (error.response?.status === 400){
+      setErrorMessage(error.response.data.message);
+    } else if (error.response?. status === 404){
+      setErrorMessage(error.response.data.message);
+    } else if (error.response?.status === 422){
+      setErrorMessage(error.response.data.message);
+    } else if (error.response?.status === 500){
+      setErrorMessage(error.response.data.message);
+    }
+     else {
+      // General error handling
+      setErrorMessage("Something went wrong while generating the payslip.");
+    }
     }
   };
 
@@ -90,7 +108,7 @@ const PayrollRun = ({ onGeneratePayslip }) => {
                               {employee.firstName} {employee.lastName}
                             </p>
                             <p className="text-sm text-gray-500">
-                              Employee ID: {employee.employeeId} | Salary: £{employee.annualIncomeOfEmployee} | Taxcode: {employee.taxCode} | Region: {employee.region}
+                              Employee ID: {employee.employeeId} | Salary: £{employee.annualIncomeOfEmployee} | Taxcode: {employee.taxCode} | Region: {employee.region} | payPeriod: {employee.payPeriod}
                             </p>
                             
                           </div>
@@ -98,7 +116,11 @@ const PayrollRun = ({ onGeneratePayslip }) => {
                       );
                     })}
                   </div>
-
+{errorMessage && (
+  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mt-4">
+    {errorMessage}
+  </div>
+)}
                   {selectedEmployeeId && (
                     <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end">
                       <button

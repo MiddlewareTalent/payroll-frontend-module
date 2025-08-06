@@ -26,11 +26,11 @@ const Login = ({ onLogin }) => {
 
       if (userType === "employee") {
        
-        url = `http://localhost:8080/api/employee-details/test/email/${email}`;
+        url = `http://localhost:8081/api/employee-details/test/email/${email}`;
       } 
       else if (userType === "employer") {
         
-        url = `http://localhost:8080/api/v1/employer/test/email/${email}`;
+        url = `http://localhost:8081/api/v1/employer/test/email/${email}`;
       }
        else {
         
