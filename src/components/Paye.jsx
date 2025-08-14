@@ -15,6 +15,8 @@ export default function Paye() {
         setAllEmployers(response.data);
       } catch (error) {
         console.error("Failed to fetch employees:", error);
+      }finally{
+        setLoading(false);
       }
     };
     fetchEmployers();

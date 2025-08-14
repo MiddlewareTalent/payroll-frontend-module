@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
-const EmployeeDashboard = ({ payslips }) => {
+const EmployeeDashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();

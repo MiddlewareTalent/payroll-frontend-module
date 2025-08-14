@@ -740,9 +740,9 @@ const DummyP60form = () => {
     <td style={{ border: "1px solid #ccc", padding: "5px" }}>
       <input
         type="text"
-        value={row.earningsLEL}
+        value={i===0? employee?.otherEmployeeDetailsDTO?.earningsAtLELYtd:""}
         onChange={(e) => handleNICChange(i, "earningsLEL", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "14px", fontWeight: "bold" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold", textAlign:"center" }}
       />
     </td>
 
@@ -750,9 +750,9 @@ const DummyP60form = () => {
     <td style={{ border: "1px solid #ccc", padding: "5px" }}>
       <input
         type="text"
-        value={row.earningsPT}
+        value={i===0? employee?.otherEmployeeDetailsDTO?.earningsLelToPtYtd: ""}
         onChange={(e) => handleNICChange(i, "earningsPT", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold", textAlign:"center" }}
       />
     </td>
 
@@ -760,9 +760,9 @@ const DummyP60form = () => {
     <td style={{ border: "1px solid #ccc", padding: "5px" }}>
       <input
         type="text"
-        value={row.earningsUEL}
+        value={i===0? employee?.otherEmployeeDetailsDTO?.earningsPtToUelYtd : ""}
         onChange={(e) => handleNICChange(i, "earningsUEL", e.target.value)}
-        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold" }}
+        style={{ width: "100%", border: "none", padding: "5px", fontSize: "12px", fontWeight: "bold", textAlign:"center" }}
       />
     </td>
 

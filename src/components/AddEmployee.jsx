@@ -802,16 +802,18 @@ if (dobDate >= today) {
             onChange={(e) => handleInputChange("employeeId", e.target.value)}
           />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Post Code <span className="text-red-600">*</span></label>
-          <input
-            type="text"
-            required
+       <div>
+          <label className="block text-sm font-medium text-gray-700">Gender <span className="text-red-600">*</span></label>
+          <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.postCode}
-            onChange={(e) => handleInputChange("postCode", e.target.value)}
-          />
+            value={formData.gender}
+            onChange={(e) => handleInputChange("gender", e.target.value)}
+          >
+            <option value="">Select</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
         </div>
       </div>
 
@@ -826,20 +828,17 @@ if (dobDate >= today) {
             onChange={(e) => handleInputChange("address", e.target.value)}
           />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Gender <span className="text-red-600">*</span></label>
-          <select
+ <div>
+          <label className="block text-sm font-medium text-gray-700">Post Code <span className="text-red-600">*</span></label>
+          <input
+            type="text"
+            required
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={formData.gender}
-            onChange={(e) => handleInputChange("gender", e.target.value)}
-          >
-            <option value="">Select</option>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-            <option value="OTHER">Other</option>
-          </select>
+            value={formData.postCode}
+            onChange={(e) => handleInputChange("postCode", e.target.value)}
+          />
         </div>
+        
 
       </div>
     </div>
@@ -896,6 +895,7 @@ if (dobDate >= today) {
             onChange={(e) => handleInputChange("employmentStartedDate", e.target.value)}
           />
         </div>
+        
 
 
         <div>
@@ -1272,7 +1272,7 @@ if (dobDate >= today) {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={formData.previousEmploymentDataDTO.previousTaxCode}
 
-            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousTaxCode", e.target.value)}
+            onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousTaxCode", e.target.value.toUpperCase())}
           />
         </div>
 

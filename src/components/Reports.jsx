@@ -55,7 +55,7 @@ const Reports = () => {
       try {
         const response = await axios.get("http://localhost:8081/api/v1/employer/allEmployers");
         console.log("employers Data fetched:", response.data); 
-        setAllEmployers(response.data);
+        setAllEmployers(response.data.reverse());
       } catch (error) {
         console.error("Failed to fetch employees:", error);
       }
@@ -68,7 +68,7 @@ const Reports = () => {
       try {
         const response = await axios.get("http://localhost:8081/api/custom-dto/all/employees-summary");
         console.log("employees payslips count:", response.data); 
-        setAllEmployees(response.data);
+        setAllEmployees(response.data.reverse());
       } catch (error) {
         console.error("Failed to fetch employees:", error);
       }

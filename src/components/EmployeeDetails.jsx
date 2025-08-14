@@ -20,9 +20,6 @@ const EmployeeDetails = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  
-  
   const [editData, setEditData] = useState({
     firstName: "",
     lastName: "",
@@ -176,6 +173,10 @@ const EmployeeDetails = () => {
       setEmployees(response.data.reverse());
     } catch (error) {
       console.error("Failed to fetch employees:", error);
+      // If backend sends 404, set empty list so UI can still show "No employees"
+  if (error.response && error.response.status === 404) {
+    setEmployees([]);
+  }
     }
   };
 
@@ -1646,11 +1647,20 @@ console.log("allWarnings:", allWarnings);
             </nav>
           </aside>
 
+
         <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
           {employees.length === 0 ? (
             <div className="text-center">
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p>
+              {/* <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
+              <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p> */}
+    {!loading && employees.length === 0 && (
+      <p className="mt-1 text-sm text-gray-500">
+        {selectedTab === "active" && "There are no active employees now."}
+        {selectedTab === "leaving" && "There are no leaving employees now."}
+        {selectedTab === "inactive" && "There are no inactive employees now."}
+        {selectedTab === "all" && "There are no employees in the system."}
+      </p>
+    )}
             </div>
           ) : (
             <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-x-auto ">

@@ -65,10 +65,7 @@ const handleLogin = (userData) => {
          </Routes>
       </div>
     </Router>
-
-    
   );
 }
 
 export default App;
-
