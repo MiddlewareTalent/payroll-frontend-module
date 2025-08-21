@@ -6,25 +6,20 @@ import ModalWrapper from "../ModalWrapper/ModalWrapper"
 
 const EmployeeDetails = () => {
   const navigate = useNavigate()
-  const [selectedTab, setSelectedTab] = useState("active");
+
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isViewing, setIsViewing] = useState(false)
   const [employees, setEmployees] = useState([])
-  const [employers, setEmployers] = useState([])
   const [activeTab, setActiveTab] = useState("personal")
   const [warnings, setWarnings] = useState([]);
   const [errors, setErrors] = useState({});
   const [p45Form, setP45Form] = useState(null);
   const [starterChecklist, setStarterChecklist] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState("")
-  const [loading, setLoading] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState("");
   const [isDelete, setIsDelete]=useState(false);
   const [employeeSelectToDelete, setEmployeeSelectToDelete]=useState({});
   const [isUpdatePopup,setIsUpdatePopup]=useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
   const [editData, setEditData] = useState({
     firstName: "",
     lastName: "",
@@ -87,13 +82,6 @@ const EmployeeDetails = () => {
     },
   })
 
-  const employeeTabs = [
-    { id: "active", name: "Active Employees" },
-    { id: "leaving", name: "Leaving Employees" },
-    { id: "inactive", name: "Inactive Employees" },
-    { id: "all", name: "All Employees" }
-  ]
-
   const tabs = [
     { id: "personal", name: "Personal Details", icon: "user" },
     { id: "employment", name: "Employment", icon: "briefcase" },
@@ -143,53 +131,6 @@ const EmployeeDetails = () => {
     { value: 'Z', label: 'Z' }
   ]
 
-  const formatSortCode = (input) => {
-    let value = input.replace(/\D/g, ""); // Remove non-digits
-    if (value.length > 6) value = value.slice(0, 6);
-
-    return (
-      value.slice(0, 2) +
-      (value.length > 2 ? "-" + value.slice(2, 4) : "") +
-      (value.length > 4 ? "-" + value.slice(4, 6) : "")
-    );
-  };
-
-  const fetchEmployees = async () => {
-    try {
-      let url = "";
-      switch (selectedTab) {
-        case "active":
-          url = "http://localhost:8080/api/employee-details/fetch/active-employees";
-          break;
-        case "leaving":
-          url = "http://localhost:8080/api/employee-details/fetch/Ready-for-leave-employees";
-          break;
-        case "inactive":
-          url = "http://localhost:8080/api/employee-details/fetch/inactive-employees";
-          break;
-        case "all":
-          url = "http://localhost:8080/api/employee-details/allEmployees";
-          break;
-        default:
-          url = "http://localhost:8080/api/employee-details/fetch/active-employees";
-      }
-
-      const response = await axios.get(url);
-      setEmployees(response.data.reverse());
-    } catch (error) {
-      console.error("Failed to fetch employees:", error);
-      // If backend sends 404, set empty list so UI can still show "No employees"
-      if (error.response && error.response.status === 404) {
-        setEmployees([]);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployees();
-  }, [selectedTab]);
-
-
   const handleDocumentsChange = (e) => {
     if (e.target.value === "") {
       setEditData((prev) => ({
@@ -236,21 +177,23 @@ const EmployeeDetails = () => {
       }));
       setP45Form("");
     }
+
+
     setSelectedDocument(e.target.value);
   };
 
+
   useEffect(() => {
-    fetchEmployers()
+    fetchEmployees()
   }, [])
 
-  const fetchEmployers = async () => {
+  const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/employer/allEmployers");
-      console.log("all employers API fetched:", response.data)
-      setEmployers(response.data)
+      const response = await axios.get("http://localhost:8080/api/employee-details/allEmployees")
+      console.log("all employees API fetched:", response.data)
+      setEmployees(response.data)
     } catch (error) {
-      console.error("Failed to fetch employers:", error)
-      alert("Failed to fetch employers. Please try again.")
+      
     }
   }
 
@@ -288,8 +231,7 @@ const EmployeeDetails = () => {
       setIsViewing(false)
       setActiveTab("personal")
     } catch (error) {
-      console.error("Failed to fetch employee details:", error)
-      alert("Unable to fetch employee data. Please try again later.")
+      
     }
   }
 
@@ -323,94 +265,34 @@ const EmployeeDetails = () => {
       setIsEditing(false)
       setActiveTab("personal")
     } catch (error) {
-      console.error("Failed to fetch employee details:", error)
-      alert("Unable to fetch employee data. Please try again later.")
+      
+     
     }
   }
 
-const handleDelete = async (id) => {
-   
- 
+  const handleDelete = async (id) => {
+    
+
     if (!id) {
       console.error("No employee ID provided for deletion.")
       return
     }
- 
-   
+
+    
       try {
         console.log("Deleting employee with ID:", id)
- 
+
         await axios.delete(`http://localhost:8080/api/employee-details/delete/${id}`)
-       
+        
         fetchEmployees()
       } catch (error) {
         console.error("Failed to delete employee:", error)
-       
+        
       }
- 
+
       setIsDelete(false);
-   
+    
   }
-  const validatePersonalDetailsTab = () => {
-    const newErrors = {};
-    const newWarnings = [];
-
-    if (!editData.firstName) {
-      newErrors.firstName = "First name is required.";
-    }
-
-    if (!editData.lastName) {
-      newErrors.lastName = "Last name is required. ";
-    }
-
-    if (!editData.email) {
-      newErrors.email = "Email is required. ";
-    }
-    // else if(!editData.email.endsWith("@gmail.com")){
-    //   newErrors.email = "Only Gmail addresses (@gmail.com) are allowed."
-    // }
-
-    if (!editData.dateOfBirth) {
-      newErrors.dateOfBirth = "Date of Birth is required.";
-    } else {
-      const dobDate = new Date(editData.dateOfBirth);
-      const today = new Date();
-
-      // Set time of both to 00:00:00 to only compare date portion
-      dobDate.setHours(0, 0, 0, 0);
-      today.setHours(0, 0, 0, 0);
-
-      if (dobDate >= today) {
-        newErrors.dateOfBirth = "Date of birth must be in the past.";
-      }
-
-    }
-
-    if (!editData.employeeId) {
-      newErrors.employeeId = "EmployeeId is required";
-    }
-
-    if (!editData.postCode) {
-      newErrors.postCode = "PostCode is required";
-    }
-
-    if (!editData.address) {
-      newErrors.address = "Address is required.";
-    }
-
-    if (!editData.gender) {
-      newErrors.gender = "Gender is required.";
-    }
-
-    setErrors(newErrors);
-    setWarnings(newWarnings);
-
-    return {
-      isValid: Object.keys(newErrors).length === 0,
-      warnings: newWarnings,
-      errors: newErrors,
-    };
-  };
 
   const validateCurrentTab = (tabId) => {
     const newErrors = {};
@@ -420,20 +302,30 @@ const handleDelete = async (id) => {
       if (!editData.annualIncomeOfEmployee) {
         newErrors.annualIncomeOfEmployee = "Annual income is required.";
       }
+      if (!editData.payPeriod) {
+        newErrors.payPeriod = "Pay period is required.";
+      }
 
-      if (!editData.bankDetailsDTO?.accountName) {
+      const bank = editData.bankDetailsDTO || {};
+
+      if (!bank.accountName) {
         newErrors.accountName = "Account name is required.";
       }
-      if (!editData.bankDetailsDTO?.accountNumber) {
+      if (!bank.accountNumber) {
         newErrors.accountNumber = "Account number is required.";
       }
-      if (!editData.bankDetailsDTO?.sortCode || editData.bankDetailsDTO?.sortCode.length !== 8) {
+      if (!bank.sortCode || bank.sortCode.length !== 8) {
         newErrors.sortCode = "Sort code must be 8 digits.";
       }
-      if (!editData.bankDetailsDTO?.bankName) {
+      if (!bank.bankName) {
         newErrors.bankName = "Bank Name is required.";
       }
+
+      if (bank.paymentLeadDays > 10) {
+        newWarnings.push("Payment lead days seem unusually high. Please review.");
+      }
     }
+
     setErrors(newErrors);
     setWarnings(newWarnings);
 
@@ -486,6 +378,11 @@ const handleDelete = async (id) => {
       newErrors.postgraduateLoanCheckbox = "Tick the checkbox for Postgraduate Loan if a plan type is selected.";
     }
 
+    // Warnings
+    if (emergencyTaxCodes.includes(formattedTaxCode) && !editData.hasEmergencyCode) {
+      newWarnings.push("You selected an emergency tax code but didn't check the Emergency Tax Code box.");
+    }
+
     if (formattedTaxCode.startsWith("S") && editData.region !== "SCOTLAND") {
       newWarnings.push("Tax code starts with 'S' - Region should be Scotland.");
     }
@@ -504,202 +401,92 @@ const handleDelete = async (id) => {
   };
 
 
-  const handleInputChange = (field, value) => {
-    const keys = field.split(".");
-    const upperValue = value.toUpperCase();
-    const isEmergency = field === "taxCode" && /\b(W1|M1|X)\b$/.test(upperValue.trim());
 
-    setEditData((prev) => ({
-      ...prev,
-      [field]: upperValue,
-      ...(field === "taxCode" && { hasEmergencyCode: isEmergency })
-    }));
 
-    // Update editData
-    if (keys.length === 2) {
-      const [parentKey, childKey] = keys;
-      setEditData((prev) => ({
-        ...prev,
-        [parentKey]: {
-          ...prev[parentKey],
-          [childKey]: value,
-        },
-      }));
-    } else {
-      setEditData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
-
-    // Clear errors dynamically when field is corrected
-    setErrors((prevErrors) => {
-      const newErrors = { ...prevErrors };
-
-      switch (field) {
-        //tax and NI fields
-        case "taxCode":
-          if (value.trim() !== "") delete newErrors.taxCode;
-          break;
-        case "nationalInsuranceNumber":
-          if (value.trim() !== "") delete newErrors.nationalInsuranceNumber;
-          break;
-        case "niLetter":
-          if (value) delete newErrors.niLetter;
-          break;
-        case "annualIncomeOfEmployee":
-          if (value.trim() !== "") delete newErrors.annualIncomeOfEmployee;
-          break;
-        //Personal Details fields 
-        case "firstName":
-          if (value.trim() !== "") delete newErrors.firstName;
-          break;
-        case "lastName":
-          if (value.trim() !== "") delete newErrors.lastName;
-          break;
-        case "email":
-          if (value.trim() !== "") delete newErrors.email;
-          break;
-        case "dateOfBirth":
-          if (value.trim() !== "") delete newErrors.dateOfBirth;
-          break;
-        case "employeeId":
-          if (value.trim() !== "") delete newErrors.employeeId;
-          break;
-        case "postCode":
-          if (value.trim() !== "") delete newErrors.postCode;
-          break;
-        case "address":
-          if (value.trim() !== "") delete newErrors.address;
-          break;
-        case "gender":
-          if (value.trim() !== "") delete newErrors.gender;
-          break;
-
-        //  Bank Details Fields
-        case "bankDetailsDTO.accountName":
-          if (value.trim() !== "") delete newErrors.accountName;
-          break;
-        case "bankDetailsDTO.accountNumber":
-          if (value.trim() !== "") delete newErrors.accountNumber;
-          break;
-        case "bankDetailsDTO.sortCode":
-          if (value.trim().length === 8) delete newErrors.sortCode;
-          break;
-        case "bankDetailsDTO.bankName":
-          if (value.trim() !== "") delete newErrors.bankName;
-          break;
-
-        //  Student Loan & Postgraduate Loan
-        case "studentLoanDto.hasStudentLoan":
-        case "studentLoanDto.studentLoanPlanType":
-          delete newErrors.studentLoanCheckbox;
-          delete newErrors.studentLoanPlanType;
-          break;
-        case "postGraduateLoanDto.hasPostgraduateLoan":
-        case "postGraduateLoanDto.postgraduateLoanPlanType":
-          delete newErrors.postgraduateLoanCheckbox;
-          delete newErrors.postgraduateLoanPlanType;
-          break;
-
-        default:
-          break;
-      }
-
-      return newErrors;
-    });
-
-    //  Dynamic warning check based on latest values
-    setWarnings(() => {
-      const updatededitData = { ...editData };
-
-      if (field.includes(".")) {
-        const [parentKey, childKey] = field.split(".");
-        updatededitData[parentKey] = {
-          ...updatededitData[parentKey],
-          [childKey]: value,
+  const handleInputChange = (fieldPath, value) => {
+    setEditData((prev) => {
+      const keys = fieldPath.split(".");
+      if (keys.length === 1) {
+        return {
+          ...prev,
+          [fieldPath]: value,
         };
       } else {
-        updatededitData[field] = value;
+        const [firstKey, ...restKeys] = keys;
+        return {
+          ...prev,
+          [firstKey]: {
+            ...prev[firstKey],
+            [restKeys.join(".")]: value,
+          },
+        };
       }
-
-      const region = updatededitData.region;
-
-      const newWarnings = [];
-
-      if (editData.taxCode.startsWith("S") && region !== "SCOTLAND") {
-        newWarnings.push("Tax code starts with 'S'. Please select region Scotland.");
-      }
-
-      if (editData.taxCode.startsWith("C") && region !== "WALES") {
-        newWarnings.push("Tax code starts with 'C'. Please select region Wales.");
-      }
-
-      return newWarnings;
     });
   };
 
   const handleNext = () => {
     const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
-    const currentTabId = tabs[currentIndex].id;
+    let validation = { isValid: true, warnings: [], errors: {} };
 
-    let isValid = true;
-
-    if (currentTabId === "personal") {
-      isValid = validatePersonalDetailsTab();
-    } else if (currentTabId === "taxNI") {
-      isValid = validateForm() && validateTaxAndLoanDetails();
+    if (activeTab === "taxNI") {
+      validation = validateTaxAndLoanDetails();
     } else {
-      isValid = validateCurrentTab(currentTabId); // fallback for other tabs
+      validation = validateCurrentTab(activeTab);
     }
 
-    if (!isValid) return;
-
-    // Move to next tab
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1].id);
+    if (!validation.isValid || validation.warnings.length > 0) {
+      setErrors(validation.errors);
+      setWarnings(validation.warnings);
+      console.warn("Form blocked due to errors or warnings");
+      return;
     }
+
+    setErrors({});
+    setWarnings({});
+    setActiveTab(tabs[currentIndex + 1]?.id || activeTab);
   };
+
+
 
   const validateForm = () => {
-    return validateCurrentTab("pay") && validateTaxAndLoanDetails() && validatePersonalDetailsTab();
+    return validateCurrentTab("pay") && validateTaxAndLoanDetails();
   };
 
- const handleUpdate = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
- 
+
     const payValidation = validateCurrentTab("pay");
     const taxValidation = validateTaxAndLoanDetails();
- 
+
     const isValid = payValidation.isValid && taxValidation.isValid;
     const allWarnings = [...payValidation.warnings, ...taxValidation.warnings];
     const allErrors = { ...payValidation.errors, ...taxValidation.errors };
- 
+
     if (!isValid || allWarnings.length > 0) {
       setWarnings(allWarnings);
       setErrors(allErrors);
       console.warn("Form blocked due to validation issues");
       return;
     }
- 
+
     if (!selectedEmployee || !selectedEmployee.id) {
       console.error("No employee selected for update");
       alert("No employee selected for update");
       return;
     }
- 
- 
- 
+
+
+
     try {
       let updatedData = { ...editData }; // Create a temp copy
- 
+
       // Step 1: Upload files if they exist
       if (p45Form || starterChecklist) {
         const formDataUpload = new FormData();
- 
+
         if (p45Form) formDataUpload.append("p45Document", p45Form);
         if (starterChecklist) formDataUpload.append("starterChecklist", starterChecklist);
- 
+
         try {
           const fileData = await axios.post(
             "http://localhost:8080/api/employee-details/upload-documents",
@@ -708,9 +495,9 @@ const handleDelete = async (id) => {
               headers: { "Content-Type": "multipart/form-data" },
             }
           );
- 
+
           console.log("Uploaded files:", fileData.data);
- 
+
           // Update the local temp object
           updatedData = {
             ...updatedData,
@@ -725,9 +512,9 @@ const handleDelete = async (id) => {
           return;
         }
       }
- 
+
       console.log("Final data to update:", updatedData);
- 
+
       // Step 2: Send PUT request with updatedData
       const response = await axios.put(
         `http://localhost:8080/api/employee-details/update/${selectedEmployee.id}`,
@@ -738,10 +525,10 @@ const handleDelete = async (id) => {
           },
         }
       );
- 
+
       if (response.status === 200) {
-       
- 
+        
+
         // Reset states and refresh
         setIsUpdatePopup(true);
        
@@ -798,7 +585,7 @@ const handleDelete = async (id) => {
           hasEmergencyCode: false,
           hasPensionEligible: false,
         });
- 
+
         fetchEmployees(); // Refresh employee list
       } else {
         alert("Failed to update employee. Please try again.");
@@ -808,14 +595,13 @@ const handleDelete = async (id) => {
       alert("There was an error updating the employee.");
     }
   };
- 
- 
 
   const handleCancel = () => {
     setIsEditing(false)
     setIsViewing(false)
     setSelectedEmployee(null)
     setActiveTab("personal")
+    // Reset edit data
     setEditData({
       firstName: "",
       lastName: "",
@@ -838,14 +624,14 @@ const handleDelete = async (id) => {
       hasStarterChecklistDocumentSubmitted: false,
 
       bankDetailsDTO: {
-        accountName: "",
-        accountNumber: "",
-        bankName: "",
-        sortCode: "",
-        bankAddress: "",
-        bankPostCode: "",
-      },
-
+            accountName: "",
+            accountNumber: "",
+            bankName: "",
+            sortCode: "",
+            bankAddress: "",
+            bankPostCode: "",
+          },
+         
       taxCode: "1257L",
       nationalInsuranceNumber: "",
       niLetter: "",
@@ -860,10 +646,12 @@ const handleDelete = async (id) => {
         hasPostgraduateLoan: false,
         postgraduateLoanPlanType: "NONE",
       },
+      // isDirector: false,
+      // pensionScheme: "WORKPLACE_PENSION",
+      // employeeContribution: 5,
+      // employerContribution: 3,
     })
   }
-
-
 
 
   const renderPersonalDetails = () => (
@@ -1042,9 +830,8 @@ const handleDelete = async (id) => {
           <label className="block text-sm font-medium text-gray-700">Working Company Name <span className="text-red-600">*</span></label>
           <input
             type="text"
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
-            value={employers[0]?.companyDetailsDTO?.companyName}
-            title="Working company name is set to the current company"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.workingCompanyName}
             onChange={(e) => handleInputChange("workingCompanyName", e.target.value)}
             disabled
           />
@@ -1069,9 +856,8 @@ const handleDelete = async (id) => {
         <div>
           <label className="block text-sm font-medium text-gray-700">Pay Period <span className="text-red-600">*</span></label>
           <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
-            value={employers[0]?.companyDetailsDTO?.currentPayPeriod}
-            title="Pay period is set to the current pay period of the company"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.payPeriod}
             onChange={(e) => handleInputChange("payPeriod", e.target.value)}
             disabled
           >
@@ -1090,7 +876,13 @@ const handleDelete = async (id) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.bankDetailsDTO?.accountName || ""}
             onChange={(e) =>
-              handleInputChange("bankDetailsDTO.accountName", e.target.value)
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  accountName: e.target.value,
+                },
+              }))
             }
             disabled={isViewing}
           />
@@ -1103,7 +895,13 @@ const handleDelete = async (id) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.bankDetailsDTO?.accountNumber || ""}
             onChange={(e) =>
-              handleInputChange("bankDetailsDTO.accountNumber", e.target.value)
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  accountNumber: e.target.value,
+                },
+              }))
             }
             disabled={isViewing}
           />
@@ -1116,15 +914,28 @@ const handleDelete = async (id) => {
           <input
             type="text"
             placeholder="00-00-00"
-            maxLength={8}
+            maxLength={8} // 6 digits + 2 hyphens
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.bankDetailsDTO?.sortCode || ""}
+            value={editData.bankDetailsDTO.sortCode}
             onChange={(e) => {
-              const formatted = formatSortCode(e.target.value);
-              handleInputChange("bankDetailsDTO.sortCode", formatted);
+              let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
+              if (value.length > 6) value = value.slice(0, 6);
+
+              // Add hyphens after every 2 digits
+              const formatted =
+                value.slice(0, 2) +
+                (value.length > 2 ? "-" + value.slice(2, 4) : "") +
+                (value.length > 4 ? "-" + value.slice(4, 6) : "");
+
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  sortCode: formatted,
+                },
+              }));
             }}
           />
-
         </div>
 
         <div>
@@ -1134,7 +945,13 @@ const handleDelete = async (id) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.bankDetailsDTO?.bankName || ""}
             onChange={(e) =>
-              handleInputChange("bankDetailsDTO.bankName", e.target.value)
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankName: e.target.value,
+                },
+              }))
             }
             disabled={isViewing}
           />
@@ -1147,7 +964,13 @@ const handleDelete = async (id) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.bankDetailsDTO?.bankAddress || ""}
             onChange={(e) =>
-              handleInputChange("bankDetailsDTO.bankAddress", e.target.value)
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankAddress: e.target.value,
+                },
+              }))
             }
             disabled={isViewing}
           />
@@ -1160,7 +983,13 @@ const handleDelete = async (id) => {
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.bankDetailsDTO?.bankPostCode || ""}
             onChange={(e) =>
-              handleInputChange("bankDetailsDTO.bankPostCode", e.target.value)
+              setEditData((prev) => ({
+                ...prev,
+                bankDetailsDTO: {
+                  ...prev.bankDetailsDTO,
+                  bankPostCode: e.target.value,
+                },
+              }))
             }
             disabled={isViewing}
           />
@@ -1174,22 +1003,17 @@ const handleDelete = async (id) => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tax Year <span className="text-red-600"> *</span></label>
-          <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
-            value={employers[0]?.companyDetailsDTO.currentTaxYear}
-            onChange={(e) => handleInputChange("taxYear", e.target.value)}
-            title="Tax year is auto-selected by company"
-            disabled
-          >
-            <option value="">Select</option>
-            <option value="2025-2026">2025-2026</option>
-            <option value="2024-2025">2024-2025</option>
-            <option value="20 23-2024">2023-2024</option>
-          </select>
+          <label className="block text-sm font-medium text-gray-700">Tax Code</label>
+          <input
+            type="text"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.taxCode}
+            onChange={(e) => handleInputChange("taxCode", e.target.value)}
+            disabled={isViewing}
+          />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">National Insurance Number <span className="text-red-600"> *</span></label>
+          <label className="block text-sm font-medium text-gray-700">National Insurance Number</label>
           <input
             type="text"
             placeholder="AB123456C"
@@ -1203,7 +1027,7 @@ const handleDelete = async (id) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">NI Category Letter <span className="text-red-600"> *</span></label>
+          <label className="block text-sm font-medium text-gray-700">NI Category Letter</label>
           <Select
             options={NICategoryLetters}
             value={NICategoryLetters.find((option) => option.value === editData.niLetter)}
@@ -1221,13 +1045,12 @@ const handleDelete = async (id) => {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Region <span className="text-red-600"> *</span></label>
+          <label className="block text-sm font-medium text-gray-700">Region</label>
           <select
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border cursor-not-allowed"
-            value={employers[0]?.companyDetailsDTO?.region}
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            value={editData.region}
             onChange={(e) => handleInputChange("region", e.target.value)}
-            title="Region is auto-selected by company"
-            disabled
+            disabled={isViewing}
           >
             <option value="">Select</option>
             <option value="SCOTLAND">Scotland</option>
@@ -1240,36 +1063,38 @@ const handleDelete = async (id) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tax Code <span className="text-red-600"> *</span></label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium text-gray-700">Tax Year</label>
+          <select
             className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
-            value={editData.taxCode}
-            onChange={(e) => handleInputChange("taxCode", e.target.value.toUpperCase())}
+            value={editData.taxYear}
+            onChange={(e) => handleInputChange("taxYear", e.target.value)}
             disabled={isViewing}
-          />
+          >
+            <option value="">Select</option>
+            <option value="2025-2026">2025-2026</option>
+            <option value="2024-2025">2024-2025</option>
+            <option value="20 23-2024">2023-2024</option>
+          </select>
         </div>
 
         <div className="flex flex-row flex-nowrap">
-          {editData.hasEmergencyCode &&
-            <label className="flex items-center mt-6 w-full">
-              <input
-                type="checkbox"
-                className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                checked={editData.hasEmergencyCode}
-                disabled={isViewing}
-                onChange={(e) => {
-                  setEditData(prev => ({
-                    ...prev,
-                    hasEmergencyCode: e.target.checked,
-                  }));
-                }}
-              />
-              <span className="ml-2 text-sm text-gray-700 font-medium">
-                Emergency Tax Code
-              </span>
-            </label>
-          }
+          <label className="flex items-center mt-6 w-full">
+            <input
+              type="checkbox"
+              className="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              checked={editData.hasEmergencyCode}
+              disabled={isViewing}
+              onChange={(e) => {
+                setEditData(prev => ({
+                  ...prev,
+                  hasEmergencyCode: e.target.checked,
+                }));
+              }}
+            />
+            <span className="ml-2 text-sm text-gray-700 font-medium">
+              Emergency Tax Code
+            </span>
+          </label>
 
           <label className="flex items-center mt-6 w-full">
             <input
@@ -1371,7 +1196,10 @@ const handleDelete = async (id) => {
         </div>
       </div>
 
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+
+
         <div >
           <select disabled={isViewing} value={selectedDocument} onChange={(e) => handleDocumentsChange(e)}>
             <option value="">Upload Document</option>
@@ -1449,6 +1277,8 @@ const handleDelete = async (id) => {
             type="date"
             disabled={isViewing} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             value={editData.previousEmploymentDataDTO.previousEmploymentEndDate}
+
+
             onChange={(e) => handleInputChange("previousEmploymentDataDTO.previousEmploymentEndDate", e.target.value)}
           />
         </div>
@@ -1575,20 +1405,17 @@ const handleDelete = async (id) => {
                               onClick={() => {
                                 const currentIndex = tabs.findIndex((tab) => tab.id === activeTab)
                                 const currentTabId = tabs[currentIndex].id;
-                                let isValid = true;
 
-                                if (currentTabId === "personal") {
-                                  isValid = validatePersonalDetailsTab();
-                                } else if (currentTabId === "taxNI") {
-                                  isValid = validateTaxAndLoanDetails();
-                                } else {
-                                  isValid = validateCurrentTab(currentTabId);
-                                }
+                                const isValid =
+                                  currentTabId === "taxNI"
+                                    ? validateTaxAndLoanDetails()
+                                    : validateCurrentTab(currentTabId);
+
                                 if (!isValid) return;
+
                                 console.log(activeTab)
                                 console.log(currentIndex)
                                 setActiveTab(tabs[currentIndex + 1].id)
-
                               }}
                               className="bg-indigo-600 border border-transparent rounded-md shadow-sm py-2 px-4 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                             >
@@ -1609,169 +1436,144 @@ const handleDelete = async (id) => {
   }
 
   return (
-    <>
-      {isDelete && <ModalWrapper>
-        <div className="flex flex-col justify-center items-center" >
-          <p>Are you sure want to delete <span className="font-bold">{employeeSelectToDelete.firstName + " " + employeeSelectToDelete.lastName}</span>?</p>
-          <div className="flex flex-row justify-start space-x-5"><button className="bg-red-600 w-12" onClick={() => handleDelete(employeeSelectToDelete.id)}>Yes</button>
-            <button className="bg-green-700  w-12" onClick={() => setIsDelete(false)}>No</button>
-          </div>
-        </div>
-      </ModalWrapper>}
-
-      {isUpdatePopup && <ModalWrapper>
-        <div className="flex flex-col justify-center items-center" >
-          <p>Employee Details updated successfully. </p>
-          <div className="flex flex-row justify-start space-x-5">
-            <button className="bg-green-700  w-12" onClick={() => {
+   <>
+   {isDelete&& <ModalWrapper>
+    <div className="flex flex-col justify-center items-center" >
+      <p>Are you sure want to delete <span className="font-bold">{employeeSelectToDelete.firstName+" "+employeeSelectToDelete.lastName}</span>?</p>
+      <div className="flex flex-row justify-start space-x-5"><button className="bg-red-600 w-12" onClick={()=>handleDelete(employeeSelectToDelete.id)}>Yes</button>
+            <button className="bg-green-700  w-12" onClick={()=>setIsDelete(false)}>No</button>
+      </div>
+    </div>
+    </ModalWrapper>}
+    
+    {isUpdatePopup&& <ModalWrapper>
+    <div className="flex flex-col justify-center items-center" >
+      <p>Employee Details updated successfully. </p>
+      <div className="flex flex-row justify-start space-x-5">
+            <button className="bg-green-700  w-12" onClick={()=>{
               setIsUpdatePopup(false);
-              setIsEditing(false);
+        setIsEditing(false);
             }}>Okay</button>
-          </div>
-        </div>
-      </ModalWrapper>}
-
-      <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Employee Details</h1>
-                <p className="text-sm text-gray-600">Manage all employee information</p>
-              </div>
-              <button
-                onClick={() => navigate("/employer-dashboard")}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Back to Dashboard
-              </button>
+      </div>
+    </div>
+    </ModalWrapper>}
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Employee Details</h1>
+              <p className="text-sm text-gray-600">Manage all employee information</p>
             </div>
+            <button
+              onClick={() => navigate("/employer-dashboard")}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Back to Dashboard
+            </button>
           </div>
         </div>
+      </div>
 
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-12 lg:gap-x-5">
-            {/* Sidebar Tabs */}
-            <aside className="py-6 px-2 sm:px-6 lg:py-0 lg:px-0 lg:col-span-3">
-              <nav className="space-y-1">
-                {employeeTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setSelectedTab(tab.id)}
-                    className={`group border-l-4 px-3 py-2 flex items-center text-sm font-medium w-full text-left ${selectedTab === tab.id
-                      ? "bg-indigo-50 border-indigo-500 text-indigo-700"
-                      : "border-transparent text-gray-900 hover:bg-gray-50 hover:text-gray-900"
-                      }`}
-                  >
-                    {tab.name}
-                  </button>
-                ))}
-              </nav>
-            </aside>
-
-
-            <div className="space-y-6 sm:px-6 lg:px-0 lg:col-span-9">
-              {employees.length === 0 ? (
-                <div className="text-center">
-                  {/* <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p> */}
-                  {!loading && employees.length === 0 && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      {selectedTab === "active" && "There are no active employees now."}
-                      {selectedTab === "leaving" && "There are no leaving employees now."}
-                      {selectedTab === "inactive" && "There are no inactive employees now."}
-                      {selectedTab === "all" && "There are no employees in the system."}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-x-auto ">
-                  <ul className="divide-y divide-gray-200 ">
-                    {employees.map((employee) => (
-                      <li key={employee.employeeId}>
-                        <div className="px-4 py-4 sm:px-6">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-white">
-                                    {employee.firstName[0]}
-                                    {employee.lastName[0]}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="flex items-center">
-                                  <p className="text-sm font-medium text-indigo-600 truncate">
-                                    {employee.firstName} {employee.lastName}
-                                  </p>
-                                </div>
-                                <div className="mt-2 flex">
-                                  <div className="flex items-center text-sm text-gray-500">
-                                    <svg
-                                      className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                      />
-                                    </svg>
-                                    {employee.email}
-                                  </div>
-                                  <div className="ml-6 flex items-center text-sm text-gray-500">
-                                    <svg
-                                      className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      viewBox="0 0 24 24"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
-                                      />
-                                    </svg>
-                                    ID: {employee.employeeId}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex space-x-2 justify-end w-full sm:w-auto">
-                              <button
-                                onClick={() => handleView(employee.employeeId)}
-                                className="inline-flex items-center px-3 py-2 ml-10 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                              >
-                                View
-                              </button>
-                              {["active", "leaving"].includes(selectedTab) && (
-                                <button
-                                  onClick={() => handleEdit(employee.employeeId)}
-                                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                  Edit
-                                </button>
-                              )}
-
-                              <button
-                                onClick={() => {
-                                  setIsDelete(true)
-                                  setEmployeeSelectToDelete(employee)
-                                }}
-                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                              >
-                                Delete
-                              </button>
+      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {employees.length === 0 ? (
+            <div className="text-center">
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No employees</h3>
+              <p className="mt-1 text-sm text-gray-500">Get started by adding a new employee.</p>
+            </div>
+          ) : (
+            <div className="bg-white shadow overflow-hidden sm:rounded-md overflow-x-auto">
+              <ul className="divide-y divide-gray-200 ">
+                {employees.map((employee) => (
+                  <li key={employee.employeeId}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center">
+                              <span className="text-sm font-medium text-white">
+                                {employee.firstName[0]}
+                                {employee.lastName[0]}
+                              </span>
                             </div>
                           </div>
+                          <div className="ml-4">
+                            <div className="flex items-center">
+                              <p className="text-sm font-medium text-indigo-600 truncate">
+                                {employee.firstName} {employee.lastName}
+                              </p>
+                            </div>
+                            <div className="mt-2 flex">
+                              <div className="flex items-center text-sm text-gray-500">
+                                <svg
+                                  className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                  />
+                                </svg>
+                                {employee.email}
+                              </div>
+                              <div className="ml-6 flex items-center text-sm text-gray-500">
+                                <svg
+                                  className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"
+                                  />
+                                </svg>
+                                ID: {employee.employeeId}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-end space-x-2">
+                          <button
+                            onClick={() => handleView(employee.employeeId)}
+                            className="inline-flex items-center px-3 py-2 ml-10 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            View
+                          </button>
 
-                        </div>              </li>))}       </ul>      </div>)}   </div> </div> </div>  </div>
-    </>
+                          <button
+                            onClick={() => handleEdit(employee.employeeId)}
+                            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            // onClick={() => handleDelete(employee.id)}
+                            onClick={()=>{
+                              setIsDelete(true)
+                              setEmployeeSelectToDelete(employee)
+                            }}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="mt-2 sm:flex sm:justify-between">
+                        <div className="sm:flex">
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                        </div>            </div>         </div>          </li>))}       </ul>      </div>)}   </div> </div> </div>
+   </>
   )
 }
 
